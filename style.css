@@ -1,0 +1,1402 @@
+/* =========================================
+   RESET E BASE
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Sora', sans-serif;
+    background-color: #f9fcff;
+    color: #000;
+    overflow-x: hidden;
+    min-height: 100vh;
+    cursor: none;
+}
+
+#scrollContainer {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    /* Rimosso padding-bottom non più necessario */
+}
+
+/* Blocca lo scroll del background quando l'overlay è attivo */
+body.overlay-active #scrollContainer {
+    overflow: hidden;
+}
+
+.page {
+    /* Assicura che la sezione occupi almeno tutta l'altezza */
+    min-height: 100vh;
+    scroll-snap-align: start;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- CUSTOM CURSOR --- */
+#customCursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+
+    /* COLORE ORO DI DEFAULT (Sullo sfondo bianco) */
+    background-color: #F0A500;
+
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999999;
+
+    /* NORMALE di default (così è oro pieno sul bianco) */
+    mix-blend-mode: normal;
+
+    transform: translate(-50%, -50%) scale(1);
+    filter: blur(0px);
+    transition:
+        width 0.3s ease,
+        height 0.3s ease,
+        background-color 0.3s ease,
+        transform 0.4s ease,
+        filter 0.4s ease;
+    will-change: transform, width, height, filter;
+}
+
+/* STATO DI MOVIMENTO: Ingrandimento e sfocatura con ease */
+body.mouse-moving #customCursor {
+    transform: translate(-50%, -50%) scale(1.4);
+    filter: blur(3px);
+}
+
+/* QUANDO IL MOUSE TOCCA UN OGGETTO (Testo, Immagine, Link) */
+body.hovering #customCursor {
+    width: 24px;
+    height: 24px;
+
+    /* Attiva l'effetto fusione SOLO sugli oggetti */
+    mix-blend-mode: exclusion;
+
+    /* Opzionale: rende l'effetto più pulito sui testi neri */
+    opacity: 0.9;
+}
+
+/* --- IMPORTANTE: ABILITA IL MOUSE SU TESTI E IMMAGINI --- */
+/* Attualmente il container .center-content ha pointer-events: none, 
+   quindi il mouse non "sente" il logo e il testo. Riattiviamoli: */
+
+.hero-logo img,
+.payoff,
+.static-text {
+    pointer-events: auto !important;
+    /* Forza la rilevazione del mouse */
+    position: relative;
+    z-index: 20;
+    /* Assicura che siano sopra allo sfondo */
+}
+
+/* =========================================
+   HEADER
+   ========================================= */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 2rem;
+    z-index: 6000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+header a {
+    pointer-events: auto;
+    cursor: none;
+}
+
+.logo-link img {
+    height: 55px;
+    width: auto;
+}
+
+/* =========================================
+   LANDING HERO
+   ========================================= */
+.landing-hero {
+    overflow: hidden;
+}
+
+.center-content {
+    text-align: center;
+    z-index: 10;
+    position: relative;
+    padding: 0 1rem;
+    pointer-events: none;
+}
+
+.hero-logo img {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    margin-bottom: 0.5rem;
+}
+
+.payoff {
+    font-size: 1.2rem;
+    color: #333;
+    line-height: 1.4;
+    font-weight: 300;
+}
+
+/* =========================================
+   CONTATTI INTERATTIVI E FOOTER
+   ========================================= */
+#contactSection {
+    background-color: #f9fcff;
+    z-index: 50;
+    /* Rimosso padding inferiore di compensazione */
+}
+
+.contact-interaction-zone {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    /* Altezza minima per l'area interattiva */
+}
+
+/* --- STATO 1: TESTO --- */
+.static-text {
+    font-size: 2.8rem;
+    color: #3273bf;
+    font-weight: 600;
+    line-height: 1.2;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 1;
+    pointer-events: none;
+}
+
+/* --- ANIMAZIONI --- */
+
+/* 1. Galleggiamento (usa margin per non rompere il transform:translate) */
+@keyframes float-vertical {
+
+    0%,
+    100% {
+        margin-top: 0;
+    }
+
+    50% {
+        margin-top: -15px;
+    }
+}
+
+/* 2. Lampeggiamento del pallino (da piccolo a grande) */
+@keyframes pulseDot {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
+}
+
+/* --- STATO 2: TRIGGER --- */
+.dynamic-trigger {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* Il transform principale è gestito dallo script JS (scale 0.8 -> 1) */
+    transform: translate(-50%, -50%) scale(0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* gap ridotto perché gestito dal margine del pallino */
+    gap: 0.5rem;
+    opacity: 0;
+    pointer-events: none;
+    /* Disattivo finché non appare */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    cursor: none;
+}
+
+/* Stile del pallino aggiornato */
+.gold-dot-large {
+    width: 12px;
+    height: 12px;
+    background-color: #F0A500;
+    border-radius: 50%;
+    /* Usa il filtro sfocatura invece dell'ombra netta */
+    filter: blur(4px);
+    box-shadow: none;
+    margin-bottom: 0.1rem;
+    /* Spazio tra pallino e testo */
+}
+
+.trigger-label {
+    font-size: 0.8rem;
+    color: #F0A500;
+    font-weight: 500;
+}
+
+/* --- LOGICA SWAP E FLUTTUAZIONE --- */
+.contact-interaction-zone.is-moving .static-text {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+/* Quando visibile, il contenitore fluttua SU e GIÙ (tutto insieme) */
+.contact-interaction-zone.is-moving .dynamic-trigger {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+    animation: float-vertical 3s ease-in-out infinite;
+}
+
+/* Il pallino lampeggia (PULSE) separatamente */
+.contact-interaction-zone.is-moving .gold-dot-large {
+    animation: pulseDot 1.5s ease-in-out infinite;
+}
+
+/* La scritta non deve avere animazioni proprie (si muove col padre) */
+.contact-interaction-zone.is-moving .trigger-label {
+    animation: none;
+}
+
+/* --- FIX CLIC PULSANTE SCRIVIMI --- */
+
+/* 1. Assicura che quando la zona è attiva, il bottone riceva il click */
+.contact-interaction-zone.is-moving #triggerScrivimi {
+    pointer-events: auto !important;
+    /* Forza la riattivazione del click */
+    cursor: pointer;
+    /* Mostra la manina */
+    z-index: 100;
+    /* Assicura che sia sopra al testo "Ready..." */
+}
+
+/* 2. Assicura che anche il cerchio interno non blocchi il click */
+#triggerScrivimi .contact-circle {
+    pointer-events: none;
+    /* Lascia passare il click al genitore (triggerScrivimi) */
+}
+
+/* =========================================
+   FOOTER STYLE (Bilanciato e Simmetrico)
+   ========================================= */
+#brandFooter {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+
+    width: 100%;
+    padding: 40px 40px;
+    background-color: #3273bf;
+    color: #ffffff;
+    z-index: 10;
+    scroll-snap-align: end;
+    box-sizing: border-box;
+
+    /* FONDAMENTALE: Allinea verticalmente i blocchi al centro */
+    /* Così l'immagine e i testi condividono lo stesso asse orizzontale */
+    align-items: center;
+}
+
+/* Gestione Colonne */
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* Spazio tra le righe di testo */
+}
+
+/* Sinistra */
+.footer-col.left {
+    align-items: flex-start;
+    text-align: left;
+}
+
+/* Centro */
+.footer-col.center {
+    align-items: center;
+    padding: 0;
+    /* Assicura che il contenitore dell'immagine non aggiunga spazi extra */
+    line-height: 0;
+}
+
+/* Destra */
+.footer-col.right {
+    align-items: flex-end;
+    text-align: right;
+    padding: 0;
+}
+
+/* --- IMMAGINE CENTRALE --- */
+.footer-logo-text {
+    /* CALCOLO ALTEZZA:
+       3 righe di testo + 2 gap da 8px = circa 3.8rem / 4rem.
+       Questa misura rende l'immagine alta esattamente quanto le 3 righe di testo a lato.
+    */
+    height: 4.8rem;
+
+    width: auto;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    display: block;
+}
+
+/* --- LINK --- */
+.footer-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+    transition: all 0.3s ease;
+    cursor: none;
+    line-height: 1.4;
+    /* Altezza della riga di testo */
+}
+
+/* Hover */
+.footer-link:hover {
+    color: #F0A500;
+    opacity: 1;
+}
+
+/* Animazioni Hover */
+.footer-col.left .footer-link:hover {
+    transform: translateX(5px);
+}
+
+.footer-col.right .footer-link:hover {
+    transform: translateX(-5px);
+}
+
+/* --- MOBILE --- */
+@media (max-width: 768px) {
+    #brandFooter {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .footer-col.left,
+    .footer-col.center,
+    .footer-col.right {
+        align-items: center;
+        text-align: center;
+    }
+}
+
+/* =========================================
+   PROJECT OVERLAY (Responsive Fix)
+   ========================================= */
+
+/* 1. Sfondo generale scuro */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(249, 252, 255, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 5000;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    /* Fondamentale: ancora il titolo in alto affinché non si muova */
+    /* Centra verticalmente nello spazio disponibile */
+
+    /* Padding-top calcolato per pulire l'header e centrare visivamente la galleria */
+    padding: 15vh 0 60px 0;
+    box-sizing: border-box;
+
+    /* Rimuove lo scroll */
+    overflow-y: hidden;
+    overflow-x: hidden;
+
+    /* Nasconde la scrollbar per ogni browser (anche se overflow è hidden, per sicurezza) */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.overlay::-webkit-scrollbar {
+    display: none;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 2. Contenitore Principale
+   La logica: calcoliamo la larghezza massima affinché
+   la box 16:9 stia SEMPRE dentro all'altezza disponibile.
+   Altezza disponibile = 100vh - padding sopra - padding sotto - header modal - footer modal - gap
+   La larghezza del modal = altezza_disponibile * (16/9)
+   Usiamo min() per prendere il valore più piccolo tra il 100vw e quello calcolato.
+*/
+.content-wrapper {
+    /*
+      --modal-overhead: spazio occupato da header (≈26px) + footer (≈50px) + gap (20px) + margini (≈10px)
+      La larghezza massima sicura è: (altezza_disponibile - overhead) * 16/9
+      altezza_disponibile ≈ 100vh - (padding_top + padding_bottom)
+    */
+    --p-top: 40px;
+    --p-bottom: 40px;
+    --target-h: 70vh;
+    /* La galleria occuperà il 70% dell'altezza finestra */
+    --max-w-from-h: calc(var(--target-h) * 16 / 9);
+
+    width: min(95vw, var(--max-w-from-h));
+    height: auto;
+
+    /* Rimosso margin: auto per evitare conflitti con align-items: flex-start */
+    margin: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* Centra orizzontalmente tutti i figli (header, modal, footer, info) */
+    gap: 0px;
+    /* Eliminato gap generale per unire gli elementi */
+
+    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: width, transform;
+}
+
+/* 3. Header (Titolo e X) */
+.modal-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    flex-shrink: 0;
+    position: relative;
+    /* Per centrare la freccia Up */
+}
+
+.modal-header h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #3273bf;
+    margin: 0;
+    line-height: 1;
+}
+
+.close-btn {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #3273bf;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.close-btn:hover {
+    transform: rotate(90deg);
+}
+
+/* 4. Box Immagini (Formato 16:9) */
+.overlay-modal {
+    position: relative;
+    width: 100%;
+    margin-inline: auto;
+    /* Centramento moderno per box flessibili */
+    aspect-ratio: 16 / 9;
+    background-color: #ffffff;
+    /* overflow: hidden; -- rimosso per far vedere le frecce fuori */
+    box-shadow: 0 10px 30px rgba(50, 115, 191, 0.1);
+    flex-shrink: 0;
+    margin-bottom: 0px;
+    /* Forza contatto con footer */
+    transform-origin: center center;
+    /* Forza l'origine al centro perfetto */
+    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Anima tutto, inclusi margini e width */
+    will-change: width, transform, opacity;
+}
+
+.overlay-gallery {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    cursor: ns-resize;
+    overflow: hidden;
+    /* Spostato qui per clippare solo le immagini */
+}
+
+.gallery-track {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 5. Le Immagini */
+.gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    opacity: 0.3;
+    transform: scale(0.95);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.gallery-img.focused {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* 6. Footer (Info e Counter) */
+.gallery-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-top: 10px;
+    height: 30px;
+    background-color: transparent;
+    flex-shrink: 0;
+    position: relative;
+    /* Per centrare le frecce Down */
+}
+
+.footer-nav-center {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+.sora-style {
+    font-family: 'Sora', sans-serif;
+    color: #3273bf;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.info-placeholder-text {
+    font-family: 'Georgia', serif;
+    /* Font serif per la 'i' */
+    font-style: italic;
+    /* Corsivo */
+    text-transform: lowercase;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #ffffff;
+    transition: color 0.3s ease;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Piccolo offset se necessario per il font serif corsivo */
+    transform: translateY(-0.5px);
+}
+
+.info-placeholder {
+    width: 20px;
+    /* Grande quanto il testo */
+    height: 20px;
+    background: #3273bf;
+    /* Blu di base */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(50, 115, 191, 0.12);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.info-placeholder:hover {
+    transform: scale(1.1);
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(50, 115, 191, 0.18);
+}
+
+
+
+/* Quando l'info è attiva, la box immagini si riduce drasticamente per dare spazio al testo */
+.overlay.info-open .overlay-modal {
+    width: 55%;
+}
+
+/* --- INFO SECTION --- */
+.info-section {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    overflow: hidden;
+    transition: grid-template-rows 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.5s ease,
+        margin 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 0;
+}
+
+.info-section>.info-grid {
+    min-height: 0;
+}
+
+.overlay.info-open .info-section {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    margin-top: 20px;
+    /* Margine ridotto e più coerente */
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+    padding: 20px 0;
+    border-top: 1px solid rgba(50, 115, 191, 0.1);
+}
+
+.info-project-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #3273bf;
+    margin-bottom: 15px;
+}
+
+.info-project-description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #444;
+    max-width: 90%;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.meta-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #3273bf;
+    opacity: 0.6;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.meta-value {
+    font-size: 0.85rem;
+    color: #3273bf;
+    font-weight: 600;
+}
+
+/* Stati UI Bottone Info */
+.info-placeholder:hover,
+.info-placeholder.active {
+    background-color: #F0A500 !important;
+    /* Oro all'hover o quando attivo */
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(240, 165, 0, 0.3);
+}
+
+.info-placeholder:hover span,
+.info-placeholder.active span {
+    color: #3273bf !important;
+    /* 'i' blu all'hover o quando attivo */
+}
+
+/* Responsive Info Section */
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .overlay.info-open .overlay-modal {
+        transform: scale(0.95);
+    }
+}
+
+/* Gradienti Oro */
+.nav-gradient {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+/* Frecce di navigazione Overlay */
+.nav-arrow {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #3273bf;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    border: 0.5px solid #3273bf;
+    /* Contorno blu */
+    box-shadow: 0 2px 8px rgba(50, 115, 191, 0.12);
+}
+
+.nav-arrow svg {
+    width: 12px;
+    height: 12px;
+}
+
+.nav-arrow.visible {
+    opacity: 0.9;
+    pointer-events: auto;
+}
+
+.nav-arrow.visible:hover {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.15);
+    background-color: #F0A500;
+    /* Cerchietto oro all'hover */
+    border-color: #F0A500;
+}
+
+.nav-arrow.visible:hover svg {
+    color: #3273bf;
+    /* Icona blu su fondo oro */
+}
+
+.nav-return-top {
+    background: #3273bf;
+    color: #fff;
+    border-color: #3273bf;
+}
+
+.nav-return-top:hover {
+    background: #F0A500;
+    border-color: #F0A500;
+    color: #3273bf;
+}
+
+.nav-gradient.top {
+    top: 0;
+    background: linear-gradient(to bottom, rgba(240, 165, 0, 0.4), transparent);
+}
+
+.nav-gradient.bottom {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(240, 165, 0, 0.4), transparent);
+}
+
+/* MOBILE: schermi piccoli */
+@media (max-width: 768px) {
+    .overlay {
+        padding: 70px 1rem 1rem 1rem;
+        align-items: flex-start;
+        overflow-y: auto;
+    }
+
+    .content-wrapper {
+        width: 100%;
+        --max-w-from-h: none;
+    }
+
+    .overlay-modal {
+        aspect-ratio: 4 / 3;
+        /* Ratio più comodo su mobile */
+    }
+}
+
+/* SCHERMI MOLTO BASSI (landscape mobile, laptop piccoli) */
+@media (max-height: 600px) {
+    .overlay {
+        padding: 50px 1rem 1rem 1rem;
+        align-items: flex-start;
+        overflow-y: auto;
+    }
+
+    .content-wrapper {
+        width: min(95vw, 900px);
+    }
+}
+
+/* =========================================
+   1. ANIMAZIONI DEFINITE
+   ========================================= */
+/* Lampeggio pallino */
+@keyframes pulseDot {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.2;
+        transform: scale(0.8);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Illuminazione testo (Proietto/Futuri) */
+@keyframes textGlow {
+
+    0%,
+    100% {
+        color: #3273bf;
+        text-shadow: 0 0 10px rgba(50, 115, 191, 0.2);
+    }
+
+    50% {
+        color: #4a90e2;
+        text-shadow: 0 0 20px rgba(74, 144, 226, 0.6);
+    }
+}
+
+/* =========================================
+   2. REGOLE PER IL TESTO EVIDENZIATO
+   ========================================= */
+/* Questa regola mancava nel tuo file CSS caricato */
+.highlight {
+    font-style: italic;
+    font-weight: 400;
+    display: inline-block;
+    animation: textGlow 3s ease-in-out infinite;
+}
+
+/* =========================================
+   3. REGOLE PROGETTI FLUTTUANTI (CORRETTE)
+   ========================================= */
+.project-square {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    cursor: none;
+    z-index: 30;
+    background: transparent;
+}
+
+/* --- IL PALLINO (Logica Mouse Fermo/Mosso) --- */
+.project-square .hint-dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #F0A500;
+    filter: blur(4px);
+    z-index: 1;
+    pointer-events: none;
+
+    /* DEFAULT (Mouse fermo): Invisibile e fermo */
+    opacity: 0;
+    transform: scale(0);
+    /* Transizione in USCIATA (più lenta e dolce) */
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* QUANDO IL MOUSE SI MUOVE (Classe gestita dal tuo sketch.js) */
+body.mouse-moving .project-square .hint-dot {
+    opacity: 1;
+    transform: scale(1);
+    /* Transizione in ENTRATA (più rapida per reattività) */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    /* L'animazione parte solo quando il mouse si muove */
+    animation: pulseDot 2s ease-in-out infinite;
+}
+
+/* ECCEZIONE: Se passo SOPRA il progetto, il pallino deve sparire */
+.project-square:hover .hint-dot {
+    opacity: 0 !important;
+    animation: none !important;
+}
+
+/* --- L'IMMAGINE --- */
+.square-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 2;
+    /* Sopra il pallino */
+
+    opacity: 0;
+    filter: grayscale(100%);
+    transform: scale(1.15);
+    transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* --- IL TITOLO --- */
+.square-label {
+    position: absolute;
+    bottom: -20px;
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+    font-family: 'Sora', sans-serif;
+    color: #000;
+    z-index: 3;
+
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: all 0.4s ease 0.1s;
+    pointer-events: none;
+}
+
+/* --- HOVER SUL PROGETTO --- */
+.project-square:hover .square-img {
+    opacity: 1;
+    filter: grayscale(0%);
+    transform: scale(1.0);
+    box-shadow: 0 15px 45px rgba(50, 115, 191, 0.15);
+    /* Ombra morbida e poco opaca */
+}
+
+.project-square:hover {
+    z-index: 100;
+}
+
+.project-square:hover .square-label {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.gold-trigger {
+    transition: color 0.3s ease;
+    color: inherit;
+}
+
+.gold-trigger.active {
+    color: #F0A500;
+}
+
+/* =========================================
+   GRESTIONE OVERLAY E FORM EMAIL
+   ========================================= */
+
+/* 1. Lo sfondo che copre tutta la pagina */
+.email-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(249, 252, 255, 0.85);
+    /* Sfondo chiaro semi-trasparente */
+    backdrop-filter: blur(8px);
+    /* Effetto sfocato moderno */
+    z-index: 5000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+/* Stato quando il popup è aperto */
+.email-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 2. La scheda bianca (Card) */
+.email-card {
+    background: #fff;
+    padding: 2.5rem;
+    width: min(380px, 85vw);
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 20px;
+    /* Stondo ridotto */
+    position: relative;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transform: translateY(20px);
+    transition: transform 0.4s ease;
+}
+
+.email-overlay.active .email-card {
+    transform: translateY(0);
+}
+
+/* 3. La X di chiusura in alto a destra */
+.email-close {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.2rem;
+    font-size: 0.8rem;
+    color: #3273bf;
+    cursor: pointer;
+    line-height: 1;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.email-close:hover {
+    color: #F0A500;
+    transform: scale(1.1) rotate(90deg);
+}
+
+/* 4. Elementi del Form con stondi */
+.form-title {
+    font-size: 1.5rem;
+    color: #3273bf;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.email-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border: 1px solid #eee;
+    background-color: #fcfdfe;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.85rem;
+    border-radius: 10px;
+    /* Stondi per i campi */
+    outline: none;
+    transition: border-color 0.3s ease;
+    min-height: auto;
+    resize: none;
+}
+
+.form-textarea {
+    min-height: 100px;
+    resize: none;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    border-color: #3273bf;
+}
+
+.send-btn {
+    background-color: #3273bf;
+    color: #fff;
+    border: none;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    border-radius: 10px;
+    /* Stondi per il bottone ridotti */
+    font-family: 'Sora', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.send-btn:hover {
+    background-color: #F0A500;
+    color: #3273bf;
+    transform: translateY(-2px);
+}
+
+/* MEDIA QUERY */
+@media (max-width: 768px) {
+    body {
+        cursor: auto;
+        overflow-x: hidden;
+    }
+
+    #customCursor {
+        display: none;
+    }
+
+    .project-square {
+        width: 100px;
+        height: 100px;
+        opacity: 0.2;
+    }
+
+    #contactSection {
+        padding: 0 1.5rem;
+    }
+
+    .static-text {
+        font-size: 1.8rem;
+    }
+
+    #brandFooter {
+        padding: 2rem 1rem;
+        font-size: 0.8rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .content-wrapper {
+        width: 100vw;
+        padding: 0 1rem;
+        align-items: center;
+    }
+
+    .close-btn {
+        top: 1rem;
+        right: 1rem;
+    }
+}
+
+/* --- CONFIGURAZIONE ORO E VARIABILI OVERLAY --- */
+:root {
+    --gold-intensity: 0.7;
+}
+
+.page-counter {
+    letter-spacing: 1px;
+}
+
+.info-placeholder:hover {
+    background-color: #3273bf;
+    color: #fff;
+}
+
+/* --- NASCONDE IL CTA QUANDO L'OVERLAY PROGETTO È APERTO --- */
+/* Quando .overlay ha la classe .active, il CTA "Sei rimasto abbagliato?"
+   scompare subito e non è più cliccabile */
+#projectOverlay.active~* #heroScrollCTA,
+body:has(#projectOverlay.active) #heroScrollCTA {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    transition: opacity 0.2s ease, visibility 0.2s !important;
+}
+
+/* =========================================
+   HERO SCROLL CTA
+   ========================================= */
+
+.hero-scroll-cta {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+
+    display: flex;
+    justify-content: center;
+    /* tutto raggruppato al centro */
+    /* frecce vicine al testo */
+    align-items: flex-end;
+    gap: 0.5em;
+    /* ~mezza lettera di distanza */
+    padding: 0 1rem 12px 1rem;
+    /* respiro laterale minimo */
+
+    /* PARTENZA: Invisibile per non sovrapporsi al loading */
+    opacity: 0;
+    pointer-events: none;
+
+    z-index: 400;
+    cursor: pointer;
+    padding-bottom: 10px;
+
+    /* Appare dolcemente quando il JS aggiunge la classe .loaded-visible */
+    transition: opacity 0.5s ease;
+}
+
+/* Classe attivata dal JS a fine caricamento */
+.hero-scroll-cta.loaded-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Contenuti */
+.cta-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    z-index: 3;
+    margin-bottom: 8px;
+    /* Aumentata distanza dalla sfumatura per il testo */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.cta-text {
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 0.65rem;
+    /* Ridotto leggermente */
+    color: #F0A500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Freccia generica (usata anche in contact-scroll-cta) */
+.cta-arrow {
+    font-family: 'Sora', sans-serif;
+    font-size: 0.75rem;
+    color: #F0A500;
+    line-height: 1;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    z-index: 3;
+    margin-bottom: 8px;
+    /* Aumentata distanza dalla sfumatura */
+    /* allineamento verticale con il testo */
+}
+
+.cta-arrow svg {
+    width: 14px;
+    /* Dimensione coerente col testo ridotto */
+    height: 14px;
+}
+
+/* Le due frecce laterali dell'hero CTA */
+.cta-arrow--left,
+.cta-arrow--right {
+    flex-shrink: 0;
+}
+
+/* La Sfumatura (Il protagonista) */
+.cta-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    /* Altezza a riposo */
+
+    /* Sfumatura base: leggera */
+    background: linear-gradient(to top, #F0A500 10%, rgba(240, 165, 0, 0.8) 50%, transparent 100%);
+    opacity: 0.5;
+
+    z-index: 1;
+    pointer-events: none;
+
+    transition: height 0.4s cubic-bezier(0.7, 0, 0.3, 1), opacity 0.3s ease;
+}
+
+/* --- HOVER SEMPLICE (Prima dell'attivazione) --- */
+.hero-scroll-cta:not(.active-transition):hover .cta-gradient {
+    opacity: 1;
+    height: 40px;
+}
+
+.hero-scroll-cta:not(.active-transition):hover .cta-content {
+    transform: translateY(-20px);
+}
+
+/* Le frecce laterali si alzano insieme al testo sull'hover */
+.hero-scroll-cta:not(.active-transition):hover .cta-arrow--left,
+.hero-scroll-cta:not(.active-transition):hover .cta-arrow--right {
+    transform: translateY(-20px);
+}
+
+.hero-scroll-cta:not(.active-transition):hover .cta-text,
+.hero-scroll-cta:not(.active-transition):hover .cta-arrow {
+    color: #F0A500;
+}
+
+/* --- STATO ATTIVO: L'ABBAGLIO SFUMATO --- */
+.hero-scroll-cta.active-transition .cta-gradient {
+    /* Copre tutto lo schermo + extra per sicurezza */
+    height: 150vh;
+    opacity: 1;
+
+    /* QUI LA MAGIA: Invece di colore piatto, è una sfumatura gigante */
+    /* Parte solida in basso, sfuma verso l'alto */
+    background: linear-gradient(to top,
+            #F0A500 0%,
+            #F0A500 60%,
+            rgba(240, 165, 0, 0.8) 80%,
+            transparent 100%);
+}
+
+.hero-scroll-cta.active-transition .cta-content {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* Nasconde anche le frecce laterali durante la transizione dorata */
+.hero-scroll-cta.active-transition .cta-arrow--left,
+.hero-scroll-cta.active-transition .cta-arrow--right {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* =========================================
+   CONTACT SCROLL CTA (freccia in fondo alla pagina contatti)
+   ========================================= */
+.contact-scroll-cta {
+    bottom: 24px;
+    /* Un po' più in alto dal bordo */
+    z-index: 50;
+    transition: all 0.3s ease;
+}
+
+/* Ruota SVG quando "attivo" (siamo al footer) */
+.contact-scroll-cta.is-up svg {
+    transform: rotate(180deg);
+}
+
+.contact-scroll-cta .cta-arrow {
+    margin-bottom: 0;
+}
