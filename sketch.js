@@ -82,8 +82,8 @@ const projectsData = {
         evocativeTitle: "Tratti di Pompei",
         description: "Ricerca tra le domus di Pompei tradotta in mattonelle ceramiche d’autore. Il progetto rilegge i segni del passato in chiave contemporanea, trasformando la materia in narrazione visiva. Dallo studio dei pigmenti alle geometrie, ogni pezzo racconta un frammento di storia romana. Un dialogo materico tra eredità archeologica e design industriale d'eccellenza per Ma.vi. Ceramica.",
         meta: {
-            project: "Ricerca, Prodotto, Comunicazione",
-            client: "Ma.vi. Ceramica",
+            project: "Prodotto, Comunicazione",
+            client: "Ma.Vi. Ceramica",
             sector: "Ceramica",
             year: "2024"
         },
@@ -122,7 +122,7 @@ const projectsData = {
         meta: {
             project: "Branding, Comunicazione",
             client: "Vinicio Capossela / Sponz Fest",
-            sector: "Eventistica / Branding",
+            sector: "Festival Folkloristico",
             year: "2025"
         },
         images: [
@@ -139,7 +139,7 @@ const projectsData = {
         evocativeTitle: "Find Your Identity",
         description: "Branding totale per un salone di bellezza napoletano incentrato sull’unicità della persona. Il lavoro definisce un’identità visiva elegante, dal naming ai capi da lavoro sartoriali. Ogni dettaglio è curato per garantire coerenza in ogni punto di contatto, inclusi merchandising e comunicazione. Uno spazio dove il design incontra la bellezza in un’esperienza professionale completa.",
         meta: {
-            project: "Naming, Branding, Merchandising, Workwear Design",
+            project: "Naming, Branding, Merchandising",
             client: "Identity Salon Napoli",
             sector: "Salone di Bellezza",
             year: "2025"
@@ -158,8 +158,8 @@ const projectsData = {
         evocativeTitle: "Geografie Emotive di Maratea",
         description: "Sistema di editoria e servizi per scoprire Maratea attraverso una mappatura partecipativa. Una mappa pieghevole raccoglie emozioni e tracce urbane, espandendosi grazie a sticker interattivi usati dagli utenti. L'approccio trasforma il cammino in pratica collettiva di riscoperta del paesaggio. Uno strumento che unisce rigore cartografico alla poesia dell'esperienza vissuta sul campo.",
         meta: {
-            project: "Servizio, Editoria",
-            client: "Comune di Maratea / Pro Loco",
+            project: "Sedicesimo",
+            client: "Nuova Libbaneria Mediterranea",
             sector: "Design per la Comunità",
             year: "2024"
         },
@@ -177,7 +177,7 @@ const projectsData = {
         evocativeTitle: "Una Ricetta del Saper Fare Comunità",
         description: "Albo illustrato e manifesto per un design collaborativo radicato nelle tradizioni locali. La pubblicazione documenta la lavorazione delle fibre vegetali come simbolo di resilienza creativa. Raccoglie visioni di designer che hanno reinterpretato i libbani per oggetti d'uso quotidiano. Una guida su come la condivisione di saperi possa rigenerare l’identità di un intero territorio.",
         meta: {
-            project: "Ricerca, Editoria",
+            project: "Illustrazione,Editoria",
             client: "La Nuova Libbaneria Mediterranea",
             sector: "Design per la Comunità",
             year: "2025"
