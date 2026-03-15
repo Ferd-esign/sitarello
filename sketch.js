@@ -622,8 +622,8 @@ function initContactSwap() {
             // Calcola distanza tra mouse e centro del bottone
             const dist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
 
-            // Definiamo un raggio di influenza (es. 400px)
-            const radius = 400;
+            // Definiamo un raggio di influenza (es. 600px)
+            const radius = 600;
             if (dist < radius) {
                 // Mappiamo la distanza in un valore di scala da 1.0 (lontano) a 1.2 (vicino)
                 // Usiamo una curva morbida
