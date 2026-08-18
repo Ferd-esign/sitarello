@@ -79,7 +79,7 @@ function initFloatingInteraction() {
 const projectsData = {
     "Tratti": {
         title: "Collezione Tratti",
-        evocativeTitle: "Tratti di Pompei",
+        evocativeTitle: "PROVA",
         description: "Ricerca tra le domus di Pompei tradotta in mattonelle ceramiche d’autore. Il progetto rilegge i segni del passato in chiave contemporanea, trasformando la materia in narrazione visiva. Dallo studio dei pigmenti alle geometrie, ogni pezzo racconta un frammento di storia romana. Un dialogo materico tra eredità archeologica e design industriale d'eccellenza per Ma.vi. Ceramica.",
         meta: {
             project: "Prodotto, Comunicazione",
