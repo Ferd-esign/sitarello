@@ -23,7 +23,35 @@
       "cliente": "La Nuova Libbaneria Mediterranea",
       "settore": "Design per la Comunità",
       "anno": 2024
-    }
+    },
+    "sottoprogetti": [
+      {
+        "id": "marathia",
+        "cartella": "Marathia",
+        "titolo": "Marathia",
+        "titoloEvocativo": "Geografie Emotive di Maratea",
+        "descrizione": "Sistema di editoria e servizi per scoprire Maratea attraverso una mappatura partecipativa. Una mappa pieghevole raccoglie emozioni e tracce urbane, espandendosi grazie a sticker interattivi usati dagli utenti. L'approccio trasforma il cammino in pratica collettiva di riscoperta del paesaggio. Uno strumento che unisce rigore cartografico alla poesia dell'esperienza vissuta sul campo.",
+        "metadati": {
+          "progetto": ["Sedicesimo"],
+          "cliente": "Nuova Libbaneria Mediterranea",
+          "settore": "Design per la Comunità",
+          "anno": 2024
+        }
+      },
+      {
+        "id": "cunti",
+        "cartella": "Cunti",
+        "titolo": "Cunti da libbàni",
+        "titoloEvocativo": "Una Ricetta del Saper Fare Comunità",
+        "descrizione": "Albo illustrato e manifesto per un design collaborativo radicato nelle tradizioni locali. La pubblicazione documenta la lavorazione delle fibre vegetali come simbolo di resilienza creativa. Raccoglie visioni di designer che hanno reinterpretato i libbani per oggetti d'uso quotidiano. Una guida su come la condivisione di saperi possa rigenerare l'identità di un intero territorio.",
+        "metadati": {
+          "progetto": ["Illustrazione", "Editoria"],
+          "cliente": "La Nuova Libbaneria Mediterranea",
+          "settore": "Design per la Comunità",
+          "anno": 2025
+        }
+      }
+    ]
   },
   {
     "id": "sponzfest",
@@ -48,32 +76,6 @@
       "progetto": ["Naming", "Branding", "Merchandising"],
       "cliente": "Identity Salon Napoli",
       "settore": "Salone di Bellezza",
-      "anno": 2025
-    }
-  },
-  {
-    "id": "marathia",
-    "cartella": "Marathia",
-    "titolo": "Marathia",
-    "titoloEvocativo": "Geografie Emotive di Maratea",
-    "descrizione": "Sistema di editoria e servizi per scoprire Maratea attraverso una mappatura partecipativa. Una mappa pieghevole raccoglie emozioni e tracce urbane, espandendosi grazie a sticker interattivi usati dagli utenti. L'approccio trasforma il cammino in pratica collettiva di riscoperta del paesaggio. Uno strumento che unisce rigore cartografico alla poesia dell'esperienza vissuta sul campo.",
-    "metadati": {
-      "progetto": ["Sedicesimo"],
-      "cliente": "Nuova Libbaneria Mediterranea",
-      "settore": "Design per la Comunità",
-      "anno": 2024
-    }
-  },
-  {
-    "id": "cunti",
-    "cartella": "Cunti",
-    "titolo": "Cunti da libbàni",
-    "titoloEvocativo": "Una Ricetta del Saper Fare Comunità",
-    "descrizione": "Albo illustrato e manifesto per un design collaborativo radicato nelle tradizioni locali. La pubblicazione documenta la lavorazione delle fibre vegetali come simbolo di resilienza creativa. Raccoglie visioni di designer che hanno reinterpretato i libbani per oggetti d'uso quotidiano. Una guida su come la condivisione di saperi possa rigenerare l'identità di un intero territorio.",
-    "metadati": {
-      "progetto": ["Illustrazione", "Editoria"],
-      "cliente": "La Nuova Libbaneria Mediterranea",
-      "settore": "Design per la Comunità",
       "anno": 2025
     }
   }

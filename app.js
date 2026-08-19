@@ -8,7 +8,7 @@ let portfolioFile = [];
 function getProjectMedia(project, struttura) {
     const cartellaLower = project.cartella.toLowerCase();
 
-    // 1. Cerca una cartella in portfolio-struttura che corrisponda alla cartella del progetto (es. Tratti, SponzFest, Identity)
+    // 1. Cerca una cartella in portfolio-struttura che corrisponda alla cartella del progetto
     const folderMatch = struttura.find(item => {
         const itemLower = item.Cartella.toLowerCase();
         return itemLower === cartellaLower ||
@@ -17,22 +17,25 @@ function getProjectMedia(project, struttura) {
     });
 
     if (folderMatch) {
+        // Usa CartellaFisica se presente (es. NLM -> Tesi), altrimenti usa Cartella
+        const physicalFolder = folderMatch.CartellaFisica || folderMatch.Cartella;
         return folderMatch.File.map(fileName => ({
             name: fileName,
-            path: `Progetti/${folderMatch.Cartella}/${fileName}`,
+            path: `Progetti/${physicalFolder}/${fileName}`,
             type: fileName.toLowerCase().endsWith('.mp4') ? 'video' : 'image'
         }));
     }
 
-    // 2. Se non corrisponde direttamente (es. NLM, Marathia, Cunti), cerca tra tutti i file in tutte le cartelle (es. Tesi)
+    // 2. Fallback: cerca per nome file in tutte le cartelle
     const matchedFiles = [];
     struttura.forEach(item => {
+        const physicalFolder = item.CartellaFisica || item.Cartella;
         item.File.forEach(fileName => {
             const fileNameLower = fileName.toLowerCase();
             if (fileNameLower.includes(cartellaLower)) {
                 matchedFiles.push({
                     name: fileName,
-                    path: `Progetti/${item.Cartella}/${fileName}`,
+                    path: `Progetti/${physicalFolder}/${fileName}`,
                     type: fileName.toLowerCase().endsWith('.mp4') ? 'video' : 'image'
                 });
             }
@@ -59,6 +62,23 @@ function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// Scroll Reveal — IntersectionObserver globale
+function initScrollReveal() {
+    const elements = document.querySelectorAll('.reveal');
+    if (!elements.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target); // anima solo una volta
+            }
+        });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    elements.forEach(el => observer.observe(el));
+}
+
 // Renders
 function renderEsplora() {
     setActiveNav('esplora');
@@ -78,13 +98,14 @@ function renderEsplora() {
         <div class="project-grid">
     `;
 
-    progettiData.forEach(p => {
+    progettiData.forEach((p, index) => {
         const media = getProjectMedia(p, portfolioStruttura);
         const firstImage = media.find(m => m.type === 'image');
         const coverSrc = firstImage ? firstImage.path : '';
+        const delayIndex = (index % 4) + 1; // delay 1-4 ciclicamente
 
         html += `
-            <div class="project-card" onclick="renderProgetto('${p.id}')">
+            <div class="project-card reveal" data-delay="${delayIndex}" onclick="renderProgetto('${p.id}')">
                 <div class="cover-container">
                     ${coverSrc ?
                 `<img src="${coverSrc}" alt="${p.titolo}" class="cover" onerror="this.src='https://via.placeholder.com/800x600/f0f0f0/cccccc?text=${p.titolo}'">` :
@@ -100,6 +121,7 @@ function renderEsplora() {
     html += `</div>`;
     appContent.innerHTML = html;
     scrollToTop();
+    initScrollReveal();
 }
 
 function renderArchivio() {
@@ -137,88 +159,179 @@ function renderArchivio() {
 
 function renderContatti() {
     setActiveNav('contatti');
+
+    const email = bioData.link ? bioData.link.email : 'mailto:virnoferdinando@gmail.com';
+    const linkedin = bioData.link ? bioData.link.linkedin : '#';
+    const instagram = bioData.link ? bioData.link.instagram : '#';
+
     appContent.innerHTML = `
-        <div class="contatti-section">
-            <img src="Personal Branding/foto_ferd_2024.jpg" alt="Ferdinando Virno" class="profile-pic" onerror="this.src='https://via.placeholder.com/300?text=FV'">
-            <div class="bio-text">
-                <p>${bioData.bio || ''}</p>
-                <p>${bioData.interesse || ''}</p>
+        <div class="contatti-card">
+
+            <!-- TOP ROW -->
+            <div class="cc-top">
+                <div class="cc-top-left">
+                    <h1 class="cc-name">FERDINANDO<br>VIRN<span class="cc-o-geo">O</span></h1>
+                    <div class="cc-handle">
+                        <svg class="cc-arrow" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 16 L16 4 M16 4 L7 4 M16 4 L16 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        ferd.esign
+                    </div>
+                </div>
+                <div class="cc-top-center">
+                    <span class="cc-tag">22 ANNI</span>
+                </div>
+                <div class="cc-top-right">
+                    <span class="cc-tag">SALERNO / NAPOLI</span>
+                </div>
             </div>
-            
-            <div style="margin-top: 20px; display: flex; gap: 20px; text-transform: uppercase; font-weight: 600;">
-                <a href="${bioData.link ? bioData.link.email : '#'}" class="contact-link">Email</a>
-                <a href="${bioData.link ? bioData.link.linkedin : '#'}" target="_blank" class="contact-link">LinkedIn</a>
-                <a href="${bioData.link ? bioData.link.instagram : '#'}" target="_blank" class="contact-link">Instagram</a>
-                <a href="Personal Branding/VIRNO-FERDINANDO_CV_2026.pdf" target="_blank" class="cv-link">Scarica CV</a>
+
+            <!-- MIDDLE — SVG GEOMETRY -->
+            <div class="cc-middle" aria-hidden="true">
+                <svg class="cc-geo-svg" viewBox="0 0 1000 440" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Cerchio sinistro -->
+                    <circle cx="380" cy="220" r="190" fill="none" stroke="var(--blue)" stroke-width="0.8" opacity="0.55"/>
+                    <!-- Cerchio destro -->
+                    <circle cx="620" cy="220" r="190" fill="none" stroke="var(--blue)" stroke-width="0.8" opacity="0.55"/>
+                    <!-- Rombo sinistro (linee diagonali) -->
+                    <polygon points="120,10 340,220 120,430 -100,220" fill="none" stroke="var(--blue)" stroke-width="0.7" opacity="0.4"/>
+                    <!-- Rombo destro -->
+                    <polygon points="880,10 1100,220 880,430 660,220" fill="none" stroke="var(--blue)" stroke-width="0.7" opacity="0.4"/>
+                    <!-- Linea verticale centrale -->
+                    <line x1="500" y1="0" x2="500" y2="440" stroke="var(--blue)" stroke-width="0.5" opacity="0.25"/>
+                </svg>
             </div>
+
+            <!-- BOTTOM ROW -->
+            <div class="cc-bottom">
+                <div class="cc-bottom-left">
+                    <span class="cc-tag-line">I DESIGN<br>VISUAL STORIES</span>
+                </div>
+                <div class="cc-bottom-center">
+                    <span class="cc-info-label">TEL</span>
+                    <a href="tel:+393339128401" class="cc-info-value">3339128401</a>
+                </div>
+                <div class="cc-bottom-right">
+                    <span class="cc-info-label">EMAIL</span>
+                    <a href="${email}" class="cc-info-value">VIRNOFERDINANDO@GMAIL.COM</a>
+                </div>
+            </div>
+
+            <!-- LINKS ROW -->
+            <div class="cc-links-row">
+                <a href="${linkedin}"  target="_blank" class="cc-pill-link">LinkedIn</a>
+                <a href="${instagram}" target="_blank" class="cc-pill-link">Instagram</a>
+                <a href="Personal Branding/VIRNO-FERDINANDO_CV_2026.pdf" target="_blank" class="cc-pill-link cc-pill-primary">Scarica CV</a>
+            </div>
+
         </div>
     `;
     scrollToTop();
 }
 
+
 function renderProgetto(id) {
     const p = progettiData.find(x => x.id === id);
     if (!p) return;
 
-    setActiveNav(null); // Nessun link nav attivo se siamo in una scheda progetto
+    setActiveNav(null);
 
     const media = getProjectMedia(p, portfolioStruttura);
-    let galleryHtml = '';
+    const firstImage = media.find(m => m.type === 'image');
+    const coverSrc = firstImage ? firstImage.path : '';
 
-    if (media.length > 0) {
-        media.forEach(m => {
-            if (m.type === 'video') {
-                galleryHtml += `
-                    <div class="media-container video-container">
-                        <video src="${m.path}" autoplay loop muted playsinline></video>
-                    </div>
-                `;
-            } else {
-                galleryHtml += `
-                    <div class="media-container image-container">
-                        <img src="${m.path}" alt="${p.titolo}">
-                    </div>
-                `;
-            }
+    // ── Galleria principale (solo i media del progetto padre, non dei sottoprogetti) ──
+    const subKeywords = (p.sottoprogetti || []).map(sp => sp.cartella.toLowerCase());
+    const mainMedia = p.sottoprogetti
+        ? media.filter(m => !subKeywords.some(kw => m.name.toLowerCase().includes(kw)))
+        : media;
+
+    let galleryHtml = '';
+    if (mainMedia.length > 0) {
+        mainMedia.forEach(m => {
+            galleryHtml += m.type === 'video'
+                ? `<div class="media-container video-container reveal"><video src="${m.path}" autoplay loop muted playsinline></video></div>`
+                : `<div class="media-container image-container reveal"><img src="${m.path}" alt="${p.titolo}"></div>`;
         });
     } else {
-        galleryHtml = `<div style="text-align: center; color: #999; padding: 40px;">Nessun elemento multimediale disponibile per questo progetto.</div>`;
+        galleryHtml = `<div style="text-align:center;color:#999;padding:40px;">Nessun elemento multimediale disponibile.</div>`;
     }
+
+    // ── Sezioni sottoprogetti (Marathia, Cunti…) ──
+    let subProjectsHtml = '';
+    if (p.sottoprogetti && p.sottoprogetti.length > 0) {
+        p.sottoprogetti.forEach(sp => {
+            // Filtra i media del sottoprogetto per nome file
+            const spKey = sp.cartella.toLowerCase();
+            const spMedia = media.filter(m => m.name.toLowerCase().includes(spKey));
+
+            const spFirstImg = spMedia.find(m => m.type === 'image');
+            const spCoverSrc = spFirstImg ? spFirstImg.path : '';
+
+            let spGalleryHtml = '';
+            if (spMedia.length > 0) {
+                spMedia.forEach(m => {
+                    spGalleryHtml += m.type === 'video'
+                        ? `<div class="media-container video-container reveal"><video src="${m.path}" autoplay loop muted playsinline></video></div>`
+                        : `<div class="media-container image-container reveal"><img src="${m.path}" alt="${sp.titolo}"></div>`;
+                });
+            }
+
+            const spCoverHeroHtml = spCoverSrc ? `
+                <div class="detail-hero-cover">
+                    <img src="${spCoverSrc}" alt="${sp.titolo} — cover" onerror="this.parentElement.style.display='none'">
+                </div>` : '';
+
+            subProjectsHtml += `
+                <div class="subproject-section reveal">
+                    <div class="subproject-header">
+                        <h3 class="subproject-title">${sp.titolo}</h3>
+                        <div class="subproject-evocativo">${sp.titoloEvocativo}</div>
+                        <div class="meta-grid" style="margin-top:20px;">
+                            <div class="meta-item"><strong>Cliente</strong>${sp.metadati.cliente}</div>
+                            <div class="meta-item"><strong>Tipologia</strong>${sp.metadati.progetto.join(', ')}</div>
+                            <div class="meta-item"><strong>Anno</strong>${sp.metadati.anno}</div>
+                        </div>
+                    </div>
+                    ${spCoverHeroHtml}
+                    <p class="progetto-descrizione reveal" style="margin-top:32px;">${sp.descrizione}</p>
+                    <div class="gallery">${spGalleryHtml}</div>
+                </div>
+            `;
+        });
+    }
+
+    // Cover hero del progetto principale
+    const coverHeroHtml = coverSrc ? `
+        <div class="detail-hero-cover">
+            <img src="${coverSrc}" alt="${p.titolo} — cover" onerror="this.parentElement.style.display='none'">
+        </div>` : '';
 
     appContent.innerHTML = `
         <div class="progetto-detail">
-            <h2>${p.titolo}</h2>
-            <div class="evocativo">${p.titoloEvocativo}</div>
-            
-            <div class="meta-grid">
-                <div class="meta-item">
-                    <strong>Cliente</strong>
-                    ${p.metadati.cliente}
-                </div>
-                <div class="meta-item">
-                    <strong>Settore</strong>
-                    ${p.metadati.settore}
-                </div>
-                <div class="meta-item">
-                    <strong>Tipologia</strong>
-                    ${p.metadati.progetto.join(', ')}
-                </div>
-                <div class="meta-item">
-                    <strong>Anno</strong>
-                    ${p.metadati.anno}
-                </div>
+            <h2 class="reveal visible">${p.titolo}</h2>
+            <div class="evocativo reveal visible">${p.titoloEvocativo}</div>
+
+            <div class="meta-grid reveal visible">
+                <div class="meta-item"><strong>Cliente</strong>${p.metadati.cliente}</div>
+                <div class="meta-item"><strong>Settore</strong>${p.metadati.settore}</div>
+                <div class="meta-item"><strong>Tipologia</strong>${p.metadati.progetto.join(', ')}</div>
+                <div class="meta-item"><strong>Anno</strong>${p.metadati.anno}</div>
             </div>
-            
-            <p class="progetto-descrizione">${p.descrizione}</p>
-            
-            <div class="gallery">
-                ${galleryHtml}
-            </div>
-            
+
+            ${coverHeroHtml}
+
+            <p class="progetto-descrizione reveal">${p.descrizione}</p>
+
+            <div class="gallery">${galleryHtml}</div>
+
+            ${subProjectsHtml}
+
             <button class="btn-back" onclick="renderEsplora()">Torna a Esplora</button>
         </div>
     `;
     scrollToTop();
+    initScrollReveal();
 }
 
 // Event Listeners for Nav

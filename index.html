@@ -36,39 +36,50 @@
     </main>
 
     <footer id="main-footer">
-        <div class="footer-top">
-            <div class="footer-left-col">
-                <a href="#" onclick="renderEsplora(); return false;"
-                    style="display: block; width: fit-content; text-decoration: none;">
-                    <img src="Personal Branding/pittogramma-ferd.png" alt="FV" class="footer-pictogram"
-                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <div style="display:none; font-weight:700; font-size:24px; color:#ffffff;">FV</div>
-                </a>
-                <div class="footer-links-group">
-                    <a href="https://www.linkedin.com/in/ferdinando-virno-62528b218/" target="_blank">Linkedin</a>
+        <!-- DESKTOP: 3 colonne | MOBILE: stacked -->
+        <div class="footer-inner">
+
+            <!-- COL SX — Contatti -->
+            <div class="footer-col footer-col-left">
+                <div class="footer-contact-block">
+                    <span class="footer-label">CONTATTI</span>
+                    <a href="mailto:virnoferdinando@gmail.com">virnoferdinando@gmail.com</a>
+                </div>
+                <div class="footer-contact-block" style="margin-top:20px;">
+                    <span class="footer-label">SOCIAL</span>
+                    <a href="https://www.linkedin.com/in/ferdinando-virno-62528b218/" target="_blank">LinkedIn</a>
                     <a href="https://www.instagram.com/ferd.esign/" target="_blank">Instagram</a>
                 </div>
             </div>
-            <div class="footer-right-col">
-                <p class="footer-bio-short">©Ferdinando Virno è un Visual Designer specializzato in grafica di pubblica
-                    utilità e design per la comunità.</p>
-                <div class="footer-links-group">
-                    <a href="mailto:virnoferdinando@gmail.com">Email</a>
-                    <a href="Personal Branding/VIRNO-FERDINANDO_CV_2026.pdf" target="_blank">Scarica CV</a>
+
+            <!-- COL CENTRO — Immagine nome grande -->
+            <div class="footer-col footer-col-center">
+                <img src="Personal Branding/FerdinandoVirno-2.png" alt="Ferdinando Virno" class="footer-bottom-logo"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div
+                    style="display:none; font-weight:700; font-size:48px; text-transform:uppercase; text-align:center; color:#ffffff;">
+                    Ferdinando Virno</div>
+            </div>
+
+            <!-- COL DX — Info -->
+            <div class="footer-col footer-col-right">
+
+                <div class="footer-contact-block" style="margin-top:24px;">
+                    <span class="footer-label">BASE</span>
+                    <span class="footer-info-val">SALERNO / NAPOLI</span>
+                </div>
+                <div class="footer-contact-block" style="margin-top:24px;">
+                    <span class="footer-label">DISCIPLINE</span>
+                    <span class="footer-info-val">VISUAL DESIGN<br>COMUNICAZIONE<br>GRAFICA SOCIALE</span>
                 </div>
             </div>
+
         </div>
-        <div class="footer-middle">
-            <span class="footer-year">© 2026</span>
-            <span class="footer-location">SALERNO / NAPOLI</span>
-        </div>
+
         <hr class="footer-divider">
-        <div class="footer-bottom-huge">
-            <img src="Personal Branding/FerdinandoVirno-2.png" alt="Ferdinando Virno" class="footer-bottom-logo"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <div
-                style="display:none; font-weight:700; font-size:48px; text-transform:uppercase; text-align:center; color:#ffffff;">
-                Ferdinando Virno</div>
+        <div class="footer-credits">
+            <span>©2026 Ferdinando Virno — Tutti i diritti riservati</span>
+            <span>ferd.esign</span>
         </div>
     </footer>
 
