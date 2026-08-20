@@ -3,7 +3,7 @@
     "id": "tratti",
     "cartella": "Tratti",
     "titolo": "Collezione Tratti",
-    "titoloEvocativo": "Tratti di Pompei",
+    "titoloEvocativo": "Segni archeologici di Pompei",
     "descrizione": "Ricerca tra le domus di Pompei tradotta in mattonelle ceramiche d'autore. Il progetto rilegge i segni del passato in chiave contemporanea, trasformando la materia in narrazione visiva. Dallo studio dei pigmenti alle geometrie, ogni pezzo racconta un frammento di storia romana. Un dialogo materico tra eredità archeologica e design industriale d'eccellenza per Ma.vi. Ceramica.",
     "metadati": {
       "progetto": ["Prodotto", "Comunicazione"],
@@ -15,14 +15,14 @@
   {
     "id": "nlm",
     "cartella": "NLM",
-    "titolo": "Intrecci Narrativi",
-    "titoloEvocativo": "La Nuova Libbaneria Mediterranea",
+    "titolo": "Intrecci Narrativi a Maratea",
+    "titoloEvocativo": "La Nuova Libbaneria Mediterranea tra design sociale e territorio",
     "descrizione": "Raccolta editoriale che esplora il legame tra territorio e antiche tecniche artigianali. Al centro vi è la riscoperta dei libbani, corde vegetali oggi reinterpretate con lente moderna. Il cofanetto racchiude un albo e una mappa che guidano tra memoria e innovazione sociale. Il progetto riattiva un patrimonio immateriale rendendolo nuovamente tangibile e narrabile per la comunità.",
     "metadati": {
       "progetto": ["Ricerca", "Editoria"],
       "cliente": "La Nuova Libbaneria Mediterranea",
       "settore": "Design per la Comunità",
-      "anno": 2024
+      "anno": 2025
     },
     "sottoprogetti": [
       {
@@ -35,7 +35,7 @@
           "progetto": ["Sedicesimo"],
           "cliente": "Nuova Libbaneria Mediterranea",
           "settore": "Design per la Comunità",
-          "anno": 2024
+          "anno": 2025
         }
       },
       {
@@ -58,10 +58,10 @@
     "cartella": "SponzFest",
     "titolo": "Sponz Fest",
     "titoloEvocativo": "Sponziamoci per le Feste!",
-    "descrizione": "Branding per l'edizione invernale \"Viern25\" del festival di Vinicio Capossela. Il tema dello sposalizio è reinterpretato attraverso la \"Dodicesima Notte\" shakespeariana, tra sacro e profano. L'identità visiva fonde tradizione irpina e atmosfere oniriche, coprendo ogni aspetto, dal digital alla segnaletica. Un progetto che celebra il rito della festa come coesione d'identità.",
+    "descrizione": "Branding per l'edizione invernale \"Sponz Viern\" del festival di Vinicio Capossela. Il tema dello sposalizio è reinterpretato attraverso la \"Dodicesima Notte\" shakespeariana, tra sacro e profano. L'identità visiva fonde tradizione irpina e atmosfere oniriche, coprendo ogni aspetto, dal digital alla segnaletica. Un progetto che celebra il rito della festa come coesione d'identità.",
     "metadati": {
       "progetto": ["Branding", "Comunicazione"],
-      "cliente": "Vinicio Capossela / Sponz Fest",
+      "cliente": "Vinicio Capossela",
       "settore": "Festival Folkloristico",
       "anno": 2025
     }

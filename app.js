@@ -8,7 +8,38 @@ let portfolioFile = [];
 function getProjectMedia(project, struttura) {
     const cartellaLower = project.cartella.toLowerCase();
 
-    // 1. Cerca una cartella in portfolio-struttura che corrisponda alla cartella del progetto
+    // 1. GESTIONE SPECIALE CARTELLA "TESI" (Intrecci Narrativi e sottoprogetti)
+    if (cartellaLower === 'nlm' || cartellaLower === 'marathia' || cartellaLower === 'cunti') {
+        const tesiFolder = struttura.find(item => item.Cartella.toLowerCase() === 'tesi');
+        if (tesiFolder) {
+            let matchedFiles = [];
+            tesiFolder.File.forEach(fileName => {
+                const fileNameLower = fileName.toLowerCase();
+
+                // Se stiamo caricando il progetto padre (NLM), prendiamo tutti i file della cartella Tesi,
+                // perché renderProgetto li filtrerà poi per assegnarli ai rispettivi sottoprogetti.
+                let isMatch = false;
+                if (cartellaLower === 'nlm') {
+                    isMatch = true;
+                } else if (cartellaLower === 'marathia' && fileNameLower.includes('marathia')) {
+                    isMatch = true;
+                } else if (cartellaLower === 'cunti' && fileNameLower.includes('cunti')) {
+                    isMatch = true;
+                }
+
+                if (isMatch) {
+                    matchedFiles.push({
+                        name: fileName,
+                        path: `Progetti/Tesi/${fileName}`,
+                        type: fileName.toLowerCase().endsWith('.mp4') ? 'video' : 'image'
+                    });
+                }
+            });
+            return matchedFiles;
+        }
+    }
+
+    // 2. Cerca una cartella in portfolio-struttura che corrisponda alla cartella del progetto
     const folderMatch = struttura.find(item => {
         const itemLower = item.Cartella.toLowerCase();
         return itemLower === cartellaLower ||
@@ -26,7 +57,7 @@ function getProjectMedia(project, struttura) {
         }));
     }
 
-    // 2. Fallback: cerca per nome file in tutte le cartelle
+    // 3. Fallback: cerca per nome file in tutte le cartelle
     const matchedFiles = [];
     struttura.forEach(item => {
         const physicalFolder = item.CartellaFisica || item.Cartella;
@@ -43,6 +74,17 @@ function getProjectMedia(project, struttura) {
     });
 
     return matchedFiles;
+}
+
+// Helper: trova la copertina di un progetto (file denominato COPERTINA, case-insensitive)
+function getCoverMedia(media) {
+    // Prima priorità: file con nome che inizia con 'copertina' (case-insensitive)
+    const copertina = media.find(m =>
+        m.name.toLowerCase().startsWith('copertina')
+    );
+    if (copertina) return copertina;
+    // Fallback: primo media disponibile
+    return media[0] || null;
 }
 
 // DOM Elements
@@ -79,38 +121,57 @@ function initScrollReveal() {
     elements.forEach(el => observer.observe(el));
 }
 
-// Renders
 function renderEsplora() {
     setActiveNav('esplora');
-    const claimText = bioData.claim || '';
-    // Divide la bio-claim preservando i punti
-    const claimLines = claimText.split(/(?<=\.)\s+/);
+
+    // Recupera la stringa dal JSON o usa il fallback con maiuscole/minuscole corrette
+    const rawClaim = bioData.claim || "Progetto cioè proietto. Racconto storie, a volte futuri.";
+
+    // Separa le due frasi basandosi sul punto fermo
+    const parts = rawClaim.split(/(?<=\.)\s+/);
+    let line1 = parts[0] || "Progetto cioè proietto.";
+    let line2 = parts[1] || "Racconto storie, a volte futuri.";
+
+    // Evidenzia le parole in oro garantendo la rispondenza alle minuscole/maiuscole
+    line1 = line1.replace(/\bproietto\b/gi, '<span class="claim-accent">proietto</span>');
+    line2 = line2.replace(/\bfuturi\b/gi, '<span class="claim-accent">futuri</span>');
 
     let html = `
         <div class="hero">
             <img src="Personal Branding/logotipo-ferd.png" alt="Ferdinando Virno" class="hero-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <h1 class="claim" style="display:none; font-weight:700; font-size:48px; margin-bottom: 20px;">FERDINANDO VIRNO</h1>
             <h1 class="claim">
-                <span>${claimLines[0] || ''}</span>
-                <span>${claimLines[1] || ''}</span>
+                <span class="claim-line">${line1}</span>
+                <span class="claim-line">${line2}</span>
             </h1>
         </div>
         <div class="project-grid">
     `;
 
-    progettiData.forEach((p, index) => {
+    // Ordina: anno desc, poi titolo alfabetico in caso di parità
+    const sortedProgetti = [...progettiData].sort((a, b) => {
+        const annoDiff = b.metadati.anno - a.metadati.anno;
+        if (annoDiff !== 0) return annoDiff;
+        return a.titolo.localeCompare(b.titolo, 'it', { sensitivity: 'base' });
+    });
+
+    sortedProgetti.forEach((p, index) => {
         const media = getProjectMedia(p, portfolioStruttura);
-        const firstImage = media.find(m => m.type === 'image');
-        const coverSrc = firstImage ? firstImage.path : '';
+        const coverMedia = getCoverMedia(media);
         const delayIndex = (index % 4) + 1; // delay 1-4 ciclicamente
+
+        let coverHtml = `<div style="display:flex; align-items:center; justify-content:center; height:100%; color:#999; font-size:14px;">Copertina non disponibile</div>`;
+        if (coverMedia) {
+            if (coverMedia.type === 'video') {
+                coverHtml = `<video src="${coverMedia.path}" class="cover" autoplay loop muted playsinline></video>`;
+            } else {
+                coverHtml = `<img src="${coverMedia.path}" alt="${p.titolo}" class="cover" onerror="this.src='https://via.placeholder.com/800x600/f0f0f0/cccccc?text=${p.titolo}'">`;
+            }
+        }
 
         html += `
             <div class="project-card reveal" data-delay="${delayIndex}" onclick="renderProgetto('${p.id}')">
                 <div class="cover-container">
-                    ${coverSrc ?
-                `<img src="${coverSrc}" alt="${p.titolo}" class="cover" onerror="this.src='https://via.placeholder.com/800x600/f0f0f0/cccccc?text=${p.titolo}'">` :
-                `<div style="display:flex; align-items:center; justify-content:center; height:100%; color:#999; font-size:14px;">Copertina non disponibile</div>`
-            }
+                    ${coverHtml}
                 </div>
                 <h3>${p.titolo}</h3>
                 <div class="tags">${p.metadati.progetto.join(', ')} • ${p.metadati.anno}</div>
@@ -161,8 +222,8 @@ function renderContatti() {
     setActiveNav('contatti');
 
     const email = bioData.link ? bioData.link.email : 'mailto:virnoferdinando@gmail.com';
-    const linkedin = bioData.link ? bioData.link.linkedin : '#';
-    const instagram = bioData.link ? bioData.link.instagram : '#';
+    const bio = bioData.bio || '';
+    const interesse = bioData.interesse || '';
 
     appContent.innerHTML = `
         <div class="contatti-card">
@@ -177,51 +238,29 @@ function renderContatti() {
                         </svg>
                         ferd.esign
                     </div>
-                </div>
-                <div class="cc-top-center">
-                    <span class="cc-tag">22 ANNI</span>
-                </div>
-                <div class="cc-top-right">
-                    <span class="cc-tag">SALERNO / NAPOLI</span>
+
+            <!-- FOTO BIO — Flip Card al centro -->
+            <div class="cc-foto-wrapper">
+                <div class="cc-flip-card" id="cc-flip-card" onclick="this.classList.toggle('flipped')" title="Clicca per scoprire">
+                    <div class="cc-flip-inner">
+                        <!-- FRONTE: foto -->
+                        <div class="cc-flip-front">
+                            <img src="Personal Branding/FOTO-BIO.webp" alt="Ferdinando Virno" class="cc-foto-bio" onerror="this.style.display='none'">
+                            <div class="cc-foto-hint">TAP</div>
+                        </div>
+                        <!-- RETRO: testo -->
+                        <div class="cc-flip-back">
+                            <p class="cc-flip-bio">${interesse}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- MIDDLE — SVG GEOMETRY -->
-            <div class="cc-middle" aria-hidden="true">
-                <svg class="cc-geo-svg" viewBox="0 0 1000 440" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Cerchio sinistro -->
-                    <circle cx="380" cy="220" r="190" fill="none" stroke="var(--blue)" stroke-width="0.8" opacity="0.55"/>
-                    <!-- Cerchio destro -->
-                    <circle cx="620" cy="220" r="190" fill="none" stroke="var(--blue)" stroke-width="0.8" opacity="0.55"/>
-                    <!-- Rombo sinistro (linee diagonali) -->
-                    <polygon points="120,10 340,220 120,430 -100,220" fill="none" stroke="var(--blue)" stroke-width="0.7" opacity="0.4"/>
-                    <!-- Rombo destro -->
-                    <polygon points="880,10 1100,220 880,430 660,220" fill="none" stroke="var(--blue)" stroke-width="0.7" opacity="0.4"/>
-                    <!-- Linea verticale centrale -->
-                    <line x1="500" y1="0" x2="500" y2="440" stroke="var(--blue)" stroke-width="0.5" opacity="0.25"/>
-                </svg>
-            </div>
 
-            <!-- BOTTOM ROW -->
-            <div class="cc-bottom">
-                <div class="cc-bottom-left">
-                    <span class="cc-tag-line">I DESIGN<br>VISUAL STORIES</span>
-                </div>
-                <div class="cc-bottom-center">
-                    <span class="cc-info-label">TEL</span>
-                    <a href="tel:+393339128401" class="cc-info-value">3339128401</a>
-                </div>
-                <div class="cc-bottom-right">
-                    <span class="cc-info-label">EMAIL</span>
-                    <a href="${email}" class="cc-info-value">VIRNOFERDINANDO@GMAIL.COM</a>
-                </div>
-            </div>
 
-            <!-- LINKS ROW -->
+            <!-- LINKS ROW — solo CV -->
             <div class="cc-links-row">
-                <a href="${linkedin}"  target="_blank" class="cc-pill-link">LinkedIn</a>
-                <a href="${instagram}" target="_blank" class="cc-pill-link">Instagram</a>
-                <a href="Personal Branding/VIRNO-FERDINANDO_CV_2026.pdf" target="_blank" class="cc-pill-link cc-pill-primary">Scarica CV</a>
+                <a href="Personal Branding/VIRNO-FERDINANDO_CV_2026.pdf" target="_blank" class="cc-pill-link cc-pill-primary">Scarica Curriculum</a>
             </div>
 
         </div>
@@ -237,8 +276,7 @@ function renderProgetto(id) {
     setActiveNav(null);
 
     const media = getProjectMedia(p, portfolioStruttura);
-    const firstImage = media.find(m => m.type === 'image');
-    const coverSrc = firstImage ? firstImage.path : '';
+    const coverMedia = getCoverMedia(media);
 
     // ── Galleria principale (solo i media del progetto padre, non dei sottoprogetti) ──
     const subKeywords = (p.sottoprogetti || []).map(sp => sp.cartella.toLowerCase());
@@ -265,8 +303,7 @@ function renderProgetto(id) {
             const spKey = sp.cartella.toLowerCase();
             const spMedia = media.filter(m => m.name.toLowerCase().includes(spKey));
 
-            const spFirstImg = spMedia.find(m => m.type === 'image');
-            const spCoverSrc = spFirstImg ? spFirstImg.path : '';
+            const spCoverMedia = getCoverMedia(spMedia);
 
             let spGalleryHtml = '';
             if (spMedia.length > 0) {
@@ -277,16 +314,23 @@ function renderProgetto(id) {
                 });
             }
 
-            const spCoverHeroHtml = spCoverSrc ? `
+            let spCoverHeroHtml = '';
+            if (spCoverMedia) {
+                spCoverHeroHtml = spCoverMedia.type === 'video' ? `
                 <div class="detail-hero-cover">
-                    <img src="${spCoverSrc}" alt="${sp.titolo} — cover" onerror="this.parentElement.style.display='none'">
-                </div>` : '';
+                    <video src="${spCoverMedia.path}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover; display:block; max-height:480px;"></video>
+                </div>` : `
+                <div class="detail-hero-cover">
+                    <img src="${spCoverMedia.path}" alt="${sp.titolo} — cover" onerror="this.parentElement.style.display='none'">
+                </div>`;
+            }
 
             subProjectsHtml += `
                 <div class="subproject-section reveal">
                     <div class="subproject-header">
-                        <h3 class="subproject-title">${sp.titolo}</h3>
-                        <div class="subproject-evocativo">${sp.titoloEvocativo}</div>
+                        <h3 class="subproject-title">
+                            ${sp.titolo} <span class="subproject-evocativo">— ${sp.titoloEvocativo}</span>
+                        </h3>
                         <div class="meta-grid" style="margin-top:20px;">
                             <div class="meta-item"><strong>Cliente</strong>${sp.metadati.cliente}</div>
                             <div class="meta-item"><strong>Tipologia</strong>${sp.metadati.progetto.join(', ')}</div>
@@ -302,10 +346,16 @@ function renderProgetto(id) {
     }
 
     // Cover hero del progetto principale
-    const coverHeroHtml = coverSrc ? `
+    let coverHeroHtml = '';
+    if (coverMedia) {
+        coverHeroHtml = coverMedia.type === 'video' ? `
         <div class="detail-hero-cover">
-            <img src="${coverSrc}" alt="${p.titolo} — cover" onerror="this.parentElement.style.display='none'">
-        </div>` : '';
+            <video src="${coverMedia.path}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:cover; display:block; max-height:480px;"></video>
+        </div>` : `
+        <div class="detail-hero-cover">
+            <img src="${coverMedia.path}" alt="${p.titolo} — cover" onerror="this.parentElement.style.display='none'">
+        </div>`;
+    }
 
     appContent.innerHTML = `
         <div class="progetto-detail">
@@ -327,7 +377,10 @@ function renderProgetto(id) {
 
             ${subProjectsHtml}
 
-            <button class="btn-back" onclick="renderEsplora()">Torna a Esplora</button>
+            <button class="btn-back" onclick="renderEsplora()">
+                <span class="btn-back-arrow" aria-hidden="true">←</span>
+                <span class="btn-back-label">TORNA A ESPLORA</span>
+            </button>
         </div>
     `;
     scrollToTop();
