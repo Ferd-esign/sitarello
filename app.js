@@ -158,24 +158,35 @@ function setupNextProjectScrollTrigger(onNavigate) {
     if (!triggerEl) return;
 
     let hasTriggered = false;
+    let holdTimer = null; // Timer per la pausa di 1 secondo
 
     const handleScroll = () => {
         if (hasTriggered || isNavigatingNextProject) return;
 
-        const rect = triggerEl.getBoundingClientRect();
         const fillBar = document.getElementById('np-bar-fill');
-        const windowHeight = window.innerHeight;
+        const distanceToBottom = document.documentElement.scrollHeight - (window.innerHeight + window.scrollY);
 
-        if (rect.top < windowHeight) {
-            const visibleRatio = Math.min(1, Math.max(0, (windowHeight - rect.top) / (rect.height * 0.7)));
-            if (fillBar) {
-                fillBar.style.width = `${visibleRatio * 100}%`;
+        const scrollRange = 350;
+        const fillRatio = Math.min(1, Math.max(0, 1 - (distanceToBottom / scrollRange)));
+
+        if (fillBar) {
+            fillBar.style.width = `${fillRatio * 100}%`;
+        }
+
+        // Condizione: l'utente ha completato lo scroll ed è in fondo
+        if (distanceToBottom <= 5 && fillRatio >= 0.98) {
+            // Avvia la pausa di 1 secondo se non è già in corso
+            if (!holdTimer) {
+                holdTimer = setTimeout(() => {
+                    hasTriggered = true;
+                    triggerNextProject(onNavigate);
+                }, 1000); // ⏱️ 1000 ms (1 secondo di attesa)
             }
-
-            const distanceToBottom = document.documentElement.scrollHeight - (window.innerHeight + window.scrollY);
-            if (distanceToBottom <= 20 && visibleRatio >= 0.8) {
-                hasTriggered = true;
-                triggerNextProject(onNavigate);
+        } else {
+            // Se l'utente scolla verso l'alto prima dello scadere del secondo, annulla il passaggio
+            if (holdTimer) {
+                clearTimeout(holdTimer);
+                holdTimer = null;
             }
         }
     };
@@ -203,10 +214,11 @@ function triggerNextProject(onNavigate) {
         appContent.classList.add('page-transition-out');
     }
 
+    // 3. RALLENTATO: aumentato il tempo di attesa della transizione da 300ms a 600ms per un effetto più fluido
     setTimeout(() => {
         if (appContent) appContent.classList.remove('page-transition-out');
         onNavigate();
-    }, 300);
+    }, 600);
 }
 
 // Scroll Reveal — IntersectionObserver globale
@@ -274,7 +286,7 @@ function renderEsplora() {
         }
 
         html += `
-            <div class="project-card reveal" data-delay="${delayIndex}" onclick="renderProgetto('${p.id}')">
+            <div class="project-card reveal" data-delay="${delayIndex}" onclick="window.location.hash = '#/progetto/${p.id}'">
                 <div class="cover-container">
                     ${coverHtml}
                 </div>
@@ -382,12 +394,10 @@ function renderArchivio() {
             }
 
             html += `
-                <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="renderProgettoArchivio('${p.id}')" role="button" tabindex="0" aria-label="Apri progetto ${p.titolo}">
+                <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="window.location.hash = '#/archivio/${p.id}'" role="button" tabindex="0" aria-label="Apri progetto ${p.titolo}">
                     <div class="archivio-card-cover">
                         ${coverHtml}
-                        <div class="archivio-card-overlay">
-                            <span class="archivio-card-overlay-label">Vedi progetto <span aria-hidden="true">→</span></span>
-                        </div>
+                    
                     </div>
                     <div class="archivio-card-info">
                         <h3 class="archivio-card-title">${p.titolo}</h3>
@@ -412,7 +422,7 @@ function renderArchivio() {
 function renderProgettoArchivio(id) {
     const p = archivioData.find(x => x.id === id);
     if (!p) return;
-
+    document.body.classList.add('hide-footer');
     setActiveNav('archivio');
 
     const media = getArchivioMedia(p, archivioStruttura);
@@ -494,7 +504,7 @@ function renderProgettoArchivio(id) {
     if (nextProject && nextProject.id !== id) {
         nextProjectHtml = `
             <div class="next-project-trigger-wrapper reveal">
-                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => renderProgettoArchivio('${nextProject.id}'))" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
+                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => window.location.hash = '#/archivio/${nextProject.id}')" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
                     <div class="np-trigger-top">
                         <span class="np-trigger-label">PROSSIMO PROGETTO</span>
                         <span class="np-trigger-arrow" aria-hidden="true">→</span>
@@ -529,10 +539,6 @@ function renderProgettoArchivio(id) {
 
             ${subProjectsHtml}
 
-            <button class="btn-back" onclick="renderArchivio()">
-                <span class="btn-back-arrow" aria-hidden="true">←</span>
-                <span class="btn-back-label">TORNA ALL'ARCHIVIO</span>
-            </button>
 
             ${nextProjectHtml}
         </div>
@@ -540,7 +546,7 @@ function renderProgettoArchivio(id) {
     scrollToTop();
     initScrollReveal();
     if (nextProject && nextProject.id !== id) {
-        setupNextProjectScrollTrigger(() => renderProgettoArchivio(nextProject.id));
+        setupNextProjectScrollTrigger(() => window.location.hash = `#/archivio/${nextProject.id}`);
     }
 }
 
@@ -594,7 +600,7 @@ function renderContatti() {
 function renderProgetto(id) {
     const p = progettiData.find(x => x.id === id);
     if (!p) return;
-
+    document.body.classList.add('hide-footer');
     setActiveNav(null);
 
     const media = getProjectMedia(p, portfolioStruttura);
@@ -689,7 +695,7 @@ function renderProgetto(id) {
     if (nextProject && nextProject.id !== id) {
         nextProjectHtml = `
             <div class="next-project-trigger-wrapper reveal">
-                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => renderProgetto('${nextProject.id}'))" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
+                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => window.location.hash = '#/progetto/${nextProject.id}')" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
                     <div class="np-trigger-top">
                         <span class="np-trigger-label">PROSSIMO PROGETTO</span>
                         <span class="np-trigger-arrow" aria-hidden="true">→</span>
@@ -724,31 +730,18 @@ function renderProgetto(id) {
 
             ${subProjectsHtml}
 
-            <button class="btn-back" onclick="renderEsplora()">
-                <span class="btn-back-arrow" aria-hidden="true">←</span>
-                <span class="btn-back-label">TORNA A ESPLORA</span>
-            </button>
-
             ${nextProjectHtml}
         </div>
     `;
     scrollToTop();
     initScrollReveal();
     if (nextProject && nextProject.id !== id) {
-        setupNextProjectScrollTrigger(() => renderProgetto(nextProject.id));
+        setupNextProjectScrollTrigger(() => window.location.hash = `#/progetto/${nextProject.id}`);
     }
 }
 
 // Event Listeners for Nav
-navLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const target = e.target.getAttribute('data-target');
-        if (target === 'esplora') renderEsplora();
-        if (target === 'archivio') renderArchivio();
-        if (target === 'contatti') renderContatti();
-    });
-});
+// Rimossi per delegare al routing basato su hash
 
 // Gestione Drawer Mobile
 const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -800,8 +793,8 @@ async function init() {
         archivioData = await archivioRes.json();
         archivioStruttura = await archivioStrutturaRes.json();
 
-        // Avvia il rendering iniziale
-        renderEsplora();
+        // Avvia il routing iniziale
+        handleRoute();
     } catch (err) {
         console.error("Errore nel caricamento dei dati JSON del portfolio:", err);
         appContent.innerHTML = `
@@ -812,6 +805,141 @@ async function init() {
         `;
     }
 }
+
+// ── GESTIONE SEO E ROUTING ──
+const SEOManager = {
+    update(page, data = null) {
+        let title = 'Ferdinando Virno - Portfolio';
+        let description = 'Portfolio di Ferdinando Virno, designer per la comunità e comunicatore visivo.';
+        let keywords = 'Ferdinando Virno, Portfolio, Design, Comunicazione Visiva';
+        let ogImage = 'https://ferd.esign/Personal%20Branding/FOTO-BIO.webp';
+        let url = window.location.href;
+        
+        // Estrazione base dalla bio
+        const bioText = bioData && bioData.bio ? bioData.bio : description;
+        
+        let schema = {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": "Ferdinando Virno",
+            "url": "https://ferd.esign/",
+            "jobTitle": "Designer per la Comunità",
+            "description": bioText
+        };
+
+        if (page === 'progetto' && data) {
+            title = `${data.titolo} - Ferdinando Virno`;
+            description = data.descrizione || description;
+            keywords = data.metadati && data.metadati.progetto ? data.metadati.progetto.join(', ') : keywords;
+            
+            const media = getProjectMedia(data, portfolioStruttura);
+            const cover = getCoverMedia(media);
+            if (cover && cover.type === 'image') {
+                ogImage = `https://ferd.esign/${cover.path.replace(/ /g, '%20')}`;
+            }
+
+            schema = {
+                "@context": "https://schema.org",
+                "@type": "CreativeWork",
+                "name": data.titolo,
+                "author": {
+                    "@type": "Person",
+                    "name": "Ferdinando Virno"
+                },
+                "description": description,
+                "url": url,
+                "datePublished": (data.metadati && data.metadati.anno ? data.metadati.anno : "").toString()
+            };
+        } else if (page === 'archivio_progetto' && data) {
+            title = `${data.titolo} - Archivio - Ferdinando Virno`;
+            description = data.descrizione || description;
+            keywords = data.metadati && data.metadati.progetto ? data.metadati.progetto.join(', ') : keywords;
+            
+            const media = getArchivioMedia(data, archivioStruttura);
+            const cover = getCoverMedia(media);
+            if (cover && cover.type === 'image') {
+                ogImage = `https://ferd.esign/${cover.path.replace(/ /g, '%20')}`;
+            }
+
+            schema = {
+                "@context": "https://schema.org",
+                "@type": "CreativeWork",
+                "name": data.titolo,
+                "author": {
+                    "@type": "Person",
+                    "name": "Ferdinando Virno"
+                },
+                "description": description,
+                "url": url,
+                "datePublished": (data.metadati && data.metadati.anno ? data.metadati.anno : "").toString()
+            };
+        } else if (page === 'archivio') {
+            title = 'Archivio - Ferdinando Virno';
+        } else if (page === 'contatti') {
+            title = 'About - Ferdinando Virno';
+        }
+
+        document.title = title;
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.content = description;
+        
+        const metaKeywords = document.querySelector('meta[name="keywords"]');
+        if (metaKeywords) metaKeywords.content = keywords;
+
+        const ogTitle = document.querySelector('meta[property="og:title"]');
+        if (ogTitle) ogTitle.content = title;
+
+        const ogDesc = document.querySelector('meta[property="og:description"]');
+        if (ogDesc) ogDesc.content = description;
+
+        const ogImg = document.querySelector('meta[property="og:image"]');
+        if (ogImg) ogImg.content = ogImage;
+
+        const ogUrl = document.querySelector('meta[property="og:url"]');
+        if (ogUrl) ogUrl.content = url;
+
+        const canonical = document.querySelector('link[rel="canonical"]');
+        if (canonical) canonical.href = url.split('#')[0]; // Canonical in genere punta alla radice o alla base url se è una vera SPA con rewrite
+
+        const schemaScript = document.getElementById('schema-ld');
+        if (schemaScript) schemaScript.textContent = JSON.stringify(schema, null, 2);
+    }
+};
+
+function handleRoute() {
+    const hash = window.location.hash;
+    
+    if (hash.startsWith('#/progetto/')) {
+        const id = hash.replace('#/progetto/', '');
+        const p = progettiData.find(x => x.id === id);
+        if (p) {
+            renderProgetto(id);
+            SEOManager.update('progetto', p);
+        } else {
+            window.location.hash = '#/esplora';
+        }
+    } else if (hash.startsWith('#/archivio/')) {
+        const id = hash.replace('#/archivio/', '');
+        const p = archivioData.find(x => x.id === id);
+        if (p) {
+            renderProgettoArchivio(id);
+            SEOManager.update('archivio_progetto', p);
+        } else {
+            window.location.hash = '#/archivio';
+        }
+    } else if (hash === '#/archivio') {
+        renderArchivio();
+        SEOManager.update('archivio');
+    } else if (hash === '#/contatti') {
+        renderContatti();
+        SEOManager.update('contatti');
+    } else {
+        renderEsplora();
+        SEOManager.update('esplora');
+    }
+}
+
+window.addEventListener('hashchange', handleRoute);
 
 // Inizializzazione
 init();

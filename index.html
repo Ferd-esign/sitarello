@@ -5,6 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ferdinando Virno - Portfolio</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Portfolio di Ferdinando Virno, designer per la comunità e comunicatore visivo.">
+    <meta name="keywords" content="Ferdinando Virno, Portfolio, Design, Comunicazione Visiva">
+    <!-- Open Graph / Social -->
+    <meta property="og:title" content="Ferdinando Virno - Portfolio">
+    <meta property="og:description" content="Portfolio di Ferdinando Virno, designer per la comunità e comunicatore visivo.">
+    <meta property="og:image" content="">
+    <meta property="og:url" content="">
+    <meta property="og:type" content="website">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <!-- Canonical -->
+    <link rel="canonical" href="https://ferd.esign/">
+    
     <!-- Sora Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,12 +26,15 @@
     <link rel="stylesheet" href="style.css">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="Personal Branding/favicon.png">
+    
+    <!-- JSON-LD Structured Data Container -->
+    <script type="application/ld+json" id="schema-ld"></script>
 </head>
 
 <body>
     <header id="main-header">
         <div class="logo-pictogram">
-            <a href="#" onclick="renderEsplora(); return false;">
+            <a href="#/esplora">
                 <img src="Personal Branding/pittogramma-ferd.png" alt="FV" class="pictogram"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <div style="display:none; font-weight:700; font-size:24px; color:var(--black);">FV</div>
@@ -26,8 +43,8 @@
 
         <!-- Menu Desktop (senza ESPLORA) -->
         <nav id="main-nav" class="desktop-nav">
-            <a href="#archivio" class="nav-link" data-target="archivio">ARCHIVIO</a>
-            <a href="#contatti" class="nav-link" data-target="contatti">ABOUT</a>
+            <a href="#/archivio" class="nav-link" data-target="archivio">ARCHIVIO</a>
+            <a href="#/contatti" class="nav-link" data-target="contatti">ABOUT</a>
         </nav>
 
         <!-- Pulsante Menu visibile solo su Mobile -->
@@ -39,9 +56,9 @@
     <aside id="mobile-drawer" class="mobile-drawer">
         <button id="drawer-close-btn" class="drawer-close-btn">CLOSE</button>
         <nav class="mobile-nav">
-            <a href="#esplora" class="nav-link active" data-target="esplora">ESPLORA</a>
-            <a href="#archivio" class="nav-link" data-target="archivio">ARCHIVIO</a>
-            <a href="#contatti" class="nav-link" data-target="contatti">ABOUT</a>
+            <a href="#/esplora" class="nav-link active" data-target="esplora">ESPLORA</a>
+            <a href="#/archivio" class="nav-link" data-target="archivio">ARCHIVIO</a>
+            <a href="#/contatti" class="nav-link" data-target="contatti">ABOUT</a>
         </nav>
     </aside>
 
