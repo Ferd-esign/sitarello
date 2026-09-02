@@ -18,18 +18,32 @@
     <header id="main-header">
         <div class="logo-pictogram">
             <a href="#" onclick="renderEsplora(); return false;">
-                <!-- Fallback a un div se l'immagine non è ancora caricata -->
                 <img src="Personal Branding/pittogramma-ferd.png" alt="FV" class="pictogram"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <div style="display:none; font-weight:700; font-size:24px; color:var(--black);">FV</div>
             </a>
         </div>
-        <nav id="main-nav">
+
+        <!-- Menu Desktop (senza ESPLORA) -->
+        <nav id="main-nav" class="desktop-nav">
+            <a href="#archivio" class="nav-link" data-target="archivio">ARCHIVIO</a>
+            <a href="#contatti" class="nav-link" data-target="contatti">ABOUT</a>
+        </nav>
+
+        <!-- Pulsante Menu visibile solo su Mobile -->
+        <button id="mobile-menu-btn" class="mobile-menu-btn">MENU</button>
+    </header>
+
+    <!-- Pannello Laterale Mobile (Drawer) -->
+    <div id="mobile-drawer-overlay" class="drawer-overlay"></div>
+    <aside id="mobile-drawer" class="mobile-drawer">
+        <button id="drawer-close-btn" class="drawer-close-btn">CLOSE</button>
+        <nav class="mobile-nav">
             <a href="#esplora" class="nav-link active" data-target="esplora">ESPLORA</a>
             <a href="#archivio" class="nav-link" data-target="archivio">ARCHIVIO</a>
             <a href="#contatti" class="nav-link" data-target="contatti">ABOUT</a>
         </nav>
-    </header>
+    </aside>
 
     <main id="app-content">
         <!-- Contenuto dinamico iniettato da JS -->
