@@ -2,7 +2,6 @@
 let progettiData = [];
 let bioData = {};
 let portfolioStruttura = [];
-let portfolioFile = [];
 let archivioData = [];
 let archivioStruttura = [];
 
@@ -39,6 +38,12 @@ function toggleFlipCard(card) {
     }
 }
 
+// Helper per verificare se un file è un video
+function isMediaTypeVideo(fileName) {
+    const lower = fileName.toLowerCase();
+    return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov') || lower.endsWith('.m4v') || lower.endsWith('.avi');
+}
+
 // Helper per mappare i media di ciascun progetto dalla struttura dei file
 function getProjectMedia(project, struttura) {
     const cartellaLower = project.cartella.toLowerCase();
@@ -66,7 +71,7 @@ function getProjectMedia(project, struttura) {
                     matchedFiles.push({
                         name: fileName,
                         path: `Progetti/Tesi/${fileName}`,
-                        type: fileName.toLowerCase().endsWith('.mp4') ? 'video' : 'image'
+                        type: isMediaTypeVideo(fileName) ? 'video' : 'image'
                     });
                 }
             });
@@ -88,7 +93,7 @@ function getProjectMedia(project, struttura) {
         return folderMatch.File.map(fileName => ({
             name: fileName,
             path: `Progetti/${physicalFolder}/${fileName}`,
-            type: fileName.toLowerCase().endsWith('.mp4') ? 'video' : 'image'
+            type: isMediaTypeVideo(fileName) ? 'video' : 'image'
         }));
     }
 
@@ -102,7 +107,7 @@ function getProjectMedia(project, struttura) {
                 matchedFiles.push({
                     name: fileName,
                     path: `Progetti/${physicalFolder}/${fileName}`,
-                    type: fileName.toLowerCase().endsWith('.mp4') ? 'video' : 'image'
+                    type: isMediaTypeVideo(fileName) ? 'video' : 'image'
                 });
             }
         });
@@ -111,14 +116,15 @@ function getProjectMedia(project, struttura) {
     return matchedFiles;
 }
 
-// Helper: trova la copertina di un progetto (file denominato COPERTINA, case-insensitive)
+// Helper: trova la copertina di un progetto (file contenente 'copertina', case-insensitive)
 function getCoverMedia(media) {
-    // Prima priorità: file con nome che inizia con 'copertina' (case-insensitive)
+    if (!media || media.length === 0) return null;
+    // Prima priorità: file con nome che contiene 'copertina' (case-insensitive, es. 01_copertina.webp, COPERTINA.mp4)
     const copertina = media.find(m =>
-        m.name.toLowerCase().startsWith('copertina')
+        m.name.toLowerCase().includes('copertina')
     );
     if (copertina) return copertina;
-    // Fallback: primo media disponibile
+    // Fallback: primo media disponibile (già ordinato numericamente)
     return media[0] || null;
 }
 
@@ -325,7 +331,7 @@ function getArchivioMedia(project, struttura) {
                     matchedFiles.push({
                         name: fileName,
                         path: `Progetti/Archivio/Tesi/${fileName}`,
-                        type: fileName.toLowerCase().endsWith('.mp4') ? 'video' : 'image'
+                        type: isMediaTypeVideo(fileName) ? 'video' : 'image'
                     });
                 }
             });
@@ -344,7 +350,7 @@ function getArchivioMedia(project, struttura) {
         return folderMatch.File.map(fileName => ({
             name: fileName,
             path: `Progetti/Archivio/${folderMatch.Cartella}/${fileName}`,
-            type: fileName.toLowerCase().endsWith('.mp4') ? 'video' : 'image'
+            type: isMediaTypeVideo(fileName) ? 'video' : 'image'
         }));
     }
 
@@ -368,6 +374,12 @@ function renderArchivio() {
         <div class="archivio-header reveal">
             <h2 class="archivio-title">Archivio</h2>
             <p class="archivio-subtitle">Una selezione di progetti significativi, organizzati nel tempo.</p>
+
+            <!-- NUOVO BOX AVVISO -->
+            <div class="archivio-alert">
+                Questa sezione è in fase di compilazione. L'archivio verrà presto popolato con i progetti completi.
+            </div>
+
         </div>
         <div class="archivio-timeline">
     `;
@@ -777,11 +789,10 @@ navLinks.forEach(link => {
 // Funzione asincrona di avvio per caricare i file JSON
 async function init() {
     try {
-        const [progettiRes, strutturaRes, bioRes, fileRes, archivioRes, archivioStrutturaRes] = await Promise.all([
+        const [progettiRes, strutturaRes, bioRes, archivioRes, archivioStrutturaRes] = await Promise.all([
             fetch('Progetti/progetti-data.json'),
             fetch('Progetti/portfolio-struttura.json'),
             fetch('Personal Branding/BIO-ABOUT-US.json'),
-            fetch('Personal Branding/portfolio-file.json'),
             fetch('Progetti/Archivio/archivio-data.json'),
             fetch('Progetti/Archivio/struttura-archivio.json')
         ]);
@@ -789,7 +800,6 @@ async function init() {
         progettiData = await progettiRes.json();
         portfolioStruttura = await strutturaRes.json();
         bioData = await bioRes.json();
-        portfolioFile = await fileRes.json();
         archivioData = await archivioRes.json();
         archivioStruttura = await archivioStrutturaRes.json();
 
@@ -814,10 +824,10 @@ const SEOManager = {
         let keywords = 'Ferdinando Virno, Portfolio, Design, Comunicazione Visiva';
         let ogImage = 'https://ferd.esign/Personal%20Branding/FOTO-BIO.webp';
         let url = window.location.href;
-        
+
         // Estrazione base dalla bio
         const bioText = bioData && bioData.bio ? bioData.bio : description;
-        
+
         let schema = {
             "@context": "https://schema.org",
             "@type": "Person",
@@ -831,7 +841,7 @@ const SEOManager = {
             title = `${data.titolo} - Ferdinando Virno`;
             description = data.descrizione || description;
             keywords = data.metadati && data.metadati.progetto ? data.metadati.progetto.join(', ') : keywords;
-            
+
             const media = getProjectMedia(data, portfolioStruttura);
             const cover = getCoverMedia(media);
             if (cover && cover.type === 'image') {
@@ -854,7 +864,7 @@ const SEOManager = {
             title = `${data.titolo} - Archivio - Ferdinando Virno`;
             description = data.descrizione || description;
             keywords = data.metadati && data.metadati.progetto ? data.metadati.progetto.join(', ') : keywords;
-            
+
             const media = getArchivioMedia(data, archivioStruttura);
             const cover = getCoverMedia(media);
             if (cover && cover.type === 'image') {
@@ -882,7 +892,7 @@ const SEOManager = {
         document.title = title;
         const metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) metaDesc.content = description;
-        
+
         const metaKeywords = document.querySelector('meta[name="keywords"]');
         if (metaKeywords) metaKeywords.content = keywords;
 
@@ -907,8 +917,9 @@ const SEOManager = {
 };
 
 function handleRoute() {
+    document.body.classList.remove('hide-footer');
     const hash = window.location.hash;
-    
+
     if (hash.startsWith('#/progetto/')) {
         const id = hash.replace('#/progetto/', '');
         const p = progettiData.find(x => x.id === id);

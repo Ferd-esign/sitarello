@@ -123,8 +123,8 @@ nav a.active {
 .claim-accent {
     display: inline !important;
     /* Garantisce che la parola rimanga dentro la riga */
-    color: var(--gold) !important;
-    font-style: normal;
+    color: var(--black) !important;
+    font-weight: 600
 }
 
 /* Breakpoint Desktop */
@@ -1149,6 +1149,22 @@ nav a.active {
     color: #777;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+/* Box avviso in compilazione */
+.archivio-alert {
+    background-color: rgba(255, 196, 0, 0.2);
+    /* Colore --gold (#ffc400) al 20% di opacità */
+    color: var(--black);
+    padding: 14px 20px;
+    border-radius: 8px;
+    /* Angoli morbidamente arrotondati */
+    font-size: 14px;
+    font-weight: 400;
+    margin-top: 24px;
+    display: inline-block;
+    /* Fa in modo che il box abbracci il testo senza allargarsi all'infinito */
+    letter-spacing: 0.02em;
 }
 
 /* ============================================================

@@ -26,19 +26,6 @@
     },
     "sottoprogetti": [
       {
-        "id": "marathia",
-        "cartella": "Marathia",
-        "titolo": "Marathia",
-        "titoloEvocativo": "Geografie Emotive di Maratea",
-        "descrizione": "Sistema di editoria e servizi per scoprire Maratea attraverso una mappatura partecipativa. Una mappa pieghevole raccoglie emozioni e tracce urbane, espandendosi grazie a sticker interattivi usati dagli utenti. L'approccio trasforma il cammino in pratica collettiva di riscoperta del paesaggio. Uno strumento che unisce rigore cartografico alla poesia dell'esperienza vissuta sul campo.",
-        "metadati": {
-          "progetto": ["Sedicesimo"],
-          "cliente": "Nuova Libbaneria Mediterranea",
-          "settore": "Design per la Comunità",
-          "anno": 2025
-        }
-      },
-      {
         "id": "cunti",
         "cartella": "Cunti",
         "titolo": "Cunti da libbàni",
@@ -47,6 +34,19 @@
         "metadati": {
           "progetto": ["Illustrazione", "Editoria"],
           "cliente": "La Nuova Libbaneria Mediterranea",
+          "settore": "Design per la Comunità",
+          "anno": 2025
+        }
+      },
+      {
+        "id": "marathia",
+        "cartella": "Marathia",
+        "titolo": "Marathia",
+        "titoloEvocativo": "Geografie Emotive di Maratea",
+        "descrizione": "Sistema di editoria e servizi per scoprire Maratea attraverso una mappatura partecipativa. Una mappa pieghevole raccoglie emozioni e tracce urbane, espandendosi grazie a sticker interattivi usati dagli utenti. L'approccio trasforma il cammino in pratica collettiva di riscoperta del paesaggio. Uno strumento che unisce rigore cartografico alla poesia dell'esperienza vissuta sul campo.",
+        "metadati": {
+          "progetto": ["Sedicesimo"],
+          "cliente": "Nuova Libbaneria Mediterranea",
           "settore": "Design per la Comunità",
           "anno": 2025
         }
