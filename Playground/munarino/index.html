@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <title>Munarino — Il santino di Bruno Munari</title>
+  <meta name="description"
+    content="Il Munarino: un piccolo santino tridimensionale dedicato a Bruno Munari. Ruotalo per scoprire fronte e retro." />
+
+  <!-- Font: geometrica, essenziale, in linea con il linguaggio grafico di Munari -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Import map: carichiamo three.js e i suoi addon (OrbitControls) via CDN, come moduli ES -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+
+<body>
+
+  <!-- Canvas 3D: qui three.js disegna la scena con il Munarino sospeso -->
+  <canvas id="scene" aria-label="Card tridimensionale del Munarino, trascina per ruotarla"></canvas>
+
+  <!-- Etichetta d'apertura, angolo in alto a sinistra: firma minimale della pagina e link di ritorno -->
+  <header class="intro"
+    style="display: flex; justify-content: space-between; align-items: flex-start; width: calc(100% - clamp(32px, 8vw, 80px)); pointer-events: auto; z-index: 10;">
+    <div>
+      <p class="intro__title">Munarino</p>
+      <p class="intro__subtitle">Il santino di Bruno Munari</p>
+    </div>
+  </header>
+
+  <!-- Suggerimento d'uso, discreto, sotto la card -->
+  <p class="hint" id="hint">Naviga nello spazio</p>
+
+  <!-- Bottone fisso in basso: apre la modale video -->
+  <div class="cta-wrap">
+    <button class="cta" id="openModal" type="button">
+      Accendi un’idea
+    </button>
+  </div>
+
+  <!-- Modale overlay con il video di YouTube in modalità nocookie -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal__backdrop" id="modalBackdrop"></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-label="Video: accendi un'idea">
+      <button class="modal__close" id="closeModal" type="button" aria-label="Chiudi il video">✕</button>
+      <div class="modal__video">
+        <iframe id="modalIframe" src="" title="Video incorporato da YouTube" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+
+</html>

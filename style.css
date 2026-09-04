@@ -964,7 +964,7 @@ nav a.active {
         box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
         /* Posizione iniziale fuori dallo schermo a destra */
         transform: translateX(100%);
-        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* Stato Aperto: scivola verso sinistra */
@@ -1335,4 +1335,34 @@ nav a.active {
 /* Nasccondi il footer quando la pagina contiene una scheda dettaglio progetto */
 body.hide-footer #main-footer {
     display: none !important;
+}
+
+/* ============================================
+   PLAYGROUND PAGE — STILI SPECIFICI
+   ============================================ */
+
+.playground-iframe-wrapper {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.playground-iframe {
+    width: 100%;
+    height: 75vh;
+    min-height: 520px;
+    border: none;
+    display: block;
+}
+
+@media (max-width: 767px) {
+    .playground-iframe {
+        height: 65vh;
+        min-height: 400px;
+    }
 }

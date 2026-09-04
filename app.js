@@ -4,6 +4,8 @@ let bioData = {};
 let portfolioStruttura = [];
 let archivioData = [];
 let archivioStruttura = [];
+let playgroundData = [];
+let playgroundStruttura = [];
 
 // ── Flip Card About: gestisce il pendolo → flip → pendolo senza glitch ──
 function toggleFlipCard(card) {
@@ -136,8 +138,8 @@ const navLinks = document.querySelectorAll('.nav-link');
 function setActiveNav(targetId) {
     navLinks.forEach(l => l.classList.remove('active'));
     if (targetId) {
-        const activeLink = document.querySelector(`[data-target="${targetId}"]`);
-        if (activeLink) activeLink.classList.add('active');
+        const activeLinks = document.querySelectorAll(`[data-target="${targetId}"]`);
+        activeLinks.forEach(link => link.classList.add('active'));
     }
 }
 
@@ -562,6 +564,168 @@ function renderProgettoArchivio(id) {
     }
 }
 
+// Helper: recupera i media di un progetto dal playground (path base: Playground/{Cartella}/)
+function getPlaygroundMedia(project, struttura) {
+    const cartellaLower = project.cartella.toLowerCase();
+
+    const folderMatch = struttura.find(item =>
+        item.Cartella.toLowerCase() === cartellaLower ||
+        cartellaLower.includes(item.Cartella.toLowerCase()) ||
+        item.Cartella.toLowerCase().includes(cartellaLower)
+    );
+
+    if (folderMatch) {
+        return folderMatch.File.map(fileName => ({
+            name: fileName,
+            path: `Playground/${folderMatch.Cartella}/${fileName}`,
+            type: isMediaTypeVideo(fileName) ? 'video' : 'image'
+        }));
+    }
+
+    return [];
+}
+
+function renderPlayground() {
+    setActiveNav('playground');
+
+    const sorted = [...playgroundData].sort((a, b) => {
+        const annoA = (a.metadati && a.metadati.anno) ? a.metadati.anno : 0;
+        const annoB = (b.metadati && b.metadati.anno) ? b.metadati.anno : 0;
+        if (annoB !== annoA) return annoB - annoA;
+        return a.titolo.localeCompare(b.titolo, 'it', { sensitivity: 'base' });
+    });
+
+    let html = `
+        <div class="archivio-header reveal">
+            <h2 class="archivio-title">Playground</h2>
+            <p class="archivio-subtitle">Laboratorio di sperimentazioni visive, prototipi interattivi e progetti di codice.</p>
+        </div>
+        <div class="archivio-timeline">
+            <div class="archivio-year-block reveal">
+                <div class="archivio-grid">
+    `;
+
+    sorted.forEach((p, pi) => {
+        const media = getPlaygroundMedia(p, playgroundStruttura);
+        const coverMedia = getCoverMedia(media);
+
+        let coverHtml = `<div class="archivio-card-cover-placeholder">—</div>`;
+        if (coverMedia) {
+            if (coverMedia.type === 'video') {
+                coverHtml = `<video src="${coverMedia.path}" class="archivio-card-cover-media" autoplay loop muted playsinline></video>`;
+            } else {
+                coverHtml = `<img src="${coverMedia.path}" alt="${p.titolo}" class="archivio-card-cover-media">`;
+            }
+        }
+
+        const tags = (p.metadati && p.metadati.progetto) ? p.metadati.progetto.join(' · ') : 'Interactive';
+        const anno = (p.metadati && p.metadati.anno) ? ` • ${p.metadati.anno}` : '';
+
+        html += `
+            <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="window.location.hash = '#/playground/${p.id}'" role="button" tabindex="0" aria-label="Apri esperimento ${p.titolo}">
+                <div class="archivio-card-cover">
+                    ${coverHtml}
+                </div>
+                <div class="archivio-card-info">
+                    <h3 class="archivio-card-title">${p.titolo}</h3>
+                    ${p.titoloEvocativo ? `<div style="font-size:13px; color:#666; margin-bottom:4px;">${p.titoloEvocativo}</div>` : ''}
+                    <div class="archivio-card-tags">${tags}${anno}</div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `
+                </div>
+            </div>
+        </div>
+    `;
+
+    appContent.innerHTML = html;
+    scrollToTop();
+    initScrollReveal();
+}
+
+function renderProgettoPlayground(id) {
+    const p = playgroundData.find(x => x.id === id);
+    if (!p) return;
+    document.body.classList.add('hide-footer');
+    setActiveNav('playground');
+
+    const media = getPlaygroundMedia(p, playgroundStruttura);
+    const coverMedia = getCoverMedia(media);
+
+    const projectUrl = p.url || `Playground/${p.cartella}/index.html`;
+
+    const tags = (p.metadati && p.metadati.progetto) ? p.metadati.progetto.join(', ') : 'Interactive';
+    const anno = (p.metadati && p.metadati.anno) ? p.metadati.anno : '2026';
+
+    let galleryHtml = '';
+    const otherMedia = media.filter(m => m !== coverMedia);
+    if (otherMedia.length > 0) {
+        otherMedia.forEach(m => {
+            galleryHtml += m.type === 'video'
+                ? `<div class="media-container video-container reveal"><video src="${m.path}" autoplay loop muted playsinline></video></div>`
+                : `<div class="media-container image-container reveal"><img src="${m.path}" alt="${p.titolo}"></div>`;
+        });
+    }
+
+    const currentIndex = playgroundData.findIndex(x => x.id === id);
+    const nextProject = (playgroundData.length > 1 && currentIndex !== -1)
+        ? playgroundData[(currentIndex + 1) % playgroundData.length]
+        : null;
+
+    let nextProjectHtml = '';
+    if (nextProject && nextProject.id !== id) {
+        nextProjectHtml = `
+            <div class="next-project-trigger-wrapper reveal">
+                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => window.location.hash = '#/playground/${nextProject.id}')" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
+                    <div class="np-trigger-top">
+                        <span class="np-trigger-label">PROSSIMO ESPERIMENTO</span>
+                        <span class="np-trigger-arrow" aria-hidden="true">→</span>
+                    </div>
+                    <h3 class="np-trigger-title">${nextProject.titolo}</h3>
+                    ${nextProject.titoloEvocativo ? `<p class="np-trigger-evocativo">${nextProject.titoloEvocativo}</p>` : ''}
+                    <div class="np-trigger-bar">
+                        <div class="np-trigger-bar-fill" id="np-bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    appContent.innerHTML = `
+        <div class="progetto-detail">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom: 20px;">
+                <a href="#/playground" class="nav-back-link" style="text-decoration:none; font-weight:600; font-size:13px; color:var(--blue); text-transform:uppercase; letter-spacing:0.06em;">← Torna a Playground</a>
+            </div>
+
+            <h2 class="reveal visible">${p.titolo}</h2>
+            ${p.titoloEvocativo ? `<div class="evocativo reveal visible">${p.titoloEvocativo}</div>` : ''}
+
+            <div class="meta-grid reveal visible">
+                <div class="meta-item"><strong>Tipologia</strong>${tags}</div>
+                <div class="meta-item"><strong>Anno</strong>${anno}</div>
+            </div>
+ <a href="${projectUrl}" target="_blank" class="cc-pill-link" style="padding:6px 16px; font-size:12px;">Apri a tutto schermo ↗</a>
+            <div class="playground-iframe-wrapper reveal visible" style="margin: 32px 0; border-radius:12px; overflow:hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.08); background: #000;">
+                <iframe src="${projectUrl}" class="playground-iframe" style="width:100%; height:75vh; min-height:500px; border:none; display:block;" title="${p.titolo}"></iframe>
+            </div>
+
+            <p class="progetto-descrizione reveal">${p.descrizione}</p>
+
+            ${galleryHtml ? `<div class="gallery">${galleryHtml}</div>` : ''}
+
+            ${nextProjectHtml}
+        </div>
+    `;
+    scrollToTop();
+    initScrollReveal();
+    if (nextProject && nextProject.id !== id) {
+        setupNextProjectScrollTrigger(() => window.location.hash = `#/playground/${nextProject.id}`);
+    }
+}
+
 function renderContatti() {
     setActiveNav('contatti');
 
@@ -789,12 +953,14 @@ navLinks.forEach(link => {
 // Funzione asincrona di avvio per caricare i file JSON
 async function init() {
     try {
-        const [progettiRes, strutturaRes, bioRes, archivioRes, archivioStrutturaRes] = await Promise.all([
+        const [progettiRes, strutturaRes, bioRes, archivioRes, archivioStrutturaRes, playgroundRes, playgroundStrutturaRes] = await Promise.all([
             fetch('Progetti/progetti-data.json'),
             fetch('Progetti/portfolio-struttura.json'),
             fetch('Personal Branding/BIO-ABOUT-US.json'),
             fetch('Progetti/Archivio/archivio-data.json'),
-            fetch('Progetti/Archivio/struttura-archivio.json')
+            fetch('Progetti/Archivio/struttura-archivio.json'),
+            fetch('Playground/playground-data.json').catch(() => ({ json: async () => [] })),
+            fetch('Playground/struttura-playground.json').catch(() => ({ json: async () => [] }))
         ]);
 
         progettiData = await progettiRes.json();
@@ -802,6 +968,31 @@ async function init() {
         bioData = await bioRes.json();
         archivioData = await archivioRes.json();
         archivioStruttura = await archivioStrutturaRes.json();
+        playgroundData = await playgroundRes.json();
+        playgroundStruttura = await playgroundStrutturaRes.json();
+
+        // Auto-discovery lato client: aggiunge dinamiche cartelle non ancora descritte
+        if (Array.isArray(playgroundStruttura)) {
+            playgroundStruttura.forEach(item => {
+                const folder = item.Cartella;
+                const exists = playgroundData.some(p => p.cartella.toLowerCase() === folder.toLowerCase() || p.id.toLowerCase() === folder.toLowerCase());
+                if (!exists) {
+                    const formattedTitle = folder.charAt(0).toUpperCase() + folder.slice(1).replace(/[-_]/g, ' ');
+                    playgroundData.push({
+                        id: folder.toLowerCase(),
+                        cartella: folder,
+                        titolo: formattedTitle,
+                        titoloEvocativo: "Esperimento di codice",
+                        descrizione: `Progetto sperimentale della sezione Playground: ${formattedTitle}.`,
+                        url: `Playground/${folder}/index.html`,
+                        metadati: {
+                            progetto: ["Interactive", "Creative Coding"],
+                            anno: 2026
+                        }
+                    });
+                }
+            });
+        }
 
         // Avvia il routing iniziale
         handleRoute();
@@ -883,6 +1074,31 @@ const SEOManager = {
                 "url": url,
                 "datePublished": (data.metadati && data.metadati.anno ? data.metadati.anno : "").toString()
             };
+        } else if (page === 'playground_progetto' && data) {
+            title = `${data.titolo} - Playground - Ferdinando Virno`;
+            description = data.descrizione || description;
+            keywords = data.metadati && data.metadati.progetto ? data.metadati.progetto.join(', ') : keywords;
+
+            const media = getPlaygroundMedia(data, playgroundStruttura);
+            const cover = getCoverMedia(media);
+            if (cover && cover.type === 'image') {
+                ogImage = `https://ferd.esign/${cover.path.replace(/ /g, '%20')}`;
+            }
+
+            schema = {
+                "@context": "https://schema.org",
+                "@type": "CreativeWork",
+                "name": data.titolo,
+                "author": {
+                    "@type": "Person",
+                    "name": "Ferdinando Virno"
+                },
+                "description": description,
+                "url": url,
+                "datePublished": (data.metadati && data.metadati.anno ? data.metadati.anno : "").toString()
+            };
+        } else if (page === 'playground') {
+            title = 'Playground - Ferdinando Virno';
         } else if (page === 'archivio') {
             title = 'Archivio - Ferdinando Virno';
         } else if (page === 'contatti') {
@@ -929,6 +1145,15 @@ function handleRoute() {
         } else {
             window.location.hash = '#/esplora';
         }
+    } else if (hash.startsWith('#/playground/')) {
+        const id = hash.replace('#/playground/', '');
+        const p = playgroundData.find(x => x.id === id);
+        if (p) {
+            renderProgettoPlayground(id);
+            SEOManager.update('playground_progetto', p);
+        } else {
+            window.location.hash = '#/playground';
+        }
     } else if (hash.startsWith('#/archivio/')) {
         const id = hash.replace('#/archivio/', '');
         const p = archivioData.find(x => x.id === id);
@@ -938,6 +1163,9 @@ function handleRoute() {
         } else {
             window.location.hash = '#/archivio';
         }
+    } else if (hash === '#/playground') {
+        renderPlayground();
+        SEOManager.update('playground');
     } else if (hash === '#/archivio') {
         renderArchivio();
         SEOManager.update('archivio');

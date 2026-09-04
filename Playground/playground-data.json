@@ -1,0 +1,18 @@
+[
+  {
+    "id": "munarino",
+    "cartella": "munarino",
+    "titolo": "Munarino",
+    "titoloEvocativo": "Il santino di Bruno Munari",
+    "descrizione": "Un micro-sito interattivo tridimensionale dedicato a Bruno Munari. Ruota la card sospesa nello spazio per scoprirne fronte e retro, oppure accendi un'idea con il video integrato.",
+    "url": "Playground/munarino/index.html",
+    "metadati": {
+      "progetto": [
+        "Interactive 3D",
+        "Three.js",
+        "Creative Coding"
+      ],
+      "anno": 2026
+    }
+  }
+]

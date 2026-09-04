@@ -1,0 +1,271 @@
+/* =========================================================
+   MUNARINO — stile essenziale, ispirato al linguaggio grafico
+   di Bruno Munari: geometria pulita, spazio bianco, un solo
+   accento cromatico, tipografia grottesca.
+   ========================================================= */
+
+:root {
+  /* Palette: carta calda, inchiostro quasi-nero, rosso Munari come unico accento */
+  --paper: #f3efe6;
+  --ink: #1a1712;
+  --ink-soft: rgba(26, 23, 18, 0.62);
+  --accent: #d94a2b;
+  --line: rgba(26, 23, 18, 0.14);
+
+  --font: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* la scena 3D occupa tutto lo schermo, niente scroll */
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Canvas a tutto schermo: la card 3D è l'unica protagonista */
+#scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  /* evita lo scroll della pagina durante il drag su mobile */
+  cursor: grab;
+}
+
+#scene:active {
+  cursor: grabbing;
+}
+
+/* ---------------------------------------------------------
+   Intestazione minimale, angolo in alto a sinistra
+   --------------------------------------------------------- */
+.intro {
+  position: fixed;
+  top: clamp(16px, 4vw, 40px);
+  left: clamp(16px, 4vw, 40px);
+  pointer-events: none;
+  /* non deve interferire con il drag della card */
+  line-height: 1.3;
+}
+
+.intro__title {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(15px, 2.2vw, 19px);
+  letter-spacing: 0.01em;
+}
+
+.intro__subtitle {
+  margin: 2px 0 0;
+  font-weight: 400;
+  font-size: clamp(12px, 1.6vw, 14px);
+  color: var(--ink-soft);
+}
+
+/* ---------------------------------------------------------
+   Suggerimento d'interazione, discreto, sopra il bottone
+   --------------------------------------------------------- */
+.hint {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(84px, 14vh, 108px);
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: clamp(11px, 1.4vw, 13px);
+  color: var(--ink-soft);
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.hint.is-hidden {
+  opacity: 0;
+}
+
+/* ---------------------------------------------------------
+   Bottone fisso in basso: "Accendi un'idea per il munarino"
+   --------------------------------------------------------- */
+.cta-wrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px calc(env(safe-area-inset-bottom, 0px) + clamp(20px, 4vh, 36px));
+  pointer-events: none;
+}
+
+.cta {
+  pointer-events: auto;
+  font-family: var(--font);
+  font-size: clamp(13px, 2vw, 15px);
+  font-weight: 500;
+  color: var(--paper);
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  padding: 14px 26px;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+  letter-spacing: 0.01em;
+  max-width: 90vw;
+}
+
+.cta:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.cta:active {
+  transform: scale(0.97);
+}
+
+.cta:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------
+   Modale video
+   --------------------------------------------------------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 23, 18, 0.72);
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.25s ease;
+}
+
+.modal__panel {
+  position: relative;
+  width: min(880px, 100%);
+  background: var(--paper);
+  border-radius: 16px;
+  padding: 14px;
+  animation: riseIn 0.3s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.modal__video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+}
+
+.modal__video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.modal__close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease;
+}
+
+.modal__close:hover {
+  background: var(--accent);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------------------------------------------------------
+   Responsive: schermi molto piccoli
+   --------------------------------------------------------- */
+@media (max-width: 420px) {
+  .intro {
+    top: 14px;
+    left: 14px;
+  }
+
+  .modal__close {
+    top: 8px;
+    right: 8px;
+  }
+
+  .modal__panel {
+    padding: 8px;
+    border-radius: 12px;
+  }
+}
+
+/* Rispetta le preferenze di riduzione del movimento */
+@media (prefers-reduced-motion: reduce) {
+
+  .modal__backdrop,
+  .modal__panel {
+    animation: none;
+  }
+
+  .cta,
+  .hint {
+    transition: none;
+  }
+}
