@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const BASE_URL = 'https://ferd.esign'; // Modifica se l'URL definitivo cambia
+const BASE_URL = 'https://ferdinandovirno.it'; // Modifica se l'URL definitivo cambia
 
 function generateSitemap() {
     console.log("Generazione Sitemap in corso...");
@@ -26,7 +26,7 @@ function generateSitemap() {
     }
 
     const today = new Date().toISOString().split('T')[0];
-    
+
     // Url statici
     let urls = [
         { loc: `${BASE_URL}/`, priority: '1.0' },
@@ -61,7 +61,7 @@ function generateSitemap() {
 
     let sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     sitemapContent += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-    
+
     urls.forEach(u => {
         sitemapContent += `  <url>\n`;
         sitemapContent += `    <loc>${u.loc}</loc>\n`;
@@ -69,7 +69,7 @@ function generateSitemap() {
         sitemapContent += `    <priority>${u.priority}</priority>\n`;
         sitemapContent += `  </url>\n`;
     });
-    
+
     sitemapContent += `</urlset>`;
 
     fs.writeFileSync(path.join(__dirname, '..', 'sitemap.xml'), sitemapContent, 'utf-8');

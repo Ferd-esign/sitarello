@@ -1192,8 +1192,8 @@ function handleRoute() {
     }
 
     // 1. Cerca nei Progetti Principali (compresi sottoprogetti come marathia, cunti)
-    const pMain = progettiData.find(x => 
-        x.id.toLowerCase() === slug || 
+    const pMain = progettiData.find(x =>
+        x.id.toLowerCase() === slug ||
         x.cartella.toLowerCase() === slug ||
         (x.sottoprogetti && x.sottoprogetti.some(sp => sp.id.toLowerCase() === slug || sp.cartella.toLowerCase() === slug))
     );
@@ -1204,8 +1204,8 @@ function handleRoute() {
     }
 
     // 2. Cerca nel Playground (es. munarino)
-    const pPlayground = playgroundData.find(x => 
-        x.id.toLowerCase() === slug || 
+    const pPlayground = playgroundData.find(x =>
+        x.id.toLowerCase() === slug ||
         x.cartella.toLowerCase() === slug
     );
     if (pPlayground) {
@@ -1215,8 +1215,8 @@ function handleRoute() {
     }
 
     // 3. Cerca nell'Archivio
-    const pArchivio = archivioData.find(x => 
-        x.id.toLowerCase() === slug || 
+    const pArchivio = archivioData.find(x =>
+        x.id.toLowerCase() === slug ||
         x.cartella.toLowerCase() === slug
     );
     if (pArchivio) {
