@@ -4,11 +4,11 @@
   "description": "Portfolio Ferdinando Virno - Mappatura dinamica e SEO",
   "main": "app.js",
   "scripts": {
-    "build": "node generate-structure.js && node generate-seo.js",
-    "generate": "node generate-structure.js && node generate-seo.js",
-    "generate-structure": "node generate-structure.js",
-    "generate-seo": "node generate-seo.js",
-    "watch": "node generate-structure.js --watch"
+    "build": "node scripts/generate-structure.js && node scripts/generate-seo.js",
+    "generate": "node scripts/generate-structure.js && node scripts/generate-seo.js",
+    "generate-structure": "node scripts/generate-structure.js",
+    "generate-seo": "node scripts/generate-seo.js",
+    "watch": "node scripts/generate-structure.js --watch"
   },
   "keywords": [
     "portfolio",

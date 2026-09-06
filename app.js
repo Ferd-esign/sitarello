@@ -246,6 +246,32 @@ function initScrollReveal() {
     elements.forEach(el => observer.observe(el));
 }
 
+// ── HELPER ROUTING HTML5 HISTORY API ──
+function navigateTo(path, replace = false) {
+    isNavigatingNextProject = false;
+    const targetUrl = path.startsWith('/') ? path : '/' + path;
+    if (replace) {
+        window.history.replaceState(null, '', targetUrl);
+    } else if (window.location.pathname + window.location.search !== targetUrl) {
+        window.history.pushState(null, '', targetUrl);
+    }
+    handleRoute();
+}
+
+// Delegazione dei click sui link per navigazione SPA client-side
+document.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (link) {
+        const href = link.getAttribute('href');
+        if (href && (href.startsWith('/') || href.startsWith('#')) && !href.startsWith('mailto:') && link.getAttribute('target') !== '_blank') {
+            e.preventDefault();
+            const targetPath = href.startsWith('#') ? href.replace(/^#\/?/, '/') : href;
+            navigateTo(targetPath || '/');
+        }
+    }
+});
+
+
 function renderEsplora() {
     setActiveNav('esplora');
 
@@ -294,7 +320,7 @@ function renderEsplora() {
         }
 
         html += `
-            <div class="project-card reveal" data-delay="${delayIndex}" onclick="window.location.hash = '#/progetto/${p.id}'">
+            <div class="project-card reveal" data-delay="${delayIndex}" onclick="navigateTo('/${p.id}')">
                 <div class="cover-container">
                     ${coverHtml}
                 </div>
@@ -408,7 +434,7 @@ function renderArchivio() {
             }
 
             html += `
-                <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="window.location.hash = '#/archivio/${p.id}'" role="button" tabindex="0" aria-label="Apri progetto ${p.titolo}">
+                <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri progetto ${p.titolo}">
                     <div class="archivio-card-cover">
                         ${coverHtml}
                     
@@ -518,7 +544,7 @@ function renderProgettoArchivio(id) {
     if (nextProject && nextProject.id !== id) {
         nextProjectHtml = `
             <div class="next-project-trigger-wrapper reveal">
-                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => window.location.hash = '#/archivio/${nextProject.id}')" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
+                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => navigateTo('/${nextProject.id}'))" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
                     <div class="np-trigger-top">
                         <span class="np-trigger-label">PROSSIMO PROGETTO</span>
                         <span class="np-trigger-arrow" aria-hidden="true">→</span>
@@ -560,7 +586,7 @@ function renderProgettoArchivio(id) {
     scrollToTop();
     initScrollReveal();
     if (nextProject && nextProject.id !== id) {
-        setupNextProjectScrollTrigger(() => window.location.hash = `#/archivio/${nextProject.id}`);
+        setupNextProjectScrollTrigger(() => navigateTo(`/${nextProject.id}`));
     }
 }
 
@@ -618,18 +644,14 @@ function renderPlayground() {
             }
         }
 
-        const tags = (p.metadati && p.metadati.progetto) ? p.metadati.progetto.join(' · ') : 'Interactive';
-        const anno = (p.metadati && p.metadati.anno) ? ` • ${p.metadati.anno}` : '';
-
         html += `
-            <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="window.location.hash = '#/playground/${p.id}'" role="button" tabindex="0" aria-label="Apri esperimento ${p.titolo}">
+            <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri esperimento ${p.titolo}">
                 <div class="archivio-card-cover">
                     ${coverHtml}
                 </div>
                 <div class="archivio-card-info">
                     <h3 class="archivio-card-title">${p.titolo}</h3>
                     ${p.titoloEvocativo ? `<div style="font-size:13px; color:#666; margin-bottom:4px;">${p.titoloEvocativo}</div>` : ''}
-                    <div class="archivio-card-tags">${tags}${anno}</div>
                 </div>
             </div>
         `;
@@ -657,9 +679,6 @@ function renderProgettoPlayground(id) {
 
     const projectUrl = p.url || `Playground/${p.cartella}/index.html`;
 
-    const tags = (p.metadati && p.metadati.progetto) ? p.metadati.progetto.join(', ') : 'Interactive';
-    const anno = (p.metadati && p.metadati.anno) ? p.metadati.anno : '2026';
-
     let galleryHtml = '';
     const otherMedia = media.filter(m => m !== coverMedia);
     if (otherMedia.length > 0) {
@@ -679,7 +698,7 @@ function renderProgettoPlayground(id) {
     if (nextProject && nextProject.id !== id) {
         nextProjectHtml = `
             <div class="next-project-trigger-wrapper reveal">
-                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => window.location.hash = '#/playground/${nextProject.id}')" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
+                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => navigateTo('/${nextProject.id}'))" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
                     <div class="np-trigger-top">
                         <span class="np-trigger-label">PROSSIMO ESPERIMENTO</span>
                         <span class="np-trigger-arrow" aria-hidden="true">→</span>
@@ -697,17 +716,13 @@ function renderProgettoPlayground(id) {
     appContent.innerHTML = `
         <div class="progetto-detail">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom: 20px;">
-                <a href="#/playground" class="nav-back-link" style="text-decoration:none; font-weight:600; font-size:13px; color:var(--blue); text-transform:uppercase; letter-spacing:0.06em;">← Torna a Playground</a>
+                <a href="/playground" class="nav-back-link" style="text-decoration:none; font-weight:600; font-size:13px; color:var(--blue); text-transform:uppercase; letter-spacing:0.06em;">← Torna a Playground</a>
             </div>
 
             <h2 class="reveal visible">${p.titolo}</h2>
-            ${p.titoloEvocativo ? `<div class="evocativo reveal visible">${p.titoloEvocativo}</div>` : ''}
+            ${p.titoloEvocativo ? `<div class="evocativo reveal visible" style="margin-bottom: 20px;">${p.titoloEvocativo}</div>` : ''}
 
-            <div class="meta-grid reveal visible">
-                <div class="meta-item"><strong>Tipologia</strong>${tags}</div>
-                <div class="meta-item"><strong>Anno</strong>${anno}</div>
-            </div>
- <a href="${projectUrl}" target="_blank" class="cc-pill-link" style="padding:6px 16px; font-size:12px;">Apri a tutto schermo ↗</a>
+            <a href="${projectUrl}" target="_blank" class="cc-pill-link" style="padding:6px 16px; font-size:12px;">Apri a tutto schermo ↗</a>
             <div class="playground-iframe-wrapper reveal visible" style="margin: 32px 0; border-radius:12px; overflow:hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.08); background: #000;">
                 <iframe src="${projectUrl}" class="playground-iframe" style="width:100%; height:75vh; min-height:500px; border:none; display:block;" title="${p.titolo}"></iframe>
             </div>
@@ -722,7 +737,7 @@ function renderProgettoPlayground(id) {
     scrollToTop();
     initScrollReveal();
     if (nextProject && nextProject.id !== id) {
-        setupNextProjectScrollTrigger(() => window.location.hash = `#/playground/${nextProject.id}`);
+        setupNextProjectScrollTrigger(() => navigateTo(`/${nextProject.id}`));
     }
 }
 
@@ -871,7 +886,7 @@ function renderProgetto(id) {
     if (nextProject && nextProject.id !== id) {
         nextProjectHtml = `
             <div class="next-project-trigger-wrapper reveal">
-                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => window.location.hash = '#/progetto/${nextProject.id}')" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
+                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => navigateTo('/${nextProject.id}'))" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
                     <div class="np-trigger-top">
                         <span class="np-trigger-label">PROSSIMO PROGETTO</span>
                         <span class="np-trigger-arrow" aria-hidden="true">→</span>
@@ -912,7 +927,7 @@ function renderProgetto(id) {
     scrollToTop();
     initScrollReveal();
     if (nextProject && nextProject.id !== id) {
-        setupNextProjectScrollTrigger(() => window.location.hash = `#/progetto/${nextProject.id}`);
+        setupNextProjectScrollTrigger(() => navigateTo(`/${nextProject.id}`));
     }
 }
 
@@ -1125,7 +1140,7 @@ const SEOManager = {
         if (ogUrl) ogUrl.content = url;
 
         const canonical = document.querySelector('link[rel="canonical"]');
-        if (canonical) canonical.href = url.split('#')[0]; // Canonical in genere punta alla radice o alla base url se è una vera SPA con rewrite
+        if (canonical) canonical.href = url;
 
         const schemaScript = document.getElementById('schema-ld');
         if (schemaScript) schemaScript.textContent = JSON.stringify(schema, null, 2);
@@ -1133,52 +1148,90 @@ const SEOManager = {
 };
 
 function handleRoute() {
+    isNavigatingNextProject = false;
     document.body.classList.remove('hide-footer');
-    const hash = window.location.hash;
 
-    if (hash.startsWith('#/progetto/')) {
-        const id = hash.replace('#/progetto/', '');
-        const p = progettiData.find(x => x.id === id);
-        if (p) {
-            renderProgetto(id);
-            SEOManager.update('progetto', p);
-        } else {
-            window.location.hash = '#/esplora';
+    // Gestione retrocompatibilità con eventuali URL vecchi con Hash (es. #/munarino -> /munarino)
+    let pathname = window.location.pathname;
+    const hash = window.location.hash;
+    if (hash && hash.length > 1) {
+        const cleanHash = hash.replace(/^#\/?/, '');
+        if (cleanHash) {
+            pathname = '/' + cleanHash;
+            window.history.replaceState(null, '', pathname);
         }
-    } else if (hash.startsWith('#/playground/')) {
-        const id = hash.replace('#/playground/', '');
-        const p = playgroundData.find(x => x.id === id);
-        if (p) {
-            renderProgettoPlayground(id);
-            SEOManager.update('playground_progetto', p);
-        } else {
-            window.location.hash = '#/playground';
-        }
-    } else if (hash.startsWith('#/archivio/')) {
-        const id = hash.replace('#/archivio/', '');
-        const p = archivioData.find(x => x.id === id);
-        if (p) {
-            renderProgettoArchivio(id);
-            SEOManager.update('archivio_progetto', p);
-        } else {
-            window.location.hash = '#/archivio';
-        }
-    } else if (hash === '#/playground') {
-        renderPlayground();
-        SEOManager.update('playground');
-    } else if (hash === '#/archivio') {
-        renderArchivio();
-        SEOManager.update('archivio');
-    } else if (hash === '#/contatti') {
-        renderContatti();
-        SEOManager.update('contatti');
-    } else {
+    }
+
+    // Estragga lo slug pulito dall'URL pathname
+    const cleanPath = pathname.replace(/^\/+|\/+$/g, '');
+    const segments = cleanPath ? cleanPath.split('/') : [];
+    const slug = segments.length > 0 ? segments[segments.length - 1].toLowerCase() : '';
+
+    if (!cleanPath || cleanPath === 'esplora') {
         renderEsplora();
         SEOManager.update('esplora');
+        return;
     }
+
+    if (cleanPath === 'archivio') {
+        renderArchivio();
+        SEOManager.update('archivio');
+        return;
+    }
+
+    if (cleanPath === 'playground') {
+        renderPlayground();
+        SEOManager.update('playground');
+        return;
+    }
+
+    if (cleanPath === 'contatti' || cleanPath === 'about') {
+        renderContatti();
+        SEOManager.update('contatti');
+        return;
+    }
+
+    // 1. Cerca nei Progetti Principali (compresi sottoprogetti come marathia, cunti)
+    const pMain = progettiData.find(x => 
+        x.id.toLowerCase() === slug || 
+        x.cartella.toLowerCase() === slug ||
+        (x.sottoprogetti && x.sottoprogetti.some(sp => sp.id.toLowerCase() === slug || sp.cartella.toLowerCase() === slug))
+    );
+    if (pMain) {
+        renderProgetto(pMain.id);
+        SEOManager.update('progetto', pMain);
+        return;
+    }
+
+    // 2. Cerca nel Playground (es. munarino)
+    const pPlayground = playgroundData.find(x => 
+        x.id.toLowerCase() === slug || 
+        x.cartella.toLowerCase() === slug
+    );
+    if (pPlayground) {
+        renderProgettoPlayground(pPlayground.id);
+        SEOManager.update('playground_progetto', pPlayground);
+        return;
+    }
+
+    // 3. Cerca nell'Archivio
+    const pArchivio = archivioData.find(x => 
+        x.id.toLowerCase() === slug || 
+        x.cartella.toLowerCase() === slug
+    );
+    if (pArchivio) {
+        renderProgettoArchivio(pArchivio.id);
+        SEOManager.update('archivio_progetto', pArchivio);
+        return;
+    }
+
+    // Rotta non trovata: fallback a Esplora
+    renderEsplora();
+    SEOManager.update('esplora');
+    window.history.replaceState(null, '', '/');
 }
 
-window.addEventListener('hashchange', handleRoute);
+window.addEventListener('popstate', handleRoute);
 
 // Inizializzazione
 init();

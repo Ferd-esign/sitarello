@@ -97,9 +97,9 @@ function syncPlaygroundData(playgroundStructure, playgroundDataFile) {
 function buildStructure() {
     console.log("⚡ Scansione in corso per la generazione automatica delle strutture media...");
 
-    const progettiDir = path.join(__dirname, 'Progetti');
-    const archivioDir = path.join(__dirname, 'Progetti', 'Archivio');
-    const playgroundDir = path.join(__dirname, 'Playground');
+    const progettiDir = path.join(__dirname, '..', 'Progetti');
+    const archivioDir = path.join(__dirname, '..', 'Progetti', 'Archivio');
+    const playgroundDir = path.join(__dirname, '..', 'Playground');
 
     const progettiOutputFile = path.join(progettiDir, 'portfolio-struttura.json');
     const archivioOutputFile = path.join(archivioDir, 'struttura-archivio.json');
@@ -128,7 +128,7 @@ function buildStructure() {
 function watchMode() {
     buildStructure();
 
-    const watchDirs = [path.join(__dirname, 'Progetti'), path.join(__dirname, 'Playground')];
+    const watchDirs = [path.join(__dirname, '..', 'Progetti'), path.join(__dirname, '..', 'Playground')];
     console.log(`\n👀 [WATCH MODE] In ascolto su modifiche nelle cartelle dei progetti...`);
 
     let debounceTimer = null;
