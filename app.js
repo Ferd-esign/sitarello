@@ -468,11 +468,17 @@ function renderProgettoArchivio(id) {
     const media = getArchivioMedia(p, archivioStruttura);
     const coverMedia = getCoverMedia(media);
 
-    // Galleria principale (esclude i media dei sottoprogetti)
+    // --- 1. GALLERIA PRINCIPALE ---
+    // Escludiamo i media appartenenti ai sottoprogetti
     const subKeywords = (p.sottoprogetti || []).map(sp => sp.cartella.toLowerCase());
-    const mainMedia = p.sottoprogetti
+    let mainMedia = p.sottoprogetti
         ? media.filter(m => !subKeywords.some(kw => m.name.toLowerCase().includes(kw)))
         : media;
+
+    // [MODIFICA PRO] Filtro di sicurezza per escludere la copertina dalla galleria principale
+    if (coverMedia && coverMedia.path) {
+        mainMedia = mainMedia.filter(m => m.path !== coverMedia.path);
+    }
 
     let galleryHtml = '';
     if (mainMedia.length > 0) {
@@ -482,23 +488,31 @@ function renderProgettoArchivio(id) {
                 : `<div class="media-container image-container reveal"><img src="${m.path}" alt="${p.titolo}"></div>`;
         });
     } else {
-        galleryHtml = `<div style="text-align:center;color:#999;padding:40px;">Nessun elemento multimediale disponibile.</div>`;
+        // Fallback elegante se l'unico media era la copertina
+        galleryHtml = `<div class="empty-gallery-msg" style="text-align:center;color:#999;padding:40px;">Nessun ulteriore elemento multimediale da mostrare.</div>`;
     }
 
-    // Sezioni sottoprogetti
+    // --- 2. GALLERIE DEI SOTTOPROGETTI ---
     let subProjectsHtml = '';
     if (p.sottoprogetti && p.sottoprogetti.length > 0) {
         p.sottoprogetti.forEach(sp => {
             const spMedia = getArchivioMedia(sp, archivioStruttura);
             const spCoverMedia = getCoverMedia(spMedia);
 
+            // [MODIFICA PRO] Filtro di sicurezza per escludere la copertina del sottoprogetto
+            let spGalleryMedia = spMedia;
+            if (spCoverMedia && spCoverMedia.path) {
+                spGalleryMedia = spMedia.filter(m => m.path !== spCoverMedia.path);
+            }
+
             let spGalleryHtml = '';
-            spMedia.forEach(m => {
+            spGalleryMedia.forEach(m => {
                 spGalleryHtml += m.type === 'video'
                     ? `<div class="media-container video-container reveal"><video src="${m.path}" autoplay loop muted playsinline></video></div>`
                     : `<div class="media-container image-container reveal"><img src="${m.path}" alt="${sp.titolo}"></div>`;
             });
 
+            // Gestione dell'Hero (Copertina) del sottoprogetto
             let spCoverHeroHtml = '';
             if (spCoverMedia) {
                 spCoverHeroHtml = spCoverMedia.type === 'video'
@@ -520,7 +534,9 @@ function renderProgettoArchivio(id) {
                     </div>
                     ${spCoverHeroHtml}
                     <p class="progetto-descrizione reveal" style="margin-top:32px;">${sp.descrizione}</p>
-                    <div class="gallery">${spGalleryHtml}</div>
+                    <div class="gallery">
+                        ${spGalleryHtml || `<p style="color:#999; font-size: 0.9em;">Nessun altro media disponibile.</p>`}
+                    </div>
                 </div>
             `;
         });
@@ -799,9 +815,14 @@ function renderProgetto(id) {
 
     // ── Galleria principale (solo i media del progetto padre, non dei sottoprogetti) ──
     const subKeywords = (p.sottoprogetti || []).map(sp => sp.cartella.toLowerCase());
-    const mainMedia = p.sottoprogetti
+    let mainMedia = p.sottoprogetti
         ? media.filter(m => !subKeywords.some(kw => m.name.toLowerCase().includes(kw)))
         : media;
+
+    // Escludi la copertina dalla galleria principale
+    if (coverMedia) {
+        mainMedia = mainMedia.filter(m => m.path !== coverMedia.path);
+    }
 
     let galleryHtml = '';
     if (mainMedia.length > 0) {
@@ -825,8 +846,15 @@ function renderProgetto(id) {
             const spCoverMedia = getCoverMedia(spMedia);
 
             let spGalleryHtml = '';
-            if (spMedia.length > 0) {
-                spMedia.forEach(m => {
+            let spGalleryMedia = spMedia;
+
+            // Escludi la copertina dalla galleria del sottoprogetto
+            if (spCoverMedia) {
+                spGalleryMedia = spMedia.filter(m => m.path !== spCoverMedia.path);
+            }
+
+            if (spGalleryMedia.length > 0) {
+                spGalleryMedia.forEach(m => {
                     spGalleryHtml += m.type === 'video'
                         ? `<div class="media-container video-container reveal"><video src="${m.path}" autoplay loop muted playsinline></video></div>`
                         : `<div class="media-container image-container reveal"><img src="${m.path}" alt="${sp.titolo}"></div>`;
