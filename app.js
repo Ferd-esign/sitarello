@@ -2,8 +2,6 @@
 let progettiData = [];
 let bioData = {};
 let portfolioStruttura = [];
-let archivioData = [];
-let archivioStruttura = [];
 let playgroundData = [];
 let playgroundStruttura = [];
 
@@ -298,9 +296,13 @@ function renderEsplora() {
         <div class="project-grid">
     `;
 
+    // Mostra solo i progetti con prime === true
     // Ordina: anno desc, poi titolo alfabetico in caso di parità
-    const sortedProgetti = [...progettiData].sort((a, b) => {
-        const annoDiff = b.metadati.anno - a.metadati.anno;
+    const primeProgetti = progettiData.filter(p => p.prime === true);
+    const sortedProgetti = [...primeProgetti].sort((a, b) => {
+        const annoA = (a.metadati && a.metadati.anno) ? a.metadati.anno : 0;
+        const annoB = (b.metadati && b.metadati.anno) ? b.metadati.anno : 0;
+        const annoDiff = annoB - annoA;
         if (annoDiff !== 0) return annoDiff;
         return a.titolo.localeCompare(b.titolo, 'it', { sensitivity: 'base' });
     });
@@ -336,63 +338,23 @@ function renderEsplora() {
     initScrollReveal();
 }
 
-// Helper: recupera i media di un progetto dall'archivio (path base: Progetti/Archivio/)
 function getArchivioMedia(project, struttura) {
-    const cartellaLower = project.cartella.toLowerCase();
-
-    // Gestione speciale per i sottoprogetti della Tesi (NLM)
-    if (cartellaLower === 'tesi' || cartellaLower === 'marathia' || cartellaLower === 'cunti') {
-        const tesiFolder = struttura.find(item => item.Cartella.toLowerCase() === 'tesi');
-        if (tesiFolder) {
-            let matchedFiles = [];
-            tesiFolder.File.forEach(fileName => {
-                const fileNameLower = fileName.toLowerCase();
-                let isMatch = false;
-                if (cartellaLower === 'tesi') {
-                    isMatch = true;
-                } else if (cartellaLower === 'marathia' && fileNameLower.includes('marathia')) {
-                    isMatch = true;
-                } else if (cartellaLower === 'cunti' && fileNameLower.includes('cunti')) {
-                    isMatch = true;
-                }
-                if (isMatch) {
-                    matchedFiles.push({
-                        name: fileName,
-                        path: `Progetti/Archivio/Tesi/${fileName}`,
-                        type: isMediaTypeVideo(fileName) ? 'video' : 'image'
-                    });
-                }
-            });
-            return matchedFiles;
-        }
-    }
-
-    // Cerca la cartella nella struttura archivio
-    const folderMatch = struttura.find(item =>
-        item.Cartella.toLowerCase() === cartellaLower ||
-        cartellaLower.includes(item.Cartella.toLowerCase()) ||
-        item.Cartella.toLowerCase().includes(cartellaLower)
-    );
-
-    if (folderMatch) {
-        return folderMatch.File.map(fileName => ({
-            name: fileName,
-            path: `Progetti/Archivio/${folderMatch.Cartella}/${fileName}`,
-            type: isMediaTypeVideo(fileName) ? 'video' : 'image'
-        }));
-    }
-
-    return [];
+    return getProjectMedia(project, portfolioStruttura);
 }
 
 function renderArchivio() {
     setActiveNav('archivio');
 
-    // Raggruppa i progetti per anno, ordine decrescente
-    const sorted = [...archivioData].sort((a, b) => b.metadati.anno - a.metadati.anno);
+    // Raggruppa TUTTI i progetti per anno, ordine decrescente
+    const sorted = [...progettiData].sort((a, b) => {
+        const annoA = (a.metadati && a.metadati.anno) ? a.metadati.anno : 0;
+        const annoB = (b.metadati && b.metadati.anno) ? b.metadati.anno : 0;
+        return annoB - annoA;
+    });
+
     const byYear = {};
     sorted.forEach(p => {
-        const y = p.metadati.anno;
+        const y = (p.metadati && p.metadati.anno) ? p.metadati.anno : 'N/A';
         if (!byYear[y]) byYear[y] = [];
         byYear[y].push(p);
     });
@@ -402,12 +364,6 @@ function renderArchivio() {
         <div class="archivio-header reveal">
             <h2 class="archivio-title">Archivio</h2>
             <p class="archivio-subtitle">Una selezione di progetti significativi, organizzati nel tempo.</p>
-
-            <!-- NUOVO BOX AVVISO -->
-            <div class="archivio-alert">
-                Questa sezione è in fase di compilazione. L'archivio verrà presto popolato con i progetti completi.
-            </div>
-
         </div>
         <div class="archivio-timeline">
     `;
@@ -421,7 +377,7 @@ function renderArchivio() {
         `;
 
         progetti.forEach((p, pi) => {
-            const media = getArchivioMedia(p, archivioStruttura);
+            const media = getProjectMedia(p, portfolioStruttura);
             const coverMedia = getCoverMedia(media);
 
             let coverHtml = `<div class="archivio-card-cover-placeholder">—</div>`;
@@ -433,15 +389,16 @@ function renderArchivio() {
                 }
             }
 
+            const tagsText = (p.metadati && p.metadati.progetto) ? p.metadati.progetto.join(' · ') : '';
+
             html += `
                 <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri progetto ${p.titolo}">
                     <div class="archivio-card-cover">
                         ${coverHtml}
-                    
                     </div>
                     <div class="archivio-card-info">
                         <h3 class="archivio-card-title">${p.titolo}</h3>
-                        <div class="archivio-card-tags">${p.metadati.progetto.join(' · ')}</div>
+                        ${tagsText ? `<div class="archivio-card-tags">${tagsText}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -460,150 +417,7 @@ function renderArchivio() {
 }
 
 function renderProgettoArchivio(id) {
-    const p = archivioData.find(x => x.id === id);
-    if (!p) return;
-    document.body.classList.add('hide-footer');
-    setActiveNav('archivio');
-
-    const media = getArchivioMedia(p, archivioStruttura);
-    const coverMedia = getCoverMedia(media);
-
-    // --- 1. GALLERIA PRINCIPALE ---
-    // Escludiamo i media appartenenti ai sottoprogetti
-    const subKeywords = (p.sottoprogetti || []).map(sp => sp.cartella.toLowerCase());
-    let mainMedia = p.sottoprogetti
-        ? media.filter(m => !subKeywords.some(kw => m.name.toLowerCase().includes(kw)))
-        : media;
-
-    // [MODIFICA PRO] Filtro di sicurezza per escludere la copertina dalla galleria principale
-    if (coverMedia && coverMedia.path) {
-        mainMedia = mainMedia.filter(m => m.path !== coverMedia.path);
-    }
-
-    let galleryHtml = '';
-    if (mainMedia.length > 0) {
-        mainMedia.forEach(m => {
-            galleryHtml += m.type === 'video'
-                ? `<div class="media-container video-container reveal"><video src="${m.path}" autoplay loop muted playsinline></video></div>`
-                : `<div class="media-container image-container reveal"><img src="${m.path}" alt="${p.titolo}"></div>`;
-        });
-    } else {
-        // Fallback elegante se l'unico media era la copertina
-        galleryHtml = `<div class="empty-gallery-msg" style="text-align:center;color:#999;padding:40px;">Nessun ulteriore elemento multimediale da mostrare.</div>`;
-    }
-
-    // --- 2. GALLERIE DEI SOTTOPROGETTI ---
-    let subProjectsHtml = '';
-    if (p.sottoprogetti && p.sottoprogetti.length > 0) {
-        p.sottoprogetti.forEach(sp => {
-            const spMedia = getArchivioMedia(sp, archivioStruttura);
-            const spCoverMedia = getCoverMedia(spMedia);
-
-            // [MODIFICA PRO] Filtro di sicurezza per escludere la copertina del sottoprogetto
-            let spGalleryMedia = spMedia;
-            if (spCoverMedia && spCoverMedia.path) {
-                spGalleryMedia = spMedia.filter(m => m.path !== spCoverMedia.path);
-            }
-
-            let spGalleryHtml = '';
-            spGalleryMedia.forEach(m => {
-                spGalleryHtml += m.type === 'video'
-                    ? `<div class="media-container video-container reveal"><video src="${m.path}" autoplay loop muted playsinline></video></div>`
-                    : `<div class="media-container image-container reveal"><img src="${m.path}" alt="${sp.titolo}"></div>`;
-            });
-
-            // Gestione dell'Hero (Copertina) del sottoprogetto
-            let spCoverHeroHtml = '';
-            if (spCoverMedia) {
-                spCoverHeroHtml = spCoverMedia.type === 'video'
-                    ? `<div class="detail-hero-cover"><video src="${spCoverMedia.path}" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;max-height:480px;"></video></div>`
-                    : `<div class="detail-hero-cover"><img src="${spCoverMedia.path}" alt="${sp.titolo} — cover" onerror="this.parentElement.style.display='none'"></div>`;
-            }
-
-            subProjectsHtml += `
-                <div class="subproject-section reveal">
-                    <div class="subproject-header">
-                        <h3 class="subproject-title">
-                            ${sp.titolo} <span class="subproject-evocativo">— ${sp.titoloEvocativo}</span>
-                        </h3>
-                        <div class="meta-grid" style="margin-top:20px;">
-                            <div class="meta-item"><strong>Cliente</strong>${sp.metadati.cliente}</div>
-                            <div class="meta-item"><strong>Tipologia</strong>${sp.metadati.progetto.join(', ')}</div>
-                            <div class="meta-item"><strong>Anno</strong>${sp.metadati.anno}</div>
-                        </div>
-                    </div>
-                    ${spCoverHeroHtml}
-                    <p class="progetto-descrizione reveal" style="margin-top:32px;">${sp.descrizione}</p>
-                    <div class="gallery">
-                        ${spGalleryHtml || `<p style="color:#999; font-size: 0.9em;">Nessun altro media disponibile.</p>`}
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    // Cover hero principale
-    let coverHeroHtml = '';
-    if (coverMedia) {
-        coverHeroHtml = coverMedia.type === 'video'
-            ? `<div class="detail-hero-cover"><video src="${coverMedia.path}" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;max-height:480px;"></video></div>`
-            : `<div class="detail-hero-cover"><img src="${coverMedia.path}" alt="${p.titolo} — cover" onerror="this.parentElement.style.display='none'"></div>`;
-    }
-
-    // Calcola il prossimo progetto nell'archivio
-    const currentIndex = archivioData.findIndex(x => x.id === id);
-    const nextProject = (archivioData.length > 0 && currentIndex !== -1)
-        ? archivioData[(currentIndex + 1) % archivioData.length]
-        : null;
-
-    let nextProjectHtml = '';
-    if (nextProject && nextProject.id !== id) {
-        nextProjectHtml = `
-            <div class="next-project-trigger-wrapper reveal">
-                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => navigateTo('/${nextProject.id}'))" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
-                    <div class="np-trigger-top">
-                        <span class="np-trigger-label">PROSSIMO PROGETTO</span>
-                        <span class="np-trigger-arrow" aria-hidden="true">→</span>
-                    </div>
-                    <h3 class="np-trigger-title">${nextProject.titolo}</h3>
-                    ${nextProject.titoloEvocativo ? `<p class="np-trigger-evocativo">${nextProject.titoloEvocativo}</p>` : ''}
-                    <div class="np-trigger-bar">
-                        <div class="np-trigger-bar-fill" id="np-bar-fill"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    appContent.innerHTML = `
-        <div class="progetto-detail">
-            <h2 class="reveal visible">${p.titolo}</h2>
-            <div class="evocativo reveal visible">${p.titoloEvocativo}</div>
-
-            <div class="meta-grid reveal visible">
-                <div class="meta-item"><strong>Cliente</strong>${p.metadati.cliente}</div>
-                <div class="meta-item"><strong>Settore</strong>${p.metadati.settore}</div>
-                <div class="meta-item"><strong>Tipologia</strong>${p.metadati.progetto.join(', ')}</div>
-                <div class="meta-item"><strong>Anno</strong>${p.metadati.anno}</div>
-            </div>
-
-            ${coverHeroHtml}
-
-            <p class="progetto-descrizione reveal">${p.descrizione}</p>
-
-            <div class="gallery">${galleryHtml}</div>
-
-            ${subProjectsHtml}
-
-
-            ${nextProjectHtml}
-        </div>
-    `;
-    scrollToTop();
-    initScrollReveal();
-    if (nextProject && nextProject.id !== id) {
-        setupNextProjectScrollTrigger(() => navigateTo(`/${nextProject.id}`));
-    }
+    renderProgetto(id);
 }
 
 // Helper: recupera i media di un progetto dal playground (path base: Playground/{Cartella}/)
@@ -876,16 +690,11 @@ function renderProgetto(id) {
                 <div class="subproject-section reveal">
                     <div class="subproject-header">
                         <h3 class="subproject-title">
-                            ${sp.titolo} <span class="subproject-evocativo">— ${sp.titoloEvocativo}</span>
+                            ${sp.titolo} ${sp.titoloEvocativo ? `<span class="subproject-evocativo">— ${sp.titoloEvocativo}</span>` : ''}
                         </h3>
-                        <div class="meta-grid" style="margin-top:20px;">
-                            <div class="meta-item"><strong>Cliente</strong>${sp.metadati.cliente}</div>
-                            <div class="meta-item"><strong>Tipologia</strong>${sp.metadati.progetto.join(', ')}</div>
-                            <div class="meta-item"><strong>Anno</strong>${sp.metadati.anno}</div>
-                        </div>
                     </div>
                     ${spCoverHeroHtml}
-                    <p class="progetto-descrizione reveal" style="margin-top:32px;">${sp.descrizione}</p>
+                    ${sp.descrizione ? `<p class="progetto-descrizione reveal" style="margin-top:32px;">${sp.descrizione}</p>` : ''}
                     <div class="gallery">${spGalleryHtml}</div>
                 </div>
             `;
@@ -996,12 +805,10 @@ navLinks.forEach(link => {
 // Funzione asincrona di avvio per caricare i file JSON
 async function init() {
     try {
-        const [progettiRes, strutturaRes, bioRes, archivioRes, archivioStrutturaRes, playgroundRes, playgroundStrutturaRes] = await Promise.all([
+        const [progettiRes, strutturaRes, bioRes, playgroundRes, playgroundStrutturaRes] = await Promise.all([
             fetch('Progetti/progetti-data.json'),
             fetch('Progetti/portfolio-struttura.json'),
             fetch('Personal Branding/BIO-ABOUT-US.json'),
-            fetch('Progetti/Archivio/archivio-data.json'),
-            fetch('Progetti/Archivio/struttura-archivio.json'),
             fetch('Playground/playground-data.json').catch(() => ({ json: async () => [] })),
             fetch('Playground/struttura-playground.json').catch(() => ({ json: async () => [] }))
         ]);
@@ -1009,8 +816,6 @@ async function init() {
         progettiData = await progettiRes.json();
         portfolioStruttura = await strutturaRes.json();
         bioData = await bioRes.json();
-        archivioData = await archivioRes.json();
-        archivioStruttura = await archivioStrutturaRes.json();
         playgroundData = await playgroundRes.json();
         playgroundStruttura = await playgroundStrutturaRes.json();
 
@@ -1099,7 +904,7 @@ const SEOManager = {
             description = data.descrizione || description;
             keywords = data.metadati && data.metadati.progetto ? data.metadati.progetto.join(', ') : keywords;
 
-            const media = getArchivioMedia(data, archivioStruttura);
+            const media = getProjectMedia(data, portfolioStruttura);
             const cover = getCoverMedia(media);
             if (cover && cover.type === 'image') {
                 ogImage = `https://ferd.esign/${cover.path.replace(/ /g, '%20')}`;
@@ -1239,17 +1044,6 @@ function handleRoute() {
     if (pPlayground) {
         renderProgettoPlayground(pPlayground.id);
         SEOManager.update('playground_progetto', pPlayground);
-        return;
-    }
-
-    // 3. Cerca nell'Archivio
-    const pArchivio = archivioData.find(x =>
-        x.id.toLowerCase() === slug ||
-        x.cartella.toLowerCase() === slug
-    );
-    if (pArchivio) {
-        renderProgettoArchivio(pArchivio.id);
-        SEOManager.update('archivio_progetto', pArchivio);
         return;
     }
 

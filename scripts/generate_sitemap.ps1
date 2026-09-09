@@ -1,7 +1,6 @@
 $baseUrl = "https://ferdinandovirno.it"
 $baseDir = "c:\Users\pcdoc\Desktop\redesign PORTFOLIO SITO\REDEISGN_v5-sperimentazioni"
 $progettiPath = Join-Path $baseDir "Progetti\progetti-data.json"
-$archivioPath = Join-Path $baseDir "Progetti\Archivio\archivio-data.json"
 $publicDir = Join-Path $baseDir "public"
 
 if (-not (Test-Path $publicDir)) {
@@ -24,18 +23,6 @@ if (Test-Path $progettiPath) {
         if ($null -ne $p.sottoprogetti) {
             foreach ($sub in $p.sottoprogetti) {
                 $urls += @{ loc = "$baseUrl/#/progetto/$($sub.id)"; priority = "0.8" }
-            }
-        }
-    }
-}
-
-if (Test-Path $archivioPath) {
-    $archivio = Get-Content $archivioPath -Raw | ConvertFrom-Json
-    foreach ($p in $archivio) {
-        $urls += @{ loc = "$baseUrl/#/archivio/$($p.id)"; priority = "0.7" }
-        if ($null -ne $p.sottoprogetti) {
-            foreach ($sub in $p.sottoprogetti) {
-                $urls += @{ loc = "$baseUrl/#/archivio/$($sub.id)"; priority = "0.6" }
             }
         }
     }

@@ -8,18 +8,13 @@ function generateSitemap() {
 
     // Carica dati
     const progettiPath = path.join(__dirname, '..', 'Progetti', 'progetti-data.json');
-    const archivioPath = path.join(__dirname, '..', 'Progetti', 'Archivio', 'archivio-data.json');
     const playgroundPath = path.join(__dirname, '..', 'Playground', 'playground-data.json');
 
     let progetti = [];
-    let archivio = [];
     let playground = [];
 
     if (fs.existsSync(progettiPath)) {
         progetti = JSON.parse(fs.readFileSync(progettiPath, 'utf-8'));
-    }
-    if (fs.existsSync(archivioPath)) {
-        archivio = JSON.parse(fs.readFileSync(archivioPath, 'utf-8'));
     }
     if (fs.existsSync(playgroundPath)) {
         playground = JSON.parse(fs.readFileSync(playgroundPath, 'utf-8'));
@@ -41,6 +36,14 @@ function generateSitemap() {
             loc: `${BASE_URL}/${p.id}`,
             priority: '0.9'
         });
+        if (p.sottoprogetti) {
+            p.sottoprogetti.forEach(sub => {
+                urls.push({
+                    loc: `${BASE_URL}/${sub.id}`,
+                    priority: '0.8'
+                });
+            });
+        }
     });
 
     // Progetti Playground
@@ -48,14 +51,6 @@ function generateSitemap() {
         urls.push({
             loc: `${BASE_URL}/${p.id}`,
             priority: '0.8'
-        });
-    });
-
-    // Progetti in archivio
-    archivio.forEach(p => {
-        urls.push({
-            loc: `${BASE_URL}/${p.id}`,
-            priority: '0.7'
         });
     });
 
@@ -72,15 +67,15 @@ function generateSitemap() {
 
     sitemapContent += `</urlset>`;
 
-    fs.writeFileSync(path.join(__dirname, '..', 'sitemap.xml'), sitemapContent, 'utf-8');
-    console.log("sitemap.xml generato con successo!");
+    fs.writeFileSync(path.join(__dirname, '..', 'public', 'sitemap.xml'), sitemapContent, 'utf-8');
+    console.log("sitemap.xml generato con successo in public/!");
 }
 
 function generateRobots() {
     console.log("Generazione Robots in corso...");
     const robotsContent = `User-agent: *\nAllow: /\n\nSitemap: ${BASE_URL}/sitemap.xml\n`;
-    fs.writeFileSync(path.join(__dirname, '..', 'robots.txt'), robotsContent, 'utf-8');
-    console.log("robots.txt generato con successo!");
+    fs.writeFileSync(path.join(__dirname, '..', 'public', 'robots.txt'), robotsContent, 'utf-8');
+    console.log("robots.txt generato con successo in public/!");
 }
 
 generateSitemap();

@@ -98,25 +98,18 @@ function buildStructure() {
     console.log("⚡ Scansione in corso per la generazione automatica delle strutture media...");
 
     const progettiDir = path.join(__dirname, '..', 'Progetti');
-    const archivioDir = path.join(__dirname, '..', 'Progetti', 'Archivio');
     const playgroundDir = path.join(__dirname, '..', 'Playground');
 
     const progettiOutputFile = path.join(progettiDir, 'portfolio-struttura.json');
-    const archivioOutputFile = path.join(archivioDir, 'struttura-archivio.json');
     const playgroundOutputFile = path.join(playgroundDir, 'struttura-playground.json');
     const playgroundDataFile = path.join(playgroundDir, 'playground-data.json');
 
-    // 1. Scansione Progetti (escludendo 'Archivio')
-    const progettiStructure = scanFolderStructure(progettiDir, ['Archivio']);
+    // 1. Scansione Progetti
+    const progettiStructure = scanFolderStructure(progettiDir);
     fs.writeFileSync(progettiOutputFile, JSON.stringify(progettiStructure, null, 2), 'utf-8');
     console.log(`✅ [Progetti] Mappatura salvata in: Progetti/portfolio-struttura.json (${progettiStructure.length} cartelle)`);
 
-    // 2. Scansione Archivio
-    const archivioStructure = scanFolderStructure(archivioDir);
-    fs.writeFileSync(archivioOutputFile, JSON.stringify(archivioStructure, null, 2), 'utf-8');
-    console.log(`✅ [Archivio] Mappatura salvata in: Progetti/Archivio/struttura-archivio.json (${archivioStructure.length} cartelle)`);
-
-    // 3. Scansione Playground
+    // 2. Scansione Playground
     const playgroundStructure = scanFolderStructure(playgroundDir);
     fs.writeFileSync(playgroundOutputFile, JSON.stringify(playgroundStructure, null, 2), 'utf-8');
     console.log(`✅ [Playground] Mappatura salvata in: Playground/struttura-playground.json (${playgroundStructure.length} cartelle)`);
