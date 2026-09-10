@@ -456,9 +456,7 @@ function renderPlayground() {
             <h2 class="archivio-title">Playground</h2>
             <p class="archivio-subtitle">Laboratorio di sperimentazioni visive, prototipi interattivi e progetti di codice.</p>
         </div>
-        <div class="archivio-timeline">
-            <div class="archivio-year-block reveal">
-                <div class="archivio-grid">
+        <div class="archivio-grid">
     `;
 
     sorted.forEach((p, pi) => {
@@ -474,6 +472,10 @@ function renderPlayground() {
             }
         }
 
+        const tagsText = (p.metadati && p.metadati.progetto)
+            ? p.metadati.progetto.join(' · ')
+            : (p.titoloEvocativo || '');
+
         html += `
             <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri esperimento ${p.titolo}">
                 <div class="archivio-card-cover">
@@ -481,94 +483,83 @@ function renderPlayground() {
                 </div>
                 <div class="archivio-card-info">
                     <h3 class="archivio-card-title">${p.titolo}</h3>
-                    ${p.titoloEvocativo ? `<div style="font-size:13px; color:#666; margin-bottom:4px;">${p.titoloEvocativo}</div>` : ''}
+                    ${tagsText ? `<div class="archivio-card-tags">${tagsText}</div>` : ''}
                 </div>
             </div>
         `;
     });
 
-    html += `
-                </div>
-            </div>
-        </div>
-    `;
+    html += `</div>`;
 
     appContent.innerHTML = html;
     scrollToTop();
     initScrollReveal();
 }
 
+// ── Gestione Modale Info Playground ──
+function togglePlaygroundModal(show) {
+    const modal = document.getElementById('pg-info-modal');
+    if (!modal) return;
+    if (show) {
+        modal.classList.add('open');
+    } else {
+        modal.classList.remove('open');
+    }
+}
+
+function handlePlaygroundModalOverlayClick(event) {
+    if (event.target && event.target.id === 'pg-info-modal') {
+        togglePlaygroundModal(false);
+    }
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        togglePlaygroundModal(false);
+    }
+});
+
 function renderProgettoPlayground(id) {
     const p = playgroundData.find(x => x.id === id);
     if (!p) return;
+    document.body.classList.add('playground-fullscreen-mode');
     document.body.classList.add('hide-footer');
     setActiveNav('playground');
 
-    const media = getPlaygroundMedia(p, playgroundStruttura);
-    const coverMedia = getCoverMedia(media);
-
     const projectUrl = p.url || `Playground/${p.cartella}/index.html`;
 
-    let galleryHtml = '';
-    const otherMedia = media.filter(m => m !== coverMedia);
-    if (otherMedia.length > 0) {
-        otherMedia.forEach(m => {
-            galleryHtml += m.type === 'video'
-                ? `<div class="media-container video-container reveal"><video src="${m.path}" autoplay loop muted playsinline></video></div>`
-                : `<div class="media-container image-container reveal"><img src="${m.path}" alt="${p.titolo}"></div>`;
-        });
-    }
-
-    const currentIndex = playgroundData.findIndex(x => x.id === id);
-    const nextProject = (playgroundData.length > 1 && currentIndex !== -1)
-        ? playgroundData[(currentIndex + 1) % playgroundData.length]
-        : null;
-
-    let nextProjectHtml = '';
-    if (nextProject && nextProject.id !== id) {
-        nextProjectHtml = `
-            <div class="next-project-trigger-wrapper reveal">
-                <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => navigateTo('/${nextProject.id}'))" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
-                    <div class="np-trigger-top">
-                        <span class="np-trigger-label">PROSSIMO ESPERIMENTO</span>
-                        <span class="np-trigger-arrow" aria-hidden="true">→</span>
-                    </div>
-                    <h3 class="np-trigger-title">${nextProject.titolo}</h3>
-                    ${nextProject.titoloEvocativo ? `<p class="np-trigger-evocativo">${nextProject.titoloEvocativo}</p>` : ''}
-                    <div class="np-trigger-bar">
-                        <div class="np-trigger-bar-fill" id="np-bar-fill"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
+    const tagsHtml = (p.metadati && p.metadati.progetto)
+        ? p.metadati.progetto.map(t => `<span class="pg-modal-tag">${t}</span>`).join('')
+        : '';
+    const annoHtml = (p.metadati && p.metadati.anno)
+        ? `<span class="pg-modal-tag">${p.metadati.anno}</span>`
+        : '';
 
     appContent.innerHTML = `
-        <div class="progetto-detail">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom: 20px;">
-                <a href="/playground" class="nav-back-link" style="text-decoration:none; font-weight:600; font-size:13px; color:var(--blue); text-transform:uppercase; letter-spacing:0.06em;">← Torna a Playground</a>
+        <div class="pg-fullscreen-container">
+            <header class="pg-fullscreen-header">
+                <button class="pg-back-btn" onclick="navigateTo('/playground')" aria-label="Torna a Playground">
+                    ← Torna a Playground
+                </button>
+                <button class="pg-info-btn" id="pg-info-btn" onclick="togglePlaygroundModal(true)" aria-label="Informazioni sul progetto" title="Info progetto">
+                    i
+                </button>
+            </header>
+
+            <iframe src="${projectUrl}" class="pg-fullscreen-iframe" title="${p.titolo}"></iframe>
+
+            <div id="pg-info-modal" class="pg-modal-overlay" onclick="handlePlaygroundModalOverlayClick(event)" role="dialog" aria-modal="true" aria-labelledby="pg-modal-title">
+                <div class="pg-modal-card">
+                    <button class="pg-modal-close-btn" onclick="togglePlaygroundModal(false)" aria-label="Chiudi modale">✕</button>
+                    <h2 class="pg-modal-title" id="pg-modal-title">${p.titolo}</h2>
+                    ${p.titoloEvocativo ? `<div class="pg-modal-evocativo">${p.titoloEvocativo}</div>` : ''}
+                    ${(tagsHtml || annoHtml) ? `<div class="pg-modal-tags">${tagsHtml}${annoHtml}</div>` : ''}
+                    <p class="pg-modal-description">${p.descrizione || ''}</p>
+                </div>
             </div>
-
-            <h2 class="reveal visible">${p.titolo}</h2>
-            ${p.titoloEvocativo ? `<div class="evocativo reveal visible" style="margin-bottom: 20px;">${p.titoloEvocativo}</div>` : ''}
-
-            <a href="${projectUrl}" target="_blank" class="cc-pill-link" style="padding:6px 16px; font-size:12px;">Apri a tutto schermo ↗</a>
-            <div class="playground-iframe-wrapper reveal visible" style="margin: 32px 0; border-radius:12px; overflow:hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.08); background: #000;">
-                <iframe src="${projectUrl}" class="playground-iframe" style="width:100%; height:75vh; min-height:500px; border:none; display:block;" title="${p.titolo}"></iframe>
-            </div>
-
-            <p class="progetto-descrizione reveal">${p.descrizione}</p>
-
-            ${galleryHtml ? `<div class="gallery">${galleryHtml}</div>` : ''}
-
-            ${nextProjectHtml}
         </div>
     `;
     scrollToTop();
-    initScrollReveal();
-    if (nextProject && nextProject.id !== id) {
-        setupNextProjectScrollTrigger(() => navigateTo(`/${nextProject.id}`));
-    }
 }
 
 function renderContatti() {
@@ -983,6 +974,8 @@ const SEOManager = {
 function handleRoute() {
     isNavigatingNextProject = false;
     document.body.classList.remove('hide-footer');
+    document.body.classList.remove('playground-fullscreen-mode');
+    togglePlaygroundModal(false);
 
     // Gestione retrocompatibilità con eventuali URL vecchi con Hash (es. #/munarino -> /munarino)
     let pathname = window.location.pathname;
