@@ -37,24 +37,24 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 0.15, 4.2);
 
 /* ---------------------------------------------------------
-   2. LUCI: illuminazione morbida, uniforme, senza ombre dure
+   2. LUCI: illuminazione fredda/neutra (~5000K–6500K) + potenziata (1.33x)
    --------------------------------------------------------- */
 
-// Luce ambientale diffusa: base soffusa su tutta la card
-const ambient = new THREE.AmbientLight(0xffffff, 0.75);
+// Luce ambientale diffusa: tono bianco neutro/freddo (~5500K) - Intensità incrementata da 0.75 a 1.0 (1.33x)
+const ambient = new THREE.AmbientLight(0xf0f5ff, 1.0);
 scene.add(ambient);
 
-// Luce "cielo/terra": aiuta a leggere i bordi con una gradazione naturale
-const hemi = new THREE.HemisphereLight(0xfff6ea, 0x2a241c, 0.6);
+// Luce HemisphereLight (cielo/terra): cielo azzurrato freddo (~6500K) - Intensità incrementata da 0.6 a 0.8 (1.33x)
+const hemi = new THREE.HemisphereLight(0xdbe9ff, 0x242b35, 0.8);
 scene.add(hemi);
 
-// Luce chiave frontale, morbida, leggermente dall'alto
-const keyLight = new THREE.DirectionalLight(0xffffff, 0.9);
+// Luce chiave frontale: bianco daylight (~5500K) - Intensità incrementata da 0.9 a 1.2 (1.33x)
+const keyLight = new THREE.DirectionalLight(0xf4f8ff, 1.2);
 keyLight.position.set(2.2, 2.5, 3);
 scene.add(keyLight);
 
-// Luce di schiarimento sul retro, per non lasciare il retro della card troppo scuro
-const backLight = new THREE.DirectionalLight(0xffffff, 0.55);
+// Luce di schiarimento (retro): azzurrato tenue (~6500K) - Intensità incrementata da 0.55 a 0.73 (1.33x)
+const backLight = new THREE.DirectionalLight(0xd6e4ff, 0.73);
 backLight.position.set(-2, 1.2, -3);
 scene.add(backLight);
 

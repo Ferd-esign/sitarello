@@ -593,7 +593,7 @@ function renderContatti() {
                         <!-- FRONTE: foto -->
                         <div class="cc-flip-front">
                             <img src="Personal Branding/FOTO-BIO.webp" alt="Ferdinando Virno" class="cc-foto-bio" onerror="this.style.display='none'">
-                            <div class="cc-foto-hint">TAP</div>
+                            <div class="cc-foto-hint">TAP TO KNOW ME</div>
                         </div>
                         <!-- RETRO: testo -->
                         <div class="cc-flip-back">
