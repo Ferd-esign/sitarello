@@ -244,6 +244,83 @@ function initScrollReveal() {
     elements.forEach(el => observer.observe(el));
 }
 
+// ── EFFETTO TILT 3D ──
+function initTiltEffect() {
+    const cards = document.querySelectorAll('.project-card, .archivio-card');
+    
+    cards.forEach(card => {
+        // Rimuovi eventuali event listener precedenti se la funzione viene chiamata più volte
+        if (card.dataset.tiltInitialized) return;
+        card.dataset.tiltInitialized = 'true';
+
+        let isHovered = false;
+        let bounds = null;
+
+        const onMove = (clientX, clientY) => {
+            if (!bounds) bounds = card.getBoundingClientRect();
+            
+            // Calcola la posizione relativa del cursore/tocco
+            const x = clientX - bounds.left;
+            const y = clientY - bounds.top;
+            
+            // Normalizza tra -1 e 1
+            const xNorm = (x / bounds.width) * 2 - 1;
+            const yNorm = (y / bounds.height) * 2 - 1;
+
+            const maxRotation = 6; // Gradi massimi (5°-8°)
+            const rotateX = yNorm * -maxRotation;
+            const rotateY = xNorm * maxRotation;
+
+            requestAnimationFrame(() => {
+                if (isHovered) {
+                    card.style.transform = `perspective(1000px) scale3d(1.02, 1.02, 1.02) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                    card.style.transition = 'none'; // Reattività immediata al movimento
+                }
+            });
+        };
+
+        const onEnter = () => {
+            isHovered = true;
+            bounds = card.getBoundingClientRect();
+            card.style.transition = 'transform 0.3s ease';
+        };
+
+        const onLeave = () => {
+            isHovered = false;
+            bounds = null;
+            requestAnimationFrame(() => {
+                card.style.transition = 'transform 0.3s ease';
+                card.style.transform = 'perspective(1000px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg)';
+                
+                // Rimuovi gli stili inline per ripristinare le regole CSS originali
+                setTimeout(() => {
+                    if (!isHovered) {
+                        card.style.transform = '';
+                        card.style.transition = '';
+                    }
+                }, 300);
+            });
+        };
+
+        // Desktop
+        card.addEventListener('mouseenter', onEnter);
+        card.addEventListener('mousemove', (e) => {
+            if (!isHovered) onEnter();
+            onMove(e.clientX, e.clientY);
+        });
+        card.addEventListener('mouseleave', onLeave);
+
+        // Mobile
+        card.addEventListener('touchstart', onEnter, {passive: true});
+        card.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                onMove(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, {passive: true});
+        card.addEventListener('touchend', onLeave);
+    });
+}
+
 // ── HELPER ROUTING HTML5 HISTORY API ──
 function navigateTo(path, replace = false) {
     isNavigatingNextProject = false;
@@ -327,7 +404,6 @@ function renderEsplora() {
                     ${coverHtml}
                 </div>
                 <h3>${p.titolo}</h3>
-                <div class="tags">${p.metadati.progetto.join(', ')} • ${p.metadati.anno}</div>
             </div>
         `;
     });
@@ -336,6 +412,7 @@ function renderEsplora() {
     appContent.innerHTML = html;
     scrollToTop();
     initScrollReveal();
+    initTiltEffect();
 }
 
 function getArchivioMedia(project, struttura) {
@@ -389,8 +466,6 @@ function renderArchivio() {
                 }
             }
 
-            const tagsText = (p.metadati && p.metadati.progetto) ? p.metadati.progetto.join(' · ') : '';
-
             html += `
                 <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri progetto ${p.titolo}">
                     <div class="archivio-card-cover">
@@ -398,7 +473,6 @@ function renderArchivio() {
                     </div>
                     <div class="archivio-card-info">
                         <h3 class="archivio-card-title">${p.titolo}</h3>
-                        ${tagsText ? `<div class="archivio-card-tags">${tagsText}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -414,6 +488,7 @@ function renderArchivio() {
     appContent.innerHTML = html;
     scrollToTop();
     initScrollReveal();
+    initTiltEffect();
 }
 
 function renderProgettoArchivio(id) {
@@ -472,10 +547,6 @@ function renderPlayground() {
             }
         }
 
-        const tagsText = (p.metadati && p.metadati.progetto)
-            ? p.metadati.progetto.join(' · ')
-            : (p.titoloEvocativo || '');
-
         html += `
             <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri esperimento ${p.titolo}">
                 <div class="archivio-card-cover">
@@ -483,7 +554,6 @@ function renderPlayground() {
                 </div>
                 <div class="archivio-card-info">
                     <h3 class="archivio-card-title">${p.titolo}</h3>
-                    ${tagsText ? `<div class="archivio-card-tags">${tagsText}</div>` : ''}
                 </div>
             </div>
         `;
@@ -494,6 +564,7 @@ function renderPlayground() {
     appContent.innerHTML = html;
     scrollToTop();
     initScrollReveal();
+    initTiltEffect();
 }
 
 // ── Gestione Modale Info Playground ──
