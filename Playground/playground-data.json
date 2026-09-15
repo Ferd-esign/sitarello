@@ -14,5 +14,21 @@
       ],
       "anno": 2026
     }
+  },
+  {
+    "id": "convertotore",
+    "cartella": "CONVERTOTORE",
+    "titolo": "ToTo — il ConverToTore",
+    "titoloEvocativo": "Ottimizzazione batch per il web",
+    "descrizione": "Converti e ottimizza immagini e video per il web, interamente nel tuo browser. Ridimensiona, comprimi e ricodifica in WebP, AVIF, MP4 e WebM — nessun file lascia il tuo computer.",
+    "url": "Playground/CONVERTOTORE/index.html",
+    "metadati": {
+      "progetto": [
+        "Web Tool",
+        "FFmpeg WASM",
+        "Client-Side Processing"
+      ],
+      "anno": 2026
+    }
   }
 ]

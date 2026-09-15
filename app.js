@@ -349,6 +349,7 @@ document.addEventListener('click', (e) => {
 
 function renderEsplora() {
     setActiveNav('esplora');
+    document.body.classList.add('page-esplora');
 
     // Recupera la stringa dal JSON o usa il fallback con maiuscole/minuscole corrette
     const rawClaim = bioData.claim || "Progetto cioè proietto. Racconto storie, a volte futuri.";
@@ -1046,6 +1047,7 @@ function handleRoute() {
     isNavigatingNextProject = false;
     document.body.classList.remove('hide-footer');
     document.body.classList.remove('playground-fullscreen-mode');
+    document.body.classList.remove('page-esplora');
     togglePlaygroundModal(false);
 
     // Gestione retrocompatibilità con eventuali URL vecchi con Hash (es. #/munarino -> /munarino)

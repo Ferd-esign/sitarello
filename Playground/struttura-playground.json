@@ -6,5 +6,11 @@
       "immagini/fronte.jpg",
       "immagini/retro.jpg"
     ]
+  },
+  {
+    "Cartella": "CONVERTOTORE",
+    "File": [
+      "immagini/COPERTINA.webp"
+    ]
   }
 ]
