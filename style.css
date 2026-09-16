@@ -1719,6 +1719,62 @@ body.playground-fullscreen-mode #app-content {
     padding-top: 18px;
 }
 
+.pg-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pg-open-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--black);
+    background: transparent;
+    color: var(--black);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.pg-open-btn:hover {
+    background: var(--black);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pg-modal-actions {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #eeeeee;
+}
+
+.pg-modal-direct-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 24px;
+    background: var(--black);
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.pg-modal-direct-link:hover {
+    background: var(--blue);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
 @media (max-width: 767px) {
     .pg-fullscreen-header {
         height: 52px;
@@ -1734,6 +1790,15 @@ body.playground-fullscreen-mode #app-content {
     .pg-back-btn {
         font-size: 12px;
         padding: 6px 8px;
+    }
+
+    .pg-open-btn span {
+        display: none;
+    }
+
+    .pg-open-btn {
+        padding: 6px 10px;
+        font-size: 13px;
     }
 
     .pg-info-btn {

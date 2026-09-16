@@ -613,9 +613,14 @@ function renderProgettoPlayground(id) {
                 <button class="pg-back-btn" onclick="navigateTo('/playground')" aria-label="Torna a Playground">
                     ← Torna a Playground
                 </button>
-                <button class="pg-info-btn" id="pg-info-btn" onclick="togglePlaygroundModal(true)" aria-label="Informazioni sul progetto" title="Info progetto">
-                    i
-                </button>
+                <div class="pg-header-actions">
+                    <a href="${projectUrl}" target="_blank" rel="noopener noreferrer" class="pg-open-btn" title="Apri in una nuova scheda" aria-label="Apri in una nuova scheda">
+                        <span>Apri in nuova scheda</span> ↗
+                    </a>
+                    <button class="pg-info-btn" id="pg-info-btn" onclick="togglePlaygroundModal(true)" aria-label="Informazioni sul progetto" title="Info progetto">
+                        i
+                    </button>
+                </div>
             </header>
 
             <iframe src="${projectUrl}" class="pg-fullscreen-iframe" title="${p.titolo}"></iframe>
@@ -627,6 +632,11 @@ function renderProgettoPlayground(id) {
                     ${p.titoloEvocativo ? `<div class="pg-modal-evocativo">${p.titoloEvocativo}</div>` : ''}
                     ${(tagsHtml || annoHtml) ? `<div class="pg-modal-tags">${tagsHtml}${annoHtml}</div>` : ''}
                     <p class="pg-modal-description">${p.descrizione || ''}</p>
+                    <div class="pg-modal-actions">
+                        <a href="${projectUrl}" target="_blank" rel="noopener noreferrer" class="pg-modal-direct-link">
+                            Apri in una nuova scheda ↗
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
