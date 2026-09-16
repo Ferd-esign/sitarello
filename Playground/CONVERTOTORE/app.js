@@ -427,9 +427,11 @@
 
       setFFmpegStatusText("Caricamento motore video (una tantum)…");
       const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+      const ffmpegBaseURL = "https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd";
       await ffmpeg.load({
         coreURL: await util.toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
         wasmURL: await util.toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+        classWorkerURL: await util.toBlobURL(`${ffmpegBaseURL}/814.ffmpeg.js`, "text/javascript"),
       });
 
       if (!ffmpegProgressBound) {
