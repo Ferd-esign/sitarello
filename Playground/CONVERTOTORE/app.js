@@ -100,8 +100,8 @@
     if (file.type && file.type.startsWith("image/")) return "image";
     if (file.type && file.type.startsWith("video/")) return "video";
     const ext = extOf(file.name);
-    if ([".png", ".jpg", ".jpeg", ".webp"].includes(ext)) return "image";
-    if ([".mp4", ".mov", ".m4v", ".webm"].includes(ext)) return "video";
+    if ([".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif", ".svg", ".bmp"].includes(ext)) return "image";
+    if ([".mp4", ".mov", ".m4v", ".webm", ".mkv", ".avi", ".ogv"].includes(ext)) return "video";
     return null;
   }
 
@@ -298,14 +298,18 @@
       try {
         return await createImageBitmap(file, { imageOrientation: "from-image" });
       } catch (e) {
-        // ricade sul percorso <img>
+        try {
+          return await createImageBitmap(file);
+        } catch (e2) {
+          // ricade sul percorso <img>
+        }
       }
     }
     return new Promise((resolve, reject) => {
       const url = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => { resolve(img); };
-      img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Impossibile caricare l'immagine fornita.")); };
       img.src = url;
       img._objectUrl = url;
     });
@@ -314,7 +318,15 @@
   function canvasToBlob(canvas, type, quality) {
     return new Promise((resolve) => {
       try {
-        canvas.toBlob((blob) => resolve(blob), type, quality);
+        canvas.toBlob((blob) => {
+          if (blob && (blob.type === type || (type === "image/webp" && blob.type.includes("webp")) || (type === "image/avif" && blob.type.includes("avif")))) {
+            resolve(blob);
+          } else if (blob && (type === "image/png" || type === "image/jpeg")) {
+            resolve(blob);
+          } else {
+            resolve(null);
+          }
+        }, type, quality);
       } catch (e) {
         resolve(null);
       }
@@ -376,23 +388,48 @@
     ffmpegStatus.textContent = text;
   }
 
+  function getFFmpegUtil() {
+    if (typeof window !== "undefined" && window.FFmpegUtil && typeof window.FFmpegUtil.toBlobURL === "function") {
+      return window.FFmpegUtil;
+    }
+    return {
+      async toBlobURL(url, mimeType) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Impossibile scaricare risorsa per FFmpeg: ${url}`);
+        const buf = await res.arrayBuffer();
+        const blob = new Blob([buf], { type: mimeType });
+        return URL.createObjectURL(blob);
+      },
+      async fetchFile(file) {
+        if (typeof file === "string") {
+          const res = await fetch(file);
+          return new Uint8Array(await res.arrayBuffer());
+        }
+        if (file instanceof Blob || file instanceof File) {
+          return new Uint8Array(await file.arrayBuffer());
+        }
+        return new Uint8Array();
+      },
+    };
+  }
+
   async function ensureFFmpeg() {
     if (ffmpegInstance && ffmpegInstance.loaded) return ffmpegInstance;
     if (ffmpegLoadingPromise) return ffmpegLoadingPromise;
 
     ffmpegLoadingPromise = (async () => {
-      if (typeof FFmpegWASM === "undefined" || typeof FFmpegUtil === "undefined") {
-        throw new Error("Motore video non disponibile: verifica la connessione e ricarica la pagina.");
+      if (typeof FFmpegWASM === "undefined") {
+        throw new Error("Motore video non disponibile: caricamento libreria FFmpeg.wasm fallito. Verifica la connessione.");
       }
       const { FFmpeg } = FFmpegWASM;
-      const { toBlobURL } = FFmpegUtil;
+      const util = getFFmpegUtil();
       const ffmpeg = new FFmpeg();
 
       setFFmpegStatusText("Caricamento motore video (una tantum)…");
       const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
       await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+        coreURL: await util.toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+        wasmURL: await util.toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
       });
 
       if (!ffmpegProgressBound) {
@@ -408,7 +445,11 @@
       setFFmpegStatusText("Motore video pronto.");
       ffmpegInstance = ffmpeg;
       return ffmpeg;
-    })();
+    })().catch((err) => {
+      ffmpegLoadingPromise = null;
+      setFFmpegStatusText("Errore caricamento motore video.");
+      throw err;
+    });
 
     return ffmpegLoadingPromise;
   }
@@ -459,14 +500,14 @@
 
   async function processVideoFile(item) {
     const ffmpeg = await ensureFFmpeg();
-    const { fetchFile } = FFmpegUtil;
+    const util = getFFmpegUtil();
 
     const inExt = extOf(item.file.name) || ".mp4";
     const inputName = `in_${item.id}${inExt}`;
     const base = stripExt(item.file.name);
     const preset = VIDEO_PRESETS[item.preset];
 
-    await ffmpeg.writeFile(inputName, await fetchFile(item.file));
+    await ffmpeg.writeFile(inputName, await util.fetchFile(item.file));
 
     const variants = buildVideoVariants(item.preset, state.bgResolution);
     state.activeVideoItem = item;
@@ -478,7 +519,10 @@
         state.activeVariantIndex = i;
         const v = variants[i];
         const outName = `out_${item.id}_${v.format}.${v.ext}`;
-        await ffmpeg.exec(["-i", inputName, ...v.args, outName]);
+        const ret = await ffmpeg.exec(["-i", inputName, ...v.args, outName]);
+        if (ret !== 0) {
+          console.warn(`FFmpeg non-zero exit code ${ret} per la variante ${v.format}`);
+        }
         const data = await ffmpeg.readFile(outName);
         const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
         const blob = new Blob([bytes.slice()], { type: v.mime });

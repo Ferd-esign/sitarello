@@ -400,7 +400,7 @@ function renderEsplora() {
         }
 
         html += `
-            <div class="project-card reveal" data-delay="${delayIndex}" onclick="navigateTo('/${p.id}')">
+            <div class="project-card reveal" onclick="navigateTo('/${p.id}')">
                 <div class="cover-container">
                     ${coverHtml}
                 </div>
@@ -449,7 +449,7 @@ function renderArchivio() {
     years.forEach((year, yi) => {
         const progetti = byYear[year];
         html += `
-            <div class="archivio-year-block reveal" data-delay="${(yi % 3) + 1}">
+            <div class="archivio-year-block reveal">
                 <div class="archivio-year-label">${year}</div>
                 <div class="archivio-grid">
         `;
@@ -468,7 +468,7 @@ function renderArchivio() {
             }
 
             html += `
-                <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri progetto ${p.titolo}">
+                <div class="archivio-card reveal" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri progetto ${p.titolo}">
                     <div class="archivio-card-cover">
                         ${coverHtml}
                     </div>
@@ -549,7 +549,7 @@ function renderPlayground() {
         }
 
         html += `
-            <div class="archivio-card reveal" data-delay="${(pi % 4) + 1}" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri esperimento ${p.titolo}">
+            <div class="archivio-card reveal" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri esperimento ${p.titolo}">
                 <div class="archivio-card-cover">
                     ${coverHtml}
                 </div>
