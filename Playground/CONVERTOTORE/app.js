@@ -148,16 +148,17 @@
      ------------------------------------------------------------------- */
 
   function makeQueueItem(file, kind) {
+    const isVideo = kind === "video";
     return {
       id: ++idCounter,
       file,
       kind,
       preset: kind === "image" ? DEFAULT_IMAGE_PRESET : DEFAULT_VIDEO_PRESET,
-      status: "pending", // pending | processing | done | error
+      status: isVideo ? "debug" : "pending", // pending | processing | done | error | debug
       originalSize: file.size,
       outputs: [],
       finalSize: null,
-      errorMsg: "",
+      errorMsg: isVideo ? "in fase di debug" : "",
       thumbUrl: null,
       _el: null,
     };
@@ -178,7 +179,17 @@
 
   function populatePresetSelect(select, kind, selected) {
     select.innerHTML = "";
-    const map = kind === "image" ? IMAGE_PRESETS : VIDEO_PRESETS;
+    if (kind === "video") {
+      select.disabled = true;
+      const opt = document.createElement("option");
+      opt.value = "vid-debug";
+      opt.textContent = "in fase di debug";
+      opt.disabled = true;
+      opt.selected = true;
+      select.appendChild(opt);
+      return;
+    }
+    const map = IMAGE_PRESETS;
     Object.entries(map).forEach(([key, p]) => {
       const opt = document.createElement("option");
       opt.value = key;
@@ -214,13 +225,22 @@
     }
 
     populatePresetSelect(presetSelect, item.kind, item.preset);
-    presetSelect.addEventListener("change", () => { item.preset = presetSelect.value; });
+    if (item.kind !== "video") {
+      presetSelect.addEventListener("change", () => { item.preset = presetSelect.value; });
+    }
 
     queueList.appendChild(frag);
     const liEl = queueList.lastElementChild;
 
     item._el = { li: liEl, statusPill, progressTrack, progressFill };
-    setStatus(item, "pending");
+    
+    if (item.kind === "video") {
+      liEl.classList.add("disabled-video");
+      presetSelect.disabled = true;
+      setStatus(item, "debug");
+    } else {
+      setStatus(item, "pending");
+    }
   }
 
   function setStatus(item, status, message) {
@@ -230,6 +250,8 @@
       pending: "In coda",
       processing: "In elaborazione",
       done: "Completato",
+      debug: "in fase di debug",
+      disabled: "in fase di debug",
       error: message || "Errore",
     };
     item._el.statusPill.textContent = labels[status] || status;
@@ -545,8 +567,14 @@
      ------------------------------------------------------------------- */
 
   async function startProcessing() {
-    const pending = state.files.filter((f) => f.status === "pending" || f.status === "error");
-    if (pending.length === 0) return;
+    const pending = state.files.filter((f) => f.kind === "image" && (f.status === "pending" || f.status === "error"));
+    if (pending.length === 0) {
+      const hasVideosOnly = state.files.some((f) => f.kind === "video");
+      if (hasVideosOnly) {
+        alert("La conversione dei video è temporaneamente disattivata (in fase di debug). Aggiungi file immagine per avviare la conversione.");
+      }
+      return;
+    }
 
     startBtn.disabled = true;
     startBtn.textContent = "Elaborazione…";
@@ -555,9 +583,7 @@
       setStatus(item, "processing");
       updateProgress(item, 0);
       try {
-        const outputs = item.kind === "image"
-          ? await processImageFile(item)
-          : await processVideoFile(item);
+        const outputs = await processImageFile(item);
 
         item.outputs = outputs;
         item.finalSize = pickPrimarySize(item, outputs);

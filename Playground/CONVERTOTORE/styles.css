@@ -168,6 +168,16 @@ body {
 .queue-row {
   padding: 14px 20px;
   animation: rowIn 0.22s ease both;
+  transition: opacity 0.2s ease, filter 0.2s ease, background-color 0.2s ease;
+}
+.queue-row.disabled-video {
+  opacity: 0.45;
+  filter: brightness(0.65) contrast(0.9);
+  background-color: rgba(0, 0, 0, 0.25);
+}
+.queue-row.disabled-video .field-select {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 @keyframes rowIn {
   from { opacity: 0; transform: translateY(-4px); }
@@ -209,6 +219,13 @@ body {
 .status-pill[data-state="processing"] { color: var(--amber); border-color: var(--amber-dim); }
 .status-pill[data-state="done"] { color: var(--leaf); border-color: var(--leaf); }
 .status-pill[data-state="error"] { color: var(--alert); border-color: var(--alert); }
+.status-pill[data-state="debug"],
+.status-pill[data-state="disabled"] {
+  color: #a0aec0;
+  border-color: #3b4248;
+  background: rgba(255, 255, 255, 0.03);
+  font-weight: 500;
+}
 
 .progress-track {
   margin-top: 10px;
