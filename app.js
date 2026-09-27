@@ -695,6 +695,21 @@ function renderContatti() {
 let isYTScriptLoading = false;
 const ytPlayerInitCallbacks = [];
 
+function disableYTCaptions(player) {
+    if (!player) return;
+    try {
+        if (typeof player.unloadModule === 'function') {
+            player.unloadModule('captions');
+            player.unloadModule('cc');
+        }
+        if (typeof player.setOption === 'function') {
+            player.setOption('captions', 'track', {});
+            player.setOption('cc', 'track', {});
+            player.setOption('captions', 'reload', false);
+        }
+    } catch (e) {}
+}
+
 function initYouTubePlayer(iframeId, volume = 50) {
     function setupPlayer() {
         const iframe = document.getElementById(iframeId);
@@ -706,14 +721,14 @@ function initYouTubePlayer(iframeId, volume = 50) {
                     events: {
                         'onReady': function(event) {
                             event.target.setVolume(volume);
-                            if (typeof event.target.unloadModule === 'function') {
-                                try {
-                                    event.target.unloadModule('captions');
-                                    event.target.unloadModule('cc');
-                                } catch (e) {}
-                            }
+                            disableYTCaptions(event.target);
                             if (typeof event.target.setPlaybackQuality === 'function') {
                                 event.target.setPlaybackQuality('hd1080');
+                            }
+                        },
+                        'onStateChange': function(event) {
+                            if (event.data === 1 || event.data === 3) { // PLAYING or BUFFERING (mobile tap)
+                                disableYTCaptions(event.target);
                             }
                         }
                     }
@@ -790,7 +805,7 @@ function renderProgetto(id) {
     if (youtubeId) {
         videoEmbedHtml = `
             <div class="youtube-video-container reveal">
-                <iframe id="sponz-yt-player" src="https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&cc_load_policy=0&vq=hd1080" title="${videoTitle}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                <iframe id="sponz-yt-player" src="https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&cc_load_policy=0&cc_lang_pref=off&playsinline=1&vq=hd1080" title="${videoTitle}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
         `;
     }
