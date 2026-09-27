@@ -706,6 +706,12 @@ function initYouTubePlayer(iframeId, volume = 50) {
                     events: {
                         'onReady': function(event) {
                             event.target.setVolume(volume);
+                            if (typeof event.target.unloadModule === 'function') {
+                                try {
+                                    event.target.unloadModule('captions');
+                                    event.target.unloadModule('cc');
+                                } catch (e) {}
+                            }
                             if (typeof event.target.setPlaybackQuality === 'function') {
                                 event.target.setPlaybackQuality('hd1080');
                             }
@@ -780,10 +786,11 @@ function renderProgetto(id) {
     // ── Video Embed (es. YouTube per Sponz Fest) ──
     let videoEmbedHtml = '';
     const youtubeId = p.youtubeVideoId || (p.id === 'sponzfest' ? 'ruE7jEkWyIg' : null);
+    const videoTitle = p.youtubeVideoTitle || (p.titolo + ' Video');
     if (youtubeId) {
         videoEmbedHtml = `
             <div class="youtube-video-container reveal">
-                <iframe id="sponz-yt-player" src="https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&cc_load_policy=0&vq=hd1080" title="${p.titolo} Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <iframe id="sponz-yt-player" src="https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&cc_load_policy=0&vq=hd1080" title="${videoTitle}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
         `;
     }
