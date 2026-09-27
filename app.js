@@ -691,6 +691,61 @@ function renderContatti() {
 }
 
 
+// ── YouTube IFrame API Helper ──
+let isYTScriptLoading = false;
+const ytPlayerInitCallbacks = [];
+
+function initYouTubePlayer(iframeId, volume = 50) {
+    function setupPlayer() {
+        const iframe = document.getElementById(iframeId);
+        if (!iframe) return;
+
+        if (window.YT && window.YT.Player) {
+            try {
+                new YT.Player(iframeId, {
+                    events: {
+                        'onReady': function(event) {
+                            event.target.setVolume(volume);
+                            if (typeof event.target.setPlaybackQuality === 'function') {
+                                event.target.setPlaybackQuality('hd1080');
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error('Error initializing YouTube Player API:', e);
+            }
+        }
+    }
+
+    if (window.YT && window.YT.Player) {
+        setupPlayer();
+    } else {
+        ytPlayerInitCallbacks.push(setupPlayer);
+
+        if (!window.onYouTubeIframeAPIReady) {
+            window.onYouTubeIframeAPIReady = function() {
+                while (ytPlayerInitCallbacks.length > 0) {
+                    const cb = ytPlayerInitCallbacks.shift();
+                    if (typeof cb === 'function') cb();
+                }
+            };
+        }
+
+        if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]') && !isYTScriptLoading) {
+            isYTScriptLoading = true;
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            if (firstScriptTag && firstScriptTag.parentNode) {
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            } else {
+                document.head.appendChild(tag);
+            }
+        }
+    }
+}
+
 function renderProgetto(id) {
     const p = progettiData.find(x => x.id === id);
     if (!p) return;
@@ -720,6 +775,17 @@ function renderProgetto(id) {
         });
     } else {
         galleryHtml = `<div style="text-align:center;color:#999;padding:40px;">Nessun elemento multimediale disponibile.</div>`;
+    }
+
+    // ── Video Embed (es. YouTube per Sponz Fest) ──
+    let videoEmbedHtml = '';
+    const youtubeId = p.youtubeVideoId || (p.id === 'sponzfest' ? 'ruE7jEkWyIg' : null);
+    if (youtubeId) {
+        videoEmbedHtml = `
+            <div class="youtube-video-container reveal">
+                <iframe id="sponz-yt-player" src="https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&cc_load_policy=0&vq=hd1080" title="${p.titolo} Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+        `;
     }
 
     // ── Sezioni sottoprogetti (Marathia, Cunti…) ──
@@ -827,6 +893,8 @@ function renderProgetto(id) {
 
             <p class="progetto-descrizione reveal">${p.descrizione}</p>
 
+            ${videoEmbedHtml}
+
             <div class="gallery">${galleryHtml}</div>
 
             ${subProjectsHtml}
@@ -836,6 +904,9 @@ function renderProgetto(id) {
     `;
     scrollToTop();
     initScrollReveal();
+    if (youtubeId) {
+        initYouTubePlayer('sponz-yt-player', 50);
+    }
     if (nextProject && nextProject.id !== id) {
         setupNextProjectScrollTrigger(() => navigateTo(`/${nextProject.id}`));
     }
