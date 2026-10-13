@@ -623,7 +623,7 @@ function renderProgettoPlayground(id) {
                 </div>
             </header>
 
-            <iframe src="${projectUrl}" class="pg-fullscreen-iframe" title="${p.titolo}"></iframe>
+            <iframe src="${projectUrl}" class="pg-fullscreen-iframe" title="${p.titolo}" allow="autoplay"></iframe>
 
             <div id="pg-info-modal" class="pg-modal-overlay" onclick="handlePlaygroundModalOverlayClick(event)" role="dialog" aria-modal="true" aria-labelledby="pg-modal-title">
                 <div class="pg-modal-card">
