@@ -1,1538 +1,1737 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Orchestra di segni — Dove la musica anima</title>
-<meta name="description" content="Spartito sinfonico astratto generativo con reattività dinamica. La musica si trasforma in segni visivi.">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tracce d'Orchestra— Dove la musica anima</title>
+  <meta name="description"
+    content="Spartito sinfonico astratto generativo con reattività dinamica. La musica si trasforma in segni visivi.">
 
-<!-- DM Sans Font (stessa font del portfolio) -->
-<style>
-@font-face {
-  font-family: 'DM Sans';
-  src: url('../../DM_Sans/DMSans-VariableFont_opsz,wght.ttf') format('truetype');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'DM Sans';
-  src: url('../../DM_Sans/DMSans-Italic-VariableFont_opsz,wght.ttf') format('truetype');
-  font-weight: 100 900;
-  font-style: italic;
-  font-display: swap;
-}
+  <!-- DM Sans Font (stessa font del portfolio) -->
+  <style>
+    @font-face {
+      font-family: 'DM Sans';
+      src: url('../../DM_Sans/DMSans-VariableFont_opsz,wght.ttf') format('truetype');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
 
-/* ── DESIGN SYSTEM (allineato al portfolio) ── */
-:root {
-  --black: #000000;
-  --blue: #3273bf;
-  --gold: #ffc400;
-  --bg-color: #ffffff;
-  --muted: #6a6f78;
-  --line: #e0e0e0;
-  --stage-bg: #005A85;
-  --panel-bg: #ffffff;
-  --ink-default: #005A85;
-}
+    @font-face {
+      font-family: 'DM Sans';
+      src: url('../../DM_Sans/DMSans-Italic-VariableFont_opsz,wght.ttf') format('truetype');
+      font-weight: 100 900;
+      font-style: italic;
+      font-display: swap;
+    }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── DESIGN SYSTEM (allineato al portfolio) ── */
+    :root {
+      --black: #000000;
+      --blue: #3273bf;
+      --gold: #ffc400;
+      --bg-color: #ffffff;
+      --muted: #6a6f78;
+      --line: #e0e0e0;
+      --stage-bg: #005A85;
+      --panel-bg: #ffffff;
+      --ink-default: #005A85;
+    }
 
-html, body {
-  height: 100%;
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg-color);
-  color: var(--black);
-  -webkit-font-smoothing: antialiased;
-}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* ══════════════════════════════════════════
+    html,
+    body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-color);
+      color: var(--black);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══════════════════════════════════════════
    APP LAYOUT
 ══════════════════════════════════════════ */
-.ods-app {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  height: 100%;
-  min-height: 100dvh;
-}
-
-/* ── HEADER DEL PROGETTO ── */
-.ods-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 28px;
-  border-bottom: 1px solid var(--line);
-  background: var(--panel-bg);
-  gap: 16px;
-  flex-shrink: 0;
-}
-
-.ods-header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.ods-project-name {
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: var(--black);
-}
-
-.ods-payoff {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--muted);
-  font-style: italic;
-  letter-spacing: 0.01em;
-}
-
-.ods-header-right {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.ods-logo-conservatorio {
-  height: 40px;
-  width: auto;
-  object-fit: contain;
-  opacity: 0.85;
-  transition: opacity 0.2s;
-}
-.ods-logo-conservatorio:hover { opacity: 1; }
-
-/* ── CONTENT AREA (stage + panel) ── */
-.ods-content {
-  display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
-  min-height: 0;
-}
-
-/* ── STAGE (canvas) ── */
-.ods-stage {
-  background: var(--stage-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-  min-width: 0;
-  position: relative;
-}
-
-.ods-frame {
-  line-height: 0;
-  box-shadow:
-    0 4px 20px rgba(0,0,0,.25),
-    0 25px 60px -15px rgba(0,0,0,.45);
-}
-
-canvas { display: block; }
-
-/* ── PANEL (controlli) ── */
-.ods-panel {
-  background: var(--panel-bg);
-  border-right: 1px solid var(--line);
-  padding: 20px 20px 24px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* ── SLIDER CON KEYPOINT ── */
-.ods-slider-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.ods-slider-track {
-  position: relative;
-}
-.ods-slider-track input[type=range] {
-  width: 100%;
-}
-.ods-keypoint {
-  position: absolute;
-  top: -2px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  pointer-events: none;
-  transform: translateX(-50%);
-}
-.ods-keypoint-needle {
-  width: 1.5px;
-  height: 10px;
-  background: var(--blue);
-  opacity: 0.7;
-}
-.ods-keypoint-label {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  margin-top: 1px;
-  text-transform: uppercase;
-}
-
-/* ── SEZIONI ── */
-.ods-section { display: flex; flex-direction: column; gap: 8px; }
-
-.ods-section-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--muted);
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-/* ── PULSANTI (stile portfolio: bordo nero, hover riempito) ── */
-button, .btn {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--black);
-  background: transparent;
-  border: 1px solid var(--black);
-  border-radius: 0;
-  padding: 8px 14px;
-  cursor: pointer;
-  line-height: 1.1;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  text-align: center;
-  transition: background 0.15s, color 0.15s;
-}
-button:hover, .btn:hover { background: var(--black); color: #ffffff; }
-button:disabled { opacity: .35; cursor: not-allowed; background: transparent; color: var(--black); }
-button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-
-.btn-primary { background: var(--black); color: #ffffff; }
-.btn-primary:hover { background: transparent; color: var(--black); }
-.btn-primary:disabled:hover { background: var(--black); color: #ffffff; }
-
-.btn-blue {
-  background: var(--blue);
-  color: #ffffff;
-  border-color: var(--blue);
-}
-.btn-blue:hover { background: transparent; color: var(--blue); }
-
-/* ── ROW ── */
-.ods-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-
-/* ── NOTTURNO N.1 & SELEZIONE TRACCIA ── */
-.ods-track-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  border: 1px solid var(--black);
-  background: transparent;
-  color: var(--black);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.ods-track-btn:hover {
-  background: rgba(0,0,0,0.05);
-  color: var(--black);
-}
-
-.ods-track-btn.is-active {
-  background: var(--black);
-  color: #ffffff;
-  border-color: var(--black);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.ods-track-btn.is-active:hover {
-  background: #1a1a1a;
-  color: #ffffff;
-}
-
-.ods-status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3);
-  display: inline-block;
-  flex-shrink: 0;
-  animation: pulseDot 2s infinite ease-in-out;
-}
-
-@keyframes pulseDot {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.65; }
-}
-
-.ods-tag-active {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-  padding: 2px 7px;
-  border-radius: 3px;
-  margin-left: auto;
-}
-
-/* ── CARICA TRACCIA (GRAFICA UPLOAD DEDICATA) ── */
-.ods-upload-wrap {
-  display: block;
-  width: 100%;
-  cursor: pointer;
-}
-
-.ods-upload-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 10px 14px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  color: #2c313a;
-  background: #f7f9fa;
-  border: 1.5px dashed #a0a6b2;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-}
-
-.ods-upload-btn:hover {
-  border-color: var(--black);
-  background: #edf1f5;
-  color: var(--black);
-}
-
-.ods-upload-btn svg {
-  width: 15px;
-  height: 15px;
-  stroke: #5a6270;
-  flex-shrink: 0;
-  transition: stroke 0.2s, transform 0.2s;
-}
-
-.ods-upload-btn:hover svg {
-  stroke: var(--black);
-  transform: translateY(-2px);
-}
-
-.ods-upload-btn.is-active-custom {
-  border-color: var(--blue);
-  background: #edf5fc;
-  color: var(--blue);
-  border-style: solid;
-  font-weight: 600;
-}
-
-.ods-upload-btn.is-active-custom svg {
-  stroke: var(--blue);
-}
-
-/* ── BOX DETTAGLIO TRACCIA ── */
-.ods-track-box {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 8px 10px;
-  background: #f8f9fa;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-}
-
-.ods-track-caption {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* ── TRACK NAME ── */
-.ods-track {
-  font-size: 12px;
-  color: var(--black);
-  font-weight: 500;
-  min-height: 1.4em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ── CONTROLLI AUDIO PLAYER ── */
-.ods-player-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 6px;
-  padding: 10px;
-  background: #f8f9fa;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-}
-
-.ods-player-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.ods-btn-player {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 9px 12px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.ods-btn-player svg {
-  flex-shrink: 0;
-  display: block;
-}
-
-.ods-btn-play-primary {
-  background: var(--black);
-  color: #ffffff;
-  border: 1px solid var(--black);
-}
-
-.ods-btn-play-primary:hover:not(:disabled) {
-  background: #262626;
-  color: #ffffff;
-}
-
-.ods-btn-stop {
-  background: transparent;
-  color: var(--black);
-  border: 1px solid var(--black);
-}
-
-.ods-btn-stop:hover:not(:disabled) {
-  background: var(--black);
-  color: #ffffff;
-}
-
-.ods-player-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 2px;
-}
-
-.ods-timeline-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.ods-time-sep {
-  opacity: 0.5;
-}
-
-.ods-btn-icon-audio {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border-radius: 4px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--black);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-}
-
-.ods-btn-icon-audio:hover {
-  background: rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 0, 0, 0.12);
-  color: var(--black);
-}
-
-.ods-btn-icon-audio.is-muted {
-  color: #9ca3af;
-  background: #f1f3f5;
-  border-color: #e5e7eb;
-}
-
-.ods-btn-icon-audio.is-muted:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: #e11d48;
-}
-
-
-/* ── DEFAULT TRACK BADGE ── */
-.ods-default-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--blue);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.ods-default-badge::before {
-  content: '';
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  background: var(--blue);
-  border-radius: 50%;
-}
-
-/* ── INPUT FILE ── */
-input[type=file] { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-
-/* ── SEEK / RANGE ── */
-input[type=range] { width: 100%; accent-color: var(--black); margin: 0; cursor: pointer; }
-
-/* ── TIME ROW ── */
-.ods-time {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── SEGMENTED BUTTONS ── */
-.ods-seg { display: flex; flex-wrap: wrap; gap: 4px; }
-.ods-seg button { flex: 1; min-width: 44%; }
-.ods-seg button[aria-pressed="true"] { background: var(--black); color: #ffffff; }
-
-/* ── STEPPER ── */
-.ods-stepper { display: flex; align-items: center; border: 1px solid var(--black); }
-.ods-stepper button { border: 0; padding: 7px 11px; }
-.ods-stepper button:hover { background: var(--black); color: #ffffff; }
-.ods-stepper output { min-width: 34px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; }
-
-/* ── GRID 2 ── */
-.ods-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ods-grid2 label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px; }
-
-/* ── NOTE ── */
-.ods-note { font-size: 11px; color: var(--muted); }
-
-/* ── METERS ── */
-.ods-meters { display: grid; grid-template-columns: 60px 1fr; gap: 6px 10px; align-items: center; font-size: 12px; }
-.ods-bar { height: 4px; background: var(--line); position: relative; overflow: hidden; border-radius: 2px; }
-.ods-bar i { position: absolute; inset: 0; background: var(--black); transform-origin: left center; transform: scaleX(0); transition: transform 0.05s linear; }
-
-/* ── COLOR ROW ── */
-input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
-input[type=color]::-webkit-color-swatch { border: none; }
-
-/* ── LEGEND ── */
-.ods-legend { font-size: 11px; color: var(--muted); line-height: 1.6; }
-.ods-legend b { color: var(--black); font-weight: 600; }
-
-/* ── REC ACTIVE ── */
-button.rec-active {
-  background: #d93838 !important;
-  color: #ffffff !important;
-  border-color: #d93838 !important;
-  animation: pulseRec 1.2s infinite;
-}
-@keyframes pulseRec { 0%,100%{opacity:1}50%{opacity:.6} }
-
-/* ── SEPARATORE ── */
-.ods-divider {
-  border: none;
-  border-top: 1px solid var(--line);
-  margin: 2px 0;
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width: 820px) {
-  .ods-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 60svh;
-    height: auto;
-  }
-  .ods-panel {
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .ods-header {
-    padding: 10px 16px;
-  }
-  .ods-project-name { font-size: 16px; }
-  .ods-logo-conservatorio { height: 32px; }
-}
-
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
-</style>
+    .ods-app {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      height: 100%;
+      min-height: 100dvh;
+    }
+
+    /* ── HEADER DEL PROGETTO ── */
+    .ods-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-bg);
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .ods-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .ods-project-name {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--black);
+    }
+
+    .ods-payoff {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--muted);
+      font-style: italic;
+      letter-spacing: 0.01em;
+    }
+
+    .ods-header-right {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .ods-logo-conservatorio {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      opacity: 0.85;
+      transition: opacity 0.2s;
+    }
+
+    .ods-logo-conservatorio:hover {
+      opacity: 1;
+    }
+
+    /* ── CONTENT AREA (stage + panel) ── */
+    .ods-content {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      min-height: 0;
+    }
+
+    /* ── STAGE (canvas) ── */
+    .ods-stage {
+      background: var(--stage-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      min-width: 0;
+      position: relative;
+    }
+
+    .ods-frame {
+      line-height: 0;
+      box-shadow:
+        0 4px 20px rgba(0, 0, 0, .25),
+        0 25px 60px -15px rgba(0, 0, 0, .45);
+    }
+
+    canvas {
+      display: block;
+    }
+
+    /* ── PANEL (controlli) ── */
+    .ods-panel {
+      background: var(--panel-bg);
+      border-right: 1px solid var(--line);
+      padding: 20px 20px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── SLIDER CON KEYPOINT ── */
+    .ods-slider-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .ods-slider-track {
+      position: relative;
+    }
+
+    .ods-slider-track input[type=range] {
+      width: 100%;
+    }
+
+    .ods-keypoint {
+      position: absolute;
+      top: -2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+      transform: translateX(-50%);
+    }
+
+    .ods-keypoint-needle {
+      width: 1.5px;
+      height: 10px;
+      background: var(--blue);
+      opacity: 0.7;
+    }
+
+    .ods-keypoint-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--blue);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      margin-top: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ── SEZIONI ── */
+    .ods-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ods-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    /* ── PULSANTI (stile portfolio: bordo nero, hover riempito) ── */
+    button,
+    .btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--black);
+      background: transparent;
+      border: 1px solid var(--black);
+      border-radius: 0;
+      padding: 8px 14px;
+      cursor: pointer;
+      line-height: 1.1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    button:hover,
+    .btn:hover {
+      background: var(--black);
+      color: #ffffff;
+    }
+
+    button:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+      background: transparent;
+      color: var(--black);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background: var(--black);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: transparent;
+      color: var(--black);
+    }
+
+    .btn-primary:disabled:hover {
+      background: var(--black);
+      color: #ffffff;
+    }
+
+    .btn-blue {
+      background: var(--blue);
+      color: #ffffff;
+      border-color: var(--blue);
+    }
+
+    .btn-blue:hover {
+      background: transparent;
+      color: var(--blue);
+    }
+
+    /* ── ROW ── */
+    .ods-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── NOTTURNO N.1 & SELEZIONE TRACCIA ── */
+    .ods-track-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--black);
+      background: transparent;
+      color: var(--black);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .ods-track-btn:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--black);
+    }
+
+    .ods-track-btn.is-active {
+      background: var(--black);
+      color: #ffffff;
+      border-color: var(--black);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .ods-track-btn.is-active:hover {
+      background: #1a1a1a;
+      color: #ffffff;
+    }
+
+    .ods-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3);
+      display: inline-block;
+      flex-shrink: 0;
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.3);
+        opacity: 0.65;
+      }
+    }
+
+    .ods-tag-active {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+      padding: 2px 7px;
+      border-radius: 3px;
+      margin-left: auto;
+    }
+
+    /* ── CARICA TRACCIA (GRAFICA UPLOAD DEDICATA) ── */
+    .ods-upload-wrap {
+      display: block;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .ods-upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #2c313a;
+      background: #f7f9fa;
+      border: 1.5px dashed #a0a6b2;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .ods-upload-btn:hover {
+      border-color: var(--black);
+      background: #edf1f5;
+      color: var(--black);
+    }
+
+    .ods-upload-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke: #5a6270;
+      flex-shrink: 0;
+      transition: stroke 0.2s, transform 0.2s;
+    }
+
+    .ods-upload-btn:hover svg {
+      stroke: var(--black);
+      transform: translateY(-2px);
+    }
+
+    .ods-upload-btn.is-active-custom {
+      border-color: var(--blue);
+      background: #edf5fc;
+      color: var(--blue);
+      border-style: solid;
+      font-weight: 600;
+    }
+
+    .ods-upload-btn.is-active-custom svg {
+      stroke: var(--blue);
+    }
+
+    /* ── BOX DETTAGLIO TRACCIA ── */
+    .ods-track-box {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 8px 10px;
+      background: #f8f9fa;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+
+    .ods-track-caption {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── TRACK NAME ── */
+    .ods-track {
+      font-size: 12px;
+      color: var(--black);
+      font-weight: 500;
+      min-height: 1.4em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── CONTROLLI AUDIO PLAYER ── */
+    .ods-player-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+      padding: 10px;
+      background: #f8f9fa;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+
+    .ods-player-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .ods-btn-player {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .ods-btn-player svg {
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .ods-btn-play-primary {
+      background: var(--black);
+      color: #ffffff;
+      border: 1px solid var(--black);
+    }
+
+    .ods-btn-play-primary:hover:not(:disabled) {
+      background: #262626;
+      color: #ffffff;
+    }
+
+    .ods-btn-stop {
+      background: transparent;
+      color: var(--black);
+      border: 1px solid var(--black);
+    }
+
+    .ods-btn-stop:hover:not(:disabled) {
+      background: var(--black);
+      color: #ffffff;
+    }
+
+    .ods-player-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .ods-timeline-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ods-time-sep {
+      opacity: 0.5;
+    }
+
+    .ods-btn-icon-audio {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--black);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .ods-btn-icon-audio:hover {
+      background: rgba(0, 0, 0, 0.08);
+      border-color: rgba(0, 0, 0, 0.12);
+      color: var(--black);
+    }
+
+    .ods-btn-icon-audio.is-muted {
+      color: #9ca3af;
+      background: #f1f3f5;
+      border-color: #e5e7eb;
+    }
+
+    .ods-btn-icon-audio.is-muted:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #e11d48;
+    }
+
+
+    /* ── DEFAULT TRACK BADGE ── */
+    .ods-default-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .ods-default-badge::before {
+      content: '';
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      background: var(--blue);
+      border-radius: 50%;
+    }
+
+    /* ── INPUT FILE ── */
+    input[type=file] {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
+
+    /* ── SEEK / RANGE ── */
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--black);
+      margin: 0;
+      cursor: pointer;
+    }
+
+    /* ── TIME ROW ── */
+    .ods-time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── SEGMENTED BUTTONS ── */
+    .ods-seg {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .ods-seg button {
+      flex: 1;
+      min-width: 44%;
+    }
+
+    .ods-seg button[aria-pressed="true"] {
+      background: var(--black);
+      color: #ffffff;
+    }
+
+    /* ── STEPPER ── */
+    .ods-stepper {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--black);
+    }
+
+    .ods-stepper button {
+      border: 0;
+      padding: 7px 11px;
+    }
+
+    .ods-stepper button:hover {
+      background: var(--black);
+      color: #ffffff;
+    }
+
+    .ods-stepper output {
+      min-width: 34px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* ── GRID 2 ── */
+    .ods-grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .ods-grid2 label {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    /* ── NOTE ── */
+    .ods-note {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── METERS ── */
+    .ods-meters {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 6px 10px;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .ods-bar {
+      height: 4px;
+      background: var(--line);
+      position: relative;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+
+    .ods-bar i {
+      position: absolute;
+      inset: 0;
+      background: var(--black);
+      transform-origin: left center;
+      transform: scaleX(0);
+      transition: transform 0.05s linear;
+    }
+
+    /* ── COLOR ROW ── */
+    input[type=color]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type=color]::-webkit-color-swatch {
+      border: none;
+    }
+
+    /* ── LEGEND ── */
+    .ods-legend {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .ods-legend b {
+      color: var(--black);
+      font-weight: 600;
+    }
+
+    /* ── REC ACTIVE ── */
+    button.rec-active {
+      background: #d93838 !important;
+      color: #ffffff !important;
+      border-color: #d93838 !important;
+      animation: pulseRec 1.2s infinite;
+    }
+
+    @keyframes pulseRec {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .6
+      }
+    }
+
+    /* ── SEPARATORE ── */
+    .ods-divider {
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 2px 0;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 820px) {
+      .ods-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 60svh;
+        height: auto;
+      }
+
+      .ods-panel {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .ods-header {
+        padding: 10px 16px;
+      }
+
+      .ods-project-name {
+        font-size: 16px;
+      }
+
+      .ods-logo-conservatorio {
+        height: 32px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="ods-app">
+  <div class="ods-app">
 
-  <!-- ════════════ HEADER PROGETTO ════════════ -->
-  <header class="ods-header">
-    <div class="ods-header-left">
-      <h1 class="ods-project-name">Orchestra di segni</h1>
-      <p class="ods-payoff">Dove la musica anima</p>
-    </div>
-    <div class="ods-header-right">
-      <img
-        src="LOGO-CONSERVATORIO.png"
-        alt="Logo Conservatorio"
-        class="ods-logo-conservatorio"
-        onerror="this.style.display='none'"
-      >
-    </div>
-  </header>
+    <!-- ════════════ HEADER PROGETTO ════════════ -->
+    <header class="ods-header">
+      <div class="ods-header-left">
+        <h1 class="ods-project-name">Tracce d'Orchestra</h1>
+        <p class="ods-payoff">Dove la musica anima</p>
+      </div>
+      <div class="ods-header-right">
+        <img src="LOGO-CONSERVATORIO.png" alt="Logo Conservatorio" class="ods-logo-conservatorio"
+          onerror="this.style.display='none'">
+      </div>
+    </header>
 
-  <!-- ════════════ CONTENT ════════════ -->
-  <div class="ods-content">
+    <!-- ════════════ CONTENT ════════════ -->
+    <div class="ods-content">
 
-    <!-- Panel: controlli (a sinistra) -->
-    <aside class="ods-panel">
+      <!-- Panel: controlli (a sinistra) -->
+      <aside class="ods-panel">
 
-      <!-- Traccia audio -->
-      <section class="ods-section">
-        <h2 class="ods-section-title">Traccia Sinfonica</h2>
+        <!-- Traccia audio -->
+        <section class="ods-section">
+          <h2 class="ods-section-title">Traccia Sinfonica</h2>
 
-        <!-- Pulsante Notturno n.1 con stato attivo evidente -->
-        <button id="ods-demo" class="ods-track-btn is-active" type="button" aria-pressed="true" title="Seleziona la traccia sinfonica Notturno n.1">
-          <span class="ods-status-dot"></span>
-          <span>Notturno n.1</span>
-          <span class="ods-tag-active">Attivo</span>
-        </button>
+          <!-- Pulsante Notturno n.1 con stato attivo evidente -->
+          <button id="ods-demo" class="ods-track-btn is-active" type="button" aria-pressed="true"
+            title="Seleziona la traccia sinfonica Notturno n.1">
+            <span class="ods-status-dot"></span>
+            <span>Notturno n.1</span>
+            <span class="ods-tag-active">Attivo</span>
+          </button>
 
-        <!-- Pulsante Carica traccia con grafica distinta tipo upload -->
-        <label class="ods-upload-wrap">
-          <input type="file" id="ods-file" accept="audio/*">
-          <span class="ods-upload-btn" id="ods-fileBtn" role="button" tabindex="-1">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <span>Carica file audio personalizzato</span>
-          </span>
-        </label>
-
-        <!-- Dettaglio traccia attiva -->
-        <div class="ods-track-box">
-          <span class="ods-track-caption" id="ods-trackCaption">Traccia predefinita attiva:</span>
-          <div class="ods-track" id="ods-trackName">Caricamento Notturno n.1…</div>
-        </div>
-
-        <!-- Comandi Esecuzione Audio (Play, Pausa, Stop, Seek) -->
-        <div class="ods-player-wrap">
-          <div class="ods-player-buttons">
-            <button id="ods-play" class="ods-btn-player ods-btn-play-primary" type="button" disabled aria-label="Riproduci">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="6 3 20 12 6 21 6 3"/>
+          <!-- Pulsante Carica traccia con grafica distinta tipo upload -->
+          <label class="ods-upload-wrap">
+            <input type="file" id="ods-file" accept="audio/*">
+            <span class="ods-upload-btn" id="ods-fileBtn" role="button" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
-              <span>Riproduci</span>
-            </button>
-            <button id="ods-stop" class="ods-btn-player ods-btn-stop" type="button" disabled aria-label="Ferma e riavvia" title="Ferma e riavvia dall'inizio">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="4" y="4" width="16" height="16" rx="1"/>
-              </svg>
-              <span>Stop</span>
-            </button>
+              <span>Carica file audio personalizzato</span>
+            </span>
+          </label>
+
+          <!-- Dettaglio traccia attiva -->
+          <div class="ods-track-box">
+            <span class="ods-track-caption" id="ods-trackCaption">Traccia predefinita attiva:</span>
+            <div class="ods-track" id="ods-trackName">Caricamento Notturno n.1…</div>
           </div>
-          <div class="ods-player-timeline">
-            <input type="range" id="ods-seek" min="0" max="1000" value="0" disabled aria-label="Posizione nella traccia">
-            <div class="ods-timeline-bottom">
-              <div class="ods-time">
-                <span id="ods-tcur">0:00</span>
-                <span class="ods-time-sep">/</span>
-                <span id="ods-tdur">0:00</span>
-              </div>
-              <button id="ods-audioToggle" class="ods-btn-icon-audio" type="button" aria-pressed="true" aria-label="Audio on/muto" title="Audio attivo. Clicca per silenziare.">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/>
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+
+          <!-- Comandi Esecuzione Audio (Play, Pausa, Stop, Seek) -->
+          <div class="ods-player-wrap">
+            <div class="ods-player-buttons">
+              <button id="ods-play" class="ods-btn-player ods-btn-play-primary" type="button" disabled
+                aria-label="Riproduci">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="6 3 20 12 6 21 6 3" />
                 </svg>
+                <span>Riproduci</span>
+              </button>
+              <button id="ods-stop" class="ods-btn-player ods-btn-stop" type="button" disabled
+                aria-label="Ferma e riavvia" title="Ferma e riavvia dall'inizio">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="4" y="4" width="16" height="16" rx="1" />
+                </svg>
+                <span>Stop</span>
               </button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <hr class="ods-divider">
-
-      <!-- Velocità Scorrimento -->
-      <section class="ods-section">
-        <h2 class="ods-section-title">Velocità Scorrimento</h2>
-        <!-- keypoint a 80/100 → (80-1)/(100-1) ≈ 79.8% -->
-        <div class="ods-slider-wrap">
-          <div class="ods-slider-track">
-            <input type="range" id="ods-speed" min="1" max="100" value="15" aria-label="Velocità scorrimento">
-            <div class="ods-keypoint" style="left:79.8%">
-              <div class="ods-keypoint-needle"></div>
-              <span class="ods-keypoint-label">80</span>
+            <div class="ods-player-timeline">
+              <input type="range" id="ods-seek" min="0" max="1000" value="0" disabled
+                aria-label="Posizione nella traccia">
+              <div class="ods-timeline-bottom">
+                <div class="ods-time">
+                  <span id="ods-tcur">0:00</span>
+                  <span class="ods-time-sep">/</span>
+                  <span id="ods-tdur">0:00</span>
+                </div>
+                <button id="ods-audioToggle" class="ods-btn-icon-audio" type="button" aria-pressed="true"
+                  aria-label="Audio on/muto" title="Audio attivo. Clicca per silenziare.">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" />
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <hr class="ods-divider">
+        <hr class="ods-divider">
 
-      <!-- Sensibilità -->
-      <section class="ods-section">
-        <h2 class="ods-section-title">Sensibilità Suono</h2>
-        <!-- keypoint a 200/250 → (200-20)/(250-20) ≈ 78.3% -->
-        <div class="ods-slider-wrap">
-          <div class="ods-slider-track">
-            <input type="range" id="ods-sens" min="20" max="250" value="100" aria-label="Sensibilità al suono">
-            <div class="ods-keypoint" style="left:78.3%">
-              <div class="ods-keypoint-needle"></div>
-              <span class="ods-keypoint-label">200%</span>
+        <!-- Velocità Scorrimento -->
+        <section class="ods-section">
+          <h2 class="ods-section-title">Velocità Scorrimento</h2>
+          <!-- keypoint a 80/100 → (80-1)/(100-1) ≈ 79.8% -->
+          <div class="ods-slider-wrap">
+            <div class="ods-slider-track">
+              <input type="range" id="ods-speed" min="1" max="100" value="15" aria-label="Velocità scorrimento">
+              <div class="ods-keypoint" style="left:79.8%">
+                <div class="ods-keypoint-needle"></div>
+                <span class="ods-keypoint-label">80</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="ods-time"><span id="ods-sensVal">100%</span></div>
-      </section>
+        </section>
 
-      <!-- Spaziatura -->
-      <section class="ods-section">
-        <h2 class="ods-section-title">Spaziatura Colonne</h2>
-        <input type="range" id="ods-gap" min="0" max="40" value="8" aria-label="Spaziatura tra colonne">
-        <div class="ods-time"><span id="ods-gapVal">8 px</span></div>
-      </section>
+        <hr class="ods-divider">
 
-      <section class="ods-section">
-        <h2 class="ods-section-title">Spaziatura Righe</h2>
-        <input type="range" id="ods-rowGap" min="0" max="60" value="0" aria-label="Spaziatura tra righe">
-        <div class="ods-time"><span id="ods-rowGapVal">0 px</span></div>
-      </section>
-
-      <hr class="ods-divider">
-
-      <!-- Formato -->
-      <section class="ods-section">
-        <h2 class="ods-section-title">Formato</h2>
-        <div class="ods-seg" id="ods-fmt">
-          <button type="button" data-f="1" aria-pressed="true">80×200 cm</button>
-          <button type="button" data-f="2" aria-pressed="false">4:5</button>
-          <button type="button" data-f="3" aria-pressed="false">16:9 Orizz.</button>
-          <button type="button" data-f="4" aria-pressed="false">9:16 Vert.</button>
-        </div>
-      </section>
-
-      <!-- Colore Segni -->
-      <section class="ods-section">
-        <h2 class="ods-section-title">Colore Segni</h2>
-        <div class="ods-row" style="gap:10px;align-items:center">
-          <input type="color" id="ods-inkColor" value="#005A85"
-            style="width:36px;height:34px;padding:2px;border:1px solid var(--black);background:transparent;cursor:pointer"
-            title="Seleziona colore segni">
-          <input type="text" id="ods-inkHex" value="#005A85" maxlength="7" placeholder="#005A85"
-            style="font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--black);width:110px;background:transparent;color:var(--black);text-transform:uppercase"
-            aria-label="Codice esadecimale colore segni">
-        </div>
-      </section>
-
-      <hr class="ods-divider">
-
-      <!-- Esporta -->
-      <section class="ods-section">
-        <h2 class="ods-section-title">Esporta</h2>
-        <div class="ods-row">
-          <button id="ods-recBtn" class="btn-primary" type="button">🔴 Esporta Video HD</button>
-          <button id="ods-svgBtn" type="button">SVG</button>
-        </div>
-        <div class="ods-track" id="ods-recStatus">Pronto (MP4 / WebM)</div>
-      </section>
-
-      <hr class="ods-divider">
-
-      <!-- Griglia Sinfonica -->
-      <section class="ods-section">
-        <h2 class="ods-section-title">Griglia Sinfonica</h2>
-        <div class="ods-grid2">
-          <div>
-            <label>Righe</label>
-            <div class="ods-stepper">
-              <button type="button" data-k="rows" data-d="-1" aria-label="Meno righe">−</button>
-              <output id="ods-rowsV">2</output>
-              <button type="button" data-k="rows" data-d="1" aria-label="Più righe">+</button>
+        <!-- Sensibilità -->
+        <section class="ods-section">
+          <h2 class="ods-section-title">Sensibilità Suono</h2>
+          <!-- keypoint a 200/250 → (200-20)/(250-20) ≈ 78.3% -->
+          <div class="ods-slider-wrap">
+            <div class="ods-slider-track">
+              <input type="range" id="ods-sens" min="20" max="250" value="100" aria-label="Sensibilità al suono">
+              <div class="ods-keypoint" style="left:78.3%">
+                <div class="ods-keypoint-needle"></div>
+                <span class="ods-keypoint-label">200%</span>
+              </div>
             </div>
           </div>
-          <div>
-            <label>Colonne</label>
-            <div class="ods-stepper">
-              <button type="button" data-k="cols" data-d="-1" aria-label="Meno colonne">−</button>
-              <output id="ods-colsV">8</output>
-              <button type="button" data-k="cols" data-d="1" aria-label="Più colonne">+</button>
+          <div class="ods-time"><span id="ods-sensVal">100%</span></div>
+        </section>
+
+        <!-- Spaziatura -->
+        <section class="ods-section">
+          <h2 class="ods-section-title">Spaziatura Colonne</h2>
+          <input type="range" id="ods-gap" min="0" max="40" value="8" aria-label="Spaziatura tra colonne">
+          <div class="ods-time"><span id="ods-gapVal">8 px</span></div>
+        </section>
+
+        <section class="ods-section">
+          <h2 class="ods-section-title">Spaziatura Righe</h2>
+          <input type="range" id="ods-rowGap" min="0" max="60" value="0" aria-label="Spaziatura tra righe">
+          <div class="ods-time"><span id="ods-rowGapVal">0 px</span></div>
+        </section>
+
+        <hr class="ods-divider">
+
+        <!-- Formato -->
+        <section class="ods-section">
+          <h2 class="ods-section-title">Formato</h2>
+          <div class="ods-seg" id="ods-fmt">
+            <button type="button" data-f="1" aria-pressed="true">80×200 cm</button>
+            <button type="button" data-f="2" aria-pressed="false">4:5</button>
+            <button type="button" data-f="3" aria-pressed="false">16:9 Orizz.</button>
+            <button type="button" data-f="4" aria-pressed="false">9:16 Vert.</button>
+          </div>
+        </section>
+
+        <!-- Colore Segni -->
+        <section class="ods-section">
+          <h2 class="ods-section-title">Colore Segni</h2>
+          <div class="ods-row" style="gap:10px;align-items:center">
+            <input type="color" id="ods-inkColor" value="#005A85"
+              style="width:36px;height:34px;padding:2px;border:1px solid var(--black);background:transparent;cursor:pointer"
+              title="Seleziona colore segni">
+            <input type="text" id="ods-inkHex" value="#005A85" maxlength="7" placeholder="#005A85"
+              style="font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--black);width:110px;background:transparent;color:var(--black);text-transform:uppercase"
+              aria-label="Codice esadecimale colore segni">
+          </div>
+        </section>
+
+        <hr class="ods-divider">
+
+        <!-- Esporta -->
+        <section class="ods-section">
+          <h2 class="ods-section-title">Esporta</h2>
+          <div class="ods-row">
+            <button id="ods-recBtn" class="btn-primary" type="button">🔴 Esporta Video HD</button>
+            <button id="ods-svgBtn" type="button">SVG</button>
+          </div>
+          <div class="ods-track" id="ods-recStatus">Pronto (MP4 / WebM)</div>
+        </section>
+
+        <hr class="ods-divider">
+
+        <!-- Griglia Sinfonica -->
+        <section class="ods-section">
+          <h2 class="ods-section-title">Griglia Sinfonica</h2>
+          <div class="ods-grid2">
+            <div>
+              <label>Righe</label>
+              <div class="ods-stepper">
+                <button type="button" data-k="rows" data-d="-1" aria-label="Meno righe">−</button>
+                <output id="ods-rowsV">2</output>
+                <button type="button" data-k="rows" data-d="1" aria-label="Più righe">+</button>
+              </div>
+            </div>
+            <div>
+              <label>Colonne</label>
+              <div class="ods-stepper">
+                <button type="button" data-k="cols" data-d="-1" aria-label="Meno colonne">−</button>
+                <output id="ods-colsV">8</output>
+                <button type="button" data-k="cols" data-d="1" aria-label="Più colonne">+</button>
+              </div>
             </div>
           </div>
+          <div class="ods-row"><button id="ods-shuffle" type="button">Ricomponi i segni</button></div>
+          <p class="ods-note" id="ods-lockNote">La griglia si modifica prima dell'avvio.</p>
+        </section>
+
+        <!-- Parametri Sonori -->
+        <section class="ods-section">
+          <h2 class="ods-section-title">Parametri Sonori</h2>
+          <div class="ods-meters">
+            <span>Bassi</span>
+            <div class="ods-bar"><i id="ods-mLo"></i></div>
+            <span>Medi</span>
+            <div class="ods-bar"><i id="ods-mMi"></i></div>
+            <span>Alti</span>
+            <div class="ods-bar"><i id="ods-mHi"></i></div>
+            <span>RMS</span>
+            <div class="ods-bar"><i id="ods-mRms"></i></div>
+          </div>
+          <p class="ods-legend">
+            <b>Orchestrazione dei 4 Parametri:</b><br>
+            • <b>Bassi</b> → Altezza dei <b>Rettangoli</b><br>
+            • <b>Alti</b> → Altezza degli <b>Archi</b><br>
+            • <b>Medi</b> → Posizione sul rigo (Pitch)<br>
+            • <b>RMS</b> → Dinamica e reattività globale
+          </p>
+        </section>
+
+      </aside>
+
+      <!-- Stage: canvas generativo (a destra) -->
+      <main class="ods-stage" id="ods-stage">
+        <div class="ods-frame">
+          <canvas id="ods-canvas" aria-label="Spartito visivo generativo per orchestra sinfonica"></canvas>
         </div>
-        <div class="ods-row"><button id="ods-shuffle" type="button">Ricomponi i segni</button></div>
-        <p class="ods-note" id="ods-lockNote">La griglia si modifica prima dell'avvio.</p>
-      </section>
+      </main>
 
-      <!-- Parametri Sonori -->
-      <section class="ods-section">
-        <h2 class="ods-section-title">Parametri Sonori</h2>
-        <div class="ods-meters">
-          <span>Bassi</span><div class="ods-bar"><i id="ods-mLo"></i></div>
-          <span>Medi</span><div class="ods-bar"><i id="ods-mMi"></i></div>
-          <span>Alti</span><div class="ods-bar"><i id="ods-mHi"></i></div>
-          <span>RMS</span><div class="ods-bar"><i id="ods-mRms"></i></div>
-        </div>
-        <p class="ods-legend">
-          <b>Orchestrazione dei 4 Parametri:</b><br>
-          • <b>Bassi</b> → Altezza dei <b>Rettangoli</b><br>
-          • <b>Alti</b> → Altezza degli <b>Archi</b><br>
-          • <b>Medi</b> → Posizione sul rigo (Pitch)<br>
-          • <b>RMS</b> → Dinamica e reattività globale
-        </p>
-      </section>
+    </div><!-- /ods-content -->
+  </div><!-- /ods-app -->
 
-    </aside>
+  <script>
+    (() => {
+      "use strict";
 
-    <!-- Stage: canvas generativo (a destra) -->
-    <main class="ods-stage" id="ods-stage">
-      <div class="ods-frame">
-        <canvas id="ods-canvas" aria-label="Spartito visivo generativo per orchestra sinfonica"></canvas>
-      </div>
-    </main>
+      /* ── Shorthand ── */
+      const $ = s => document.querySelector(s);
+      const canvas = $('#ods-canvas'), g = canvas.getContext('2d');
+      const stage = $('#ods-stage');
 
-  </div><!-- /ods-content -->
-</div><!-- /ods-app -->
+      let PAPER = '#f4f4f4', INK = '#005A85';
+      const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+      const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 };
 
-<script>
-(()=>{
-"use strict";
+      /* ── Stato ── */
+      const S = { rows: 2, cols: 8, fmt: 1, seed: 20260610, speed: 15, sens: 1.0, gap: 8, rowGap: 0, signs: [], rowsList: [], lastFamRow: [] };
+      let W = 0, H = 0, dpr = 1;
 
-/* ── Shorthand ── */
-const $=s=>document.querySelector(s);
-const canvas=$('#ods-canvas'), g=canvas.getContext('2d');
-const stage=$('#ods-stage');
+      /* ── Audio ── */
+      let actx = null, analyser = null, buffer = null, src = null, playing = false, tPos = 0, startCtx = 0, trackLabel = '';
+      let td = null, fd = null, prevFd = null, binHz = 1, rng3 = [[0, 0], [0, 0], [0, 0]], fluxTop = 0;
+      let audioDstNode = null, masterGain = null, audioMuted = false;
 
-let PAPER='#f4f4f4', INK='#005A85';
-const clamp=(v,a,b)=>v<a?a:v>b?b:v;
-const mulberry=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+      function ensureAudio() {
+        if (!actx) {
+          actx = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = actx.createAnalyser();
+          analyser.fftSize = 2048;
+          analyser.smoothingTimeConstant = .82;
+          analyser.minDecibels = -90; analyser.maxDecibels = -15;
 
-/* ── Stato ── */
-const S={rows:2,cols:8,fmt:1,seed:20260610,speed:15,sens:1.0,gap:8,rowGap:0,signs:[],rowsList:[],lastFamRow:[]};
-let W=0,H=0,dpr=1;
+          // Master gain per ascolto audio in cuffia/altoparlanti
+          masterGain = actx.createGain();
+          masterGain.gain.value = audioMuted ? 0 : 1.0;
+          analyser.connect(masterGain);
+          masterGain.connect(actx.destination);
 
-/* ── Audio ── */
-let actx=null,analyser=null,buffer=null,src=null,playing=false,tPos=0,startCtx=0,trackLabel='';
-let td=null,fd=null,prevFd=null,binHz=1,rng3=[[0,0],[0,0],[0,0]],fluxTop=0;
-let audioDstNode=null,masterGain=null,audioMuted=false;
+          // Destinazione per registrazione video HD (MediaStream)
+          audioDstNode = actx.createMediaStreamDestination();
+          analyser.connect(audioDstNode);
 
-function ensureAudio(){
-  if(!actx){
-    actx=new (window.AudioContext||window.webkitAudioContext)();
-    analyser=actx.createAnalyser();
-    analyser.fftSize=2048;
-    analyser.smoothingTimeConstant=.82;
-    analyser.minDecibels=-90; analyser.maxDecibels=-15;
-
-    // Master gain per ascolto audio in cuffia/altoparlanti
-    masterGain=actx.createGain();
-    masterGain.gain.value = audioMuted ? 0 : 1.0;
-    analyser.connect(masterGain);
-    masterGain.connect(actx.destination);
-
-    // Destinazione per registrazione video HD (MediaStream)
-    audioDstNode=actx.createMediaStreamDestination();
-    analyser.connect(audioDstNode);
-
-    td=new Float32Array(analyser.fftSize);
-    fd=new Uint8Array(analyser.frequencyBinCount);
-    prevFd=new Uint8Array(analyser.frequencyBinCount);
-    binHz=actx.sampleRate/analyser.fftSize;
-    const r=(a,b)=>[Math.max(1,Math.floor(a/binHz)),Math.min(fd.length-1,Math.ceil(b/binHz))];
-    rng3=[r(20,250),r(250,2500),r(2500,14000)];
-    fluxTop=Math.min(fd.length-1,Math.floor(10000/binHz));
-  }
-  if(actx.state==='suspended') actx.resume();
-}
-
-function toggleAudioMute(){
-  ensureAudio();
-  audioMuted = !audioMuted;
-  if(masterGain && actx){
-    masterGain.gain.setValueAtTime(audioMuted ? 0 : 1.0, actx.currentTime);
-  }
-  updateAudioToggleUI();
-}
-
-function updateAudioToggleUI(){
-  const btn = $('#ods-audioToggle');
-  if(!btn) return;
-  if(audioMuted){
-    btn.classList.add('is-muted');
-    btn.setAttribute('aria-pressed', 'false');
-    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
-    btn.title = "Audio silenziato. Clicca per ascoltare.";
-  } else {
-    btn.classList.remove('is-muted');
-    btn.setAttribute('aria-pressed', 'true');
-    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
-    btn.title = "Audio attivo. Clicca per silenziare.";
-  }
-}
-
-const curPos=()=>playing?tPos+(actx.currentTime-startCtx):tPos;
-function startSource(){
-  src=actx.createBufferSource(); src.buffer=buffer; src.connect(analyser);
-  src.onended=()=>{ if(!playing) return; playing=false; tPos=0; src=null; ui(); };
-  startCtx=actx.currentTime; src.start(0,tPos);
-}
-function killSource(){ if(src){ src.onended=null; try{src.stop()}catch(e){} src.disconnect(); src=null; } }
-async function play(){
-  if(!buffer) return;
-  ensureAudio();
-  if(actx && actx.state==='suspended'){
-    try { await actx.resume(); } catch(e){}
-  }
-  if(tPos>=buffer.duration-.05) tPos=0;
-  startSource();
-  playing=true;
-  ui();
-}
-function pause(){ if(!playing) return; tPos=Math.min(curPos(),buffer.duration); killSource(); playing=false; ui(); }
-function stopAll(){ killSource(); playing=false; tPos=0; buildSigns(); ui(); }
-async function seekTo(sec){
-  const was=playing;
-  if(was){ killSource(); }
-  tPos=clamp(sec,0,buffer.duration-.05);
-  if(was){
-    ensureAudio();
-    if(actx && actx.state==='suspended'){
-      try { await actx.resume(); } catch(e){}
-    }
-    startSource();
-  }
-  ui();
-}
-
-/* ── Stato selezione traccia ── */
-let currentTrackType = 'default';
-
-function updateTrackSelectionUI(){
-  const demoBtn = $('#ods-demo');
-  const fileBtn = $('#ods-fileBtn');
-  const caption = $('#ods-trackCaption');
-
-  if(currentTrackType === 'default'){
-    if(demoBtn){
-      demoBtn.classList.add('is-active');
-      demoBtn.setAttribute('aria-pressed', 'true');
-      demoBtn.innerHTML = '<span class="ods-status-dot"></span><span>Notturno n.1</span><span class="ods-tag-active">Attivo</span>';
-      demoBtn.title = 'Traccia attuale: Notturno n.1 op.70';
-    }
-    if(fileBtn){
-      fileBtn.classList.remove('is-active-custom');
-      const span = fileBtn.querySelector('span');
-      if(span) span.textContent = 'Carica file audio personalizzato';
-    }
-    if(caption) caption.textContent = 'Traccia predefinita attiva:';
-  } else if(currentTrackType === 'custom'){
-    if(demoBtn){
-      demoBtn.classList.remove('is-active');
-      demoBtn.setAttribute('aria-pressed', 'false');
-      demoBtn.innerHTML = '<span>↺ Ripristina Notturno n.1</span>';
-      demoBtn.title = 'Clicca per tornare al Notturno n.1';
-    }
-    if(fileBtn){
-      fileBtn.classList.add('is-active-custom');
-      const span = fileBtn.querySelector('span');
-      if(span) span.textContent = 'Traccia personalizzata attiva';
-    }
-    if(caption) caption.textContent = 'File personalizzato attivo:';
-  }
-}
-
-/* ── Carica file utente ── */
-async function loadFile(file){
-  try{
-    ensureAudio(); stopAll();
-    currentTrackType = 'custom';
-    updateTrackSelectionUI();
-    $('#ods-trackName').textContent='Decodifica traccia…';
-    const ab=await file.arrayBuffer();
-    buffer=await actx.decodeAudioData(ab);
-    trackLabel=file.name;
-    let h=2166136261; const key=file.name+'|'+file.size;
-    for(let i=0;i<key.length;i++){ h^=key.charCodeAt(i); h=Math.imul(h,16777619); }
-    S.seed=h>>>0; buildSigns();
-    $('#ods-trackName').textContent=trackLabel;
-    updateTrackSelectionUI();
-    ui();
-  }catch(e){
-    buffer=null; $('#ods-trackName').textContent='Formato non leggibile. Prova MP3, WAV, M4A o OGG.'; ui();
-  }
-}
-
-/* ── Carica traccia predefinita (Notturno n.1) ── */
-async function loadDefaultTrack(){
-  try{
-    ensureAudio(); stopAll();
-    currentTrackType = 'default';
-    updateTrackSelectionUI();
-    $('#ods-trackName').textContent='Caricamento Notturno n.1…';
-    const audioFile = 'Notturno n.1 op.70 di Giuseppe Martucci  JURAJ VALČUHA direttore  Orchestra del TCBO.mp3';
-    const response = await fetch(audioFile);
-    if(!response.ok) throw new Error('Network error');
-    const ab = await response.arrayBuffer();
-    ensureAudio();
-    buffer = await actx.decodeAudioData(ab);
-    trackLabel = 'Notturno n.1 op.70 — G. Martucci';
-    S.seed = 20260610;
-    buildSigns();
-    $('#ods-trackName').textContent = trackLabel;
-    updateTrackSelectionUI();
-    ui();
-  } catch(err){
-    console.warn('Traccia predefinita non caricata:', err);
-    $('#ods-trackName').textContent = 'Carica una traccia o usa la demo sintetica.';
-    ui();
-  }
-}
-
-/* ── Demo sintetica ── */
-function makeDemo(){
-  ensureAudio(); stopAll();
-  currentTrackType = 'custom';
-  updateTrackSelectionUI();
-  const sr=32000,dur=28,n=Math.floor(sr*dur),d=new Float32Array(n);
-  const TAU=Math.PI*2;
-  for(let i=0;i<n;i++){
-    const t=i/sr;
-    const swell=Math.sin(t*Math.PI/dur);
-    const bass=Math.sin(TAU*55*t)*0.4*(1+0.3*Math.sin(t*0.5));
-    const cello=Math.sin(TAU*110*t)*0.25*Math.sin(t*1.2);
-    const horns=(Math.sin(TAU*220*t)+0.5*Math.sin(TAU*330*t))*0.2;
-    const violins=(Math.sin(TAU*660*t)+0.4*Math.sin(TAU*880*t)+0.3*Math.sin(TAU*1320*t))*0.18;
-    const timpanHit=Math.exp(-((t%3)/0.15))*Math.sin(TAU*65*t)*0.3;
-    d[i]=swell*(bass+cello+horns+violins)+timpanHit*swell;
-  }
-  let pk=0; for(let i=0;i<n;i++) pk=Math.max(pk,Math.abs(d[i])); const gn=.85/pk; for(let i=0;i<n;i++) d[i]*=gn;
-  buffer=actx.createBuffer(1,n,sr); buffer.copyToChannel(d,0);
-  trackLabel='Demo Sinfonica — Adagio & Crescendo'; S.seed=20260610; buildSigns();
-  $('#ods-trackName').textContent=trackLabel; ui();
-}
-
-/* ── Segni e armonia ── */
-const CHORDS=[[0,2,4],[0,1,3],[1,3,4],[0,2,3],[1,2,4],[0,3,4],[1,3],[0,2],[2,4]];
-const C={chord:[0,2,4],chordT:6,lastChord:-9,clock:0,secPh:[0,0,0],secRatio:[1,1.5,2],centroid:.5};
-const nearest=(list,x)=>list.reduce((a,b)=>Math.abs(b-x)<Math.abs(a-x)?b:a,list[0]);
-const chordLevel=()=>C.chord[Math.floor(Math.random()*C.chord.length)];
-
-function weightsAt(x){
-  const cs=[.1,.5,.9]; const w=cs.map(m=>Math.exp(-((x-m)**2)/.08)), sum=w[0]+w[1]+w[2];
-  return w.map(v=>v/sum);
-}
-const secOf=w=>w[0]>=w[1]&&w[0]>=w[2]?0:(w[1]>=w[2]?1:2);
-const FAM_LIST=[0,1]; const FAM_WEIGHTS=[0.45,0.55];
-
-function pickFamWeighted(rnd,lastFam){
-  for(let attempt=0;attempt<10;attempt++){
-    const r=rnd(); let acc=0,chosen=FAM_LIST[0];
-    for(let i=0;i<FAM_WEIGHTS.length;i++){ acc+=FAM_WEIGHTS[i]; if(r<=acc){ chosen=FAM_LIST[i]; break; } }
-    if(chosen!==lastFam||rnd()>0.8) return chosen;
-  }
-  return FAM_LIST[0];
-}
-
-function createSign(r,rnd,lastFam=-1){
-  rnd=rnd||Math.random;
-  const fam=pickFamWeighted(rnd,lastFam);
-  const w=weightsAt(clamp(C.centroid+(rnd()-.5)*.5,0,1));
-  const lv=chordLevel();
-  return{r,fam,w,sec:secOf(w),off:rnd()*2.5,ph:rnd()*Math.PI*2,
-    timer:rnd()*4,pend:null,pos:lv,posBase:lv,hLevels:1.5,
-    q:lv/4,qBase:lv/4,wCurrent:0,x:0,cx:0,
-    maxLvl:fam===1?(rnd()>0.5?5:3):5};
-}
-
-function buildSigns(){
-  const rnd=mulberry(S.seed);
-  S.rowsList=[]; S.lastFamRow=[];
-  const M=0,iw=W,gap=S.gap;
-  const baseW=(iw-(S.cols-1)*gap)/S.cols;
-  for(let r=0;r<S.rows;r++){
-    S.lastFamRow[r]=-1;
-    const list=[];
-    let currX=M-baseW;
-    while(currX<M+iw+baseW*3){
-      const s=createSign(r,rnd,S.lastFamRow[r]);
-      S.lastFamRow[r]=s.fam;
-      s.wCurrent=baseW; s.x=currX; s.cx=currX+s.wCurrent/2;
-      currX+=s.wCurrent+gap; list.push(s);
-    }
-    S.rowsList.push(list);
-  }
-  flattenSigns();
-}
-
-function flattenSigns(){
-  const all=[];
-  for(let r=0;r<S.rowsList.length;r++){
-    if(S.rowsList[r]) all.push(...S.rowsList[r]);
-  }
-  S.signs=all;
-}
-
-function updateLayout(dt){
-  const M=0,iw=W,gap=S.gap;
-  const baseW=(iw-(S.cols-1)*gap)/S.cols;
-  if(playing){
-    const speed=iw*0.008*(S.speed/10);
-    for(let r=0;r<S.rows;r++){
-      if(!S.rowsList[r]) S.rowsList[r]=[];
-      const dirVal=(r%2===0)?-1:1;
-      const list=S.rowsList[r];
-      if(list.length>0) list[0].x+=dirVal*speed*dt;
-      let currX=list.length>0?list[0].x:M;
-      for(let i=0;i<list.length;i++){
-        const s=list[i]; s.wCurrent=baseW; s.x=currX; s.cx=currX+s.wCurrent/2; currX+=s.wCurrent+gap;
+          td = new Float32Array(analyser.fftSize);
+          fd = new Uint8Array(analyser.frequencyBinCount);
+          prevFd = new Uint8Array(analyser.frequencyBinCount);
+          binHz = actx.sampleRate / analyser.fftSize;
+          const r = (a, b) => [Math.max(1, Math.floor(a / binHz)), Math.min(fd.length - 1, Math.ceil(b / binHz))];
+          rng3 = [r(20, 250), r(250, 2500), r(2500, 14000)];
+          fluxTop = Math.min(fd.length - 1, Math.floor(10000 / binHz));
+        }
+        if (actx.state === 'suspended') actx.resume();
       }
-      while(list.length>0&&list[0].x+list[0].wCurrent<M-baseW*3) list.shift();
-      while(list.length>0&&list[list.length-1].x>M+iw+baseW*3) list.pop();
-      let leftEdge=list.length>0?list[0].x:M;
-      while(leftEdge>M-baseW*2){
-        const s=createSign(r,Math.random,S.lastFamRow[r]); S.lastFamRow[r]=s.fam;
-        s.wCurrent=baseW; const newX=leftEdge-gap-s.wCurrent; s.x=newX; s.cx=newX+s.wCurrent/2;
-        list.unshift(s); leftEdge=newX;
+
+      function toggleAudioMute() {
+        ensureAudio();
+        audioMuted = !audioMuted;
+        if (masterGain && actx) {
+          masterGain.gain.setValueAtTime(audioMuted ? 0 : 1.0, actx.currentTime);
+        }
+        updateAudioToggleUI();
       }
-      let rightEdge=list.length>0?(list[list.length-1].x+list[list.length-1].wCurrent+gap):M;
-      while(rightEdge<M+iw+baseW*2){
-        const s=createSign(r,Math.random,S.lastFamRow[r]); S.lastFamRow[r]=s.fam;
-        s.wCurrent=baseW; s.x=rightEdge; s.cx=rightEdge+s.wCurrent/2; list.push(s); rightEdge+=s.wCurrent+gap;
+
+      function updateAudioToggleUI() {
+        const btn = $('#ods-audioToggle');
+        if (!btn) return;
+        if (audioMuted) {
+          btn.classList.add('is-muted');
+          btn.setAttribute('aria-pressed', 'false');
+          btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
+          btn.title = "Audio silenziato. Clicca per ascoltare.";
+        } else {
+          btn.classList.remove('is-muted');
+          btn.setAttribute('aria-pressed', 'true');
+          btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+          btn.title = "Audio attivo. Clicca per silenziare.";
+        }
       }
-    }
-  } else {
-    const totalW=S.cols*baseW+(S.cols-1)*gap;
-    const startX=(iw-totalW)/2;
-    const k=1-Math.exp(-dt*5.0);
-    for(let r=0;r<S.rows;r++){
-      if(!S.rowsList[r]) S.rowsList[r]=[];
-      const list=S.rowsList[r];
-      while(list.length<S.cols){ const s=createSign(r,Math.random,S.lastFamRow[r]); S.lastFamRow[r]=s.fam; list.push(s); }
-      while(list.length>S.cols) list.pop();
-      for(let i=0;i<S.cols;i++){
-        const s=list[i]; s.wCurrent=baseW;
-        const targetX=startX+i*(baseW+gap); s.x+=(targetX-s.x)*k; s.cx=s.x+s.wCurrent/2;
+
+      const curPos = () => playing ? tPos + (actx.currentTime - startCtx) : tPos;
+      function startSource() {
+        src = actx.createBufferSource(); src.buffer = buffer; src.connect(analyser);
+        src.onended = () => { if (!playing) return; playing = false; tPos = 0; src = null; ui(); };
+        startCtx = actx.currentTime; src.start(0, tPos);
       }
-    }
-  }
-  flattenSigns();
-}
-
-function drift(s){
-  const R=Math.random,diss=.08+.25*A.E;
-  const lv=R()<diss?Math.floor(R()*5):chordLevel();
-  if(s.fam===1) s.posBase=lv; else s.qBase=lv/4;
-}
-
-function newChord(){
-  let n; do{ n=CHORDS[Math.floor(Math.random()*CHORDS.length)]; }while(n===C.chord);
-  C.chord=n; C.lastChord=C.clock;
-  for(const s of S.signs){
-    if(s.fam===1) s.posBase=nearest(n,s.posBase);
-    else s.qBase=nearest(n,s.qBase*4)/4;
-  }
-}
-
-function conduct(dt){
-  C.clock+=dt; C.chordT-=dt*(.5+A.E);
-  if(C.chordT<=0){ C.chordT=7+Math.random()*8; newChord(); }
-  const rate=.5+1.8*A.E;
-  for(let k=0;k<3;k++) C.secPh[k]+=dt*rate*C.secRatio[k];
-  const b=A.bands,sum=b[0]+b[1]+b[2];
-  if(sum>.06){
-    const ct=(b[1]*.5+b[2])/sum;
-    C.centroid+=(ct-C.centroid)*(1-Math.exp(-dt*2));
-  }
-}
-
-function hit(s,str){
-  if(s.fam===1) s.posBase=Math.random()<.15?Math.random()*5:chordLevel();
-}
-
-function triggerOnset(str,sh){
-  if(sh[0]>.5&&str>.55&&C.clock-C.lastChord>2.5) newChord();
-  for(const s of S.signs){
-    const d=s.w[0]*sh[0]+s.w[1]*sh[1]+s.w[2]*sh[2];
-    const p=clamp((.15+.7*str)*(.4+2*d),0,.95);
-    if(Math.random()<p){
-      const dl=Math.abs((s.cx-W/2)/W)*.28+s.r*.04;
-      if(!s.pend||str>s.pend.str) s.pend={t:dl,str};
-    }
-  }
-}
-
-function updateSign(s,dt,E,B){
-  if(!playing){
-    const kStatic=1-Math.exp(-dt*6.0);
-    if(s.fam===0){ s.hLevels+=(1.0-s.hLevels)*kStatic; s.q+=(s.qBase-s.q)*kStatic; }
-    else if(s.fam===1){ s.hLevels+=(0.2-s.hLevels)*kStatic; s.pos+=(s.posBase-s.pos)*kStatic; }
-    return;
-  }
-  const k=m=>1-Math.exp(-dt*m);
-  s.ph+=dt*(0.6+1.2*E);
-  const phVal=s.ph+s.off*2.5;
-  if(s.pend){ s.pend.t-=dt; if(s.pend.t<=0){ hit(s,s.pend.str); s.pend=null; } }
-  s.timer-=dt*(.2+1.2*E);
-  if(s.timer<=0){ s.timer=4+Math.random()*6; drift(s); }
-  if(s.fam===0){
-    const targetLevels=1.0+4.0*clamp(B[2]*0.85+E*0.15,0,1);
-    s.hLevels=(s.hLevels||1.5)+(targetLevels-(s.hLevels||1.5))*k(2.8);
-    const maxQ=Math.max(0,1-(s.hLevels-1)/4);
-    const midShift=(B[1]-0.3)*0.35;
-    const targetQ=clamp(s.qBase+midShift+0.12*Math.sin(phVal*0.95),0,maxQ);
-    s.q+=(targetQ-s.q)*k(2.8);
-  } else if(s.fam===1){
-    const maxL=s.maxLvl||5;
-    const targetLevels=0.2+(maxL-0.2)*clamp(B[0]*0.85+E*0.15,0,1);
-    s.hLevels=(s.hLevels||1.5)+(targetLevels-(s.hLevels||1.5))*k(2.8);
-    const maxShift=Math.max(0,5-(s.hLevels||1.5));
-    const midShift=(B[1]-0.3)*0.8;
-    const targetPos=clamp(s.posBase+midShift+0.15*Math.sin(phVal*0.85),0,maxShift);
-    s.pos+=(targetPos-s.pos)*k(2.8);
-  }
-}
-
-/* ── Analisi audio ── */
-const A={rms:0,rmsF:0,rmsP:.05,E:.1,bands:[0,0,0],bF:[1,1,1],bP:[0,0,0],bS:[0,0,0],
-  flux:0,fHist:new Float32Array(43),fi:0,lastOn:-1,onPulse:0,idleT:2};
-
-function analyse(dt,now){
-  const decay=60*dt;
-  if(playing&&analyser){
-    analyser.getFloatTimeDomainData(td);
-    let sq=0; for(let i=0;i<td.length;i++) sq+=td[i]*td[i];
-    const rms=Math.sqrt(sq/td.length);
-    A.rmsP=Math.max(rms,A.rmsP-.0004*decay); A.rmsF=Math.min(rms,A.rmsF+.0002*decay||0);
-    if(A.rmsF>A.rmsP) A.rmsF=A.rmsP*.5;
-    const rn=clamp((rms-A.rmsF)/Math.max(.03,A.rmsP-A.rmsF),0,1);
-    A.E+=(rn-A.E)*(1-Math.exp(-dt*(rn>A.E?12:4)));
-    analyser.getByteFrequencyData(fd);
-    const bandFlux=[0,0,0]; let tot=0;
-    for(let b=0;b<3;b++){
-      const[a,z]=rng3[b]; let m=0,f=0;
-      for(let i=a;i<=z;i++){ m+=fd[i]; const df=fd[i]-prevFd[i]; if(df>0&&i<=fluxTop) f+=df; }
-      const n=z-a+1; m=m/n/255;
-      A.bP[b]=Math.max(m,A.bP[b]-.0007*decay); A.bF[b]=Math.min(m,A.bF[b]+.0005*decay);
-      if(A.bF[b]>A.bP[b]) A.bF[b]=A.bP[b]*.5;
-      const v=clamp((m-A.bF[b])/Math.max(.1,A.bP[b]-A.bF[b]),0,1);
-      A.bS[b]+=(v-A.bS[b])*(1-Math.exp(-dt*(v>A.bS[b]?14:5)));
-      const bandF=f/255/n; bandFlux[b]=bandF; tot+=f/255;
-    }
-    prevFd.set(fd);
-    const flux=tot/Math.max(1,fluxTop);
-    let mean=0; for(let i=0;i<43;i++) mean+=A.fHist[i]; mean/=43;
-    let vr=0; for(let i=0;i<43;i++) vr+=(A.fHist[i]-mean)**2; const sd=Math.sqrt(vr/43);
-    const thr=mean+1.8*sd+.003;
-    if(flux>thr&&flux>A.flux&&now-A.lastOn>.09){
-      A.lastOn=now;
-      const str=clamp((flux-thr)/(thr+.002)+.15,.15,1)*S.sens;
-      const sb=bandFlux[0]+bandFlux[1]+bandFlux[2]+1e-9;
-      triggerOnset(str,[bandFlux[0]/sb,bandFlux[1]/sb,bandFlux[2]/sb]);
-      A.onPulse=str;
-    }
-    A.flux=flux; A.fHist[A.fi]=flux; A.fi=(A.fi+1)%43;
-  } else {
-    A.E+=(.1-A.E)*(1-Math.exp(-dt*2));
-    for(let b=0;b<3;b++){
-      const t=.12+.1*Math.sin(now*.35+b*2.1);
-      A.bS[b]+=(t-A.bS[b])*(1-Math.exp(-dt*2));
-    }
-    A.idleT-=dt;
-    if(A.idleT<=0){ A.idleT=3+Math.random()*2.5; triggerOnset(.3*S.sens,[.34,.33,.33]); }
-  }
-  A.onPulse=Math.max(0,A.onPulse-dt*4);
-  A.bands=A.bS;
-}
-
-/* ── Disegno ── */
-function draw(){
-  g.fillStyle=PAPER; g.fillRect(0,0,W,H);
-  g.fillStyle=INK;
-  const M=0,iw=W,ih=H,rows=S.rows,rowGap=S.rowGap;
-  const totalRowGap=Math.max(0,rows-1)*rowGap;
-  const ih_avail=ih-totalRowGap;
-  const rh=ih_avail/rows;
-  for(let r=0;r<rows;r++){
-    const y0=M+r*(rh+rowGap);
-    const u=rh/5;
-    g.save(); g.beginPath(); g.rect(M,y0,iw,rh); g.clip();
-    const list=S.rowsList[r]||[];
-    for(let i=0;i<list.length;i++){
-      const s=list[i]; if(!s) continue;
-      const cw=s.wCurrent,cx=s.cx,x0=s.x;
-      if(s.fam===0){
-        const hLevels=clamp(s.hLevels||1.5,1.0,5.0);
-        const q=clamp(s.q||0,0,Math.max(0,1-(hLevels-1)/4));
-        const rx=cw*0.5,ry=Math.min(u*0.5,(hLevels*u)*0.3);
-        const yTop=y0+q*(rh-hLevels*u),arcH=hLevels*u,yBot=yTop+arcH,yJunc=yTop+ry;
-        g.beginPath();
-        g.ellipse(cx,yJunc,Math.max(0.5,rx),ry,0,Math.PI,0,false);
-        g.lineTo(cx+rx,yBot); g.lineTo(cx-rx,yBot); g.lineTo(cx-rx,yJunc);
-        g.closePath(); g.fill();
-      } else if(s.fam===1){
-        const hLevels=clamp(s.hLevels||1.5,0.2,s.maxLvl||5.0);
-        const rectH=hLevels*u,pos=clamp(s.pos||0,0,Math.max(0,5-hLevels));
-        const yRect=y0+pos*u;
-        g.fillRect(x0,yRect,cw,rectH);
+      function killSource() { if (src) { src.onended = null; try { src.stop() } catch (e) { } src.disconnect(); src = null; } }
+      async function play() {
+        if (!buffer) return;
+        ensureAudio();
+        if (actx && actx.state === 'suspended') {
+          try { await actx.resume(); } catch (e) { }
+        }
+        if (tPos >= buffer.duration - .05) tPos = 0;
+        startSource();
+        playing = true;
+        ui();
       }
-    }
-    g.restore();
-  }
-}
-
-/* ── Layout / Resize ── */
-function resize(){
-  const r=stage.getBoundingClientRect(),pad=r.width<700?14:30;
-  const ar=S.fmt===1?.4:(S.fmt===2?.8:(S.fmt===3?16/9:9/16));
-  const aw=Math.max(80,r.width-pad*2),ah=Math.max(80,r.height-pad*2);
-  let w=Math.min(aw,ah*ar),h=w/ar;
-  dpr=Math.min(2,window.devicePixelRatio||1);
-  canvas.style.width=w+'px'; canvas.style.height=h+'px';
-  W=canvas.width=Math.round(w*dpr); H=canvas.height=Math.round(h*dpr);
-  buildSigns();
-}
-new ResizeObserver(resize).observe(stage);
-window.addEventListener('resize',resize);
-
-/* ── UI ── */
-const fmtT=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
-const locked=()=>playing||tPos>.05;
-function ui(){
-  const playBtn=$('#ods-play');
-  playBtn.disabled=!buffer;
-  if(playing){
-    playBtn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="4.5" height="16" rx="1"/><rect x="14.5" y="4" width="4.5" height="16" rx="1"/></svg><span>Pausa</span>`;
-    playBtn.setAttribute('aria-label','Pausa');
-  } else {
-    playBtn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg><span>Riproduci</span>`;
-    playBtn.setAttribute('aria-label','Riproduci');
-  }
-  const stopBtn=$('#ods-stop');
-  stopBtn.disabled=!buffer||(!playing&&tPos<=.05);
-  $('#ods-seek').disabled=!buffer;
-  $('#ods-tdur').textContent=buffer?fmtT(buffer.duration):'0:00';
-  const L=locked();
-  document.querySelectorAll('.ods-stepper button').forEach(b=>b.disabled=L);
-  $('#ods-shuffle').disabled=L;
-  $('#ods-lockNote').textContent=L
-    ? 'Griglia bloccata durante l\'esecuzione. Usa "Stop" per modificarla.'
-    : 'La griglia si modifica prima dell\'avvio.';
-  $('#ods-rowsV').textContent=S.rows; $('#ods-colsV').textContent=S.cols;
-}
-
-/* ── Listeners ── */
-$('#ods-file').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0]; if(f) loadFile(f); e.target.value='';});
-$('#ods-demo').addEventListener('click',loadDefaultTrack);
-$('#ods-play').addEventListener('click',()=>playing?pause():play());
-$('#ods-stop').addEventListener('click',stopAll);
-$('#ods-audioToggle').addEventListener('click',toggleAudioMute);
-window.addEventListener('click', ()=>{ if(actx && actx.state==='suspended') actx.resume(); }, { passive: true });
-$('#ods-speed').addEventListener('input',e=>{ S.speed=+e.target.value; });
-$('#ods-sens').addEventListener('input',e=>{ S.sens=+e.target.value/100; $('#ods-sensVal').textContent=e.target.value+'%'; });
-$('#ods-gap').addEventListener('input',e=>{ S.gap=+e.target.value; $('#ods-gapVal').textContent=e.target.value+' px'; buildSigns(); });
-$('#ods-rowGap').addEventListener('input',e=>{ S.rowGap=+e.target.value; $('#ods-rowGapVal').textContent=e.target.value+' px'; });
-
-let seeking=false;
-$('#ods-seek').addEventListener('input',e=>{seeking=true; if(buffer) $('#ods-tcur').textContent=fmtT(e.target.value/1000*buffer.duration);});
-$('#ods-seek').addEventListener('change',e=>{seeking=false; if(buffer) seekTo(e.target.value/1000*buffer.duration);});
-
-document.querySelectorAll('#ods-fmt button').forEach(b=>b.addEventListener('click',()=>{
-  S.fmt=+b.dataset.f;
-  document.querySelectorAll('#ods-fmt button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
-  resize();
-}));
-
-document.querySelectorAll('.ods-stepper button').forEach(b=>b.addEventListener('click',()=>{
-  if(locked()) return;
-  const k=b.dataset.k,d=+b.dataset.d,lim=k==='rows'?[1,8]:[1,16];
-  S[k]=clamp(S[k]+d,lim[0],lim[1]); buildSigns(); ui();
-}));
-
-$('#ods-shuffle').addEventListener('click',()=>{ if(locked()) return; S.seed=(Math.random()*4294967296)>>>0; buildSigns(); });
-
-window.addEventListener('keydown',e=>{
-  if(e.code==='Space'&&buffer&&!/^(BUTTON|INPUT)$/.test(document.activeElement.tagName)){e.preventDefault();playing?pause():play();}
-});
-
-/* ── Meters ── */
-const mR=$('#ods-mRms'),mL=$('#ods-mLo'),mM=$('#ods-mMi'),mH=$('#ods-mHi');
-let last=performance.now(),lastLock=false;
-function loop(t){
-  const dt=Math.min(.05,(t-last)/1000); last=t;
-  analyse(dt,t/1000);
-  conduct(dt);
-  updateLayout(dt);
-  const effE=clamp(A.E*S.sens,0,1);
-  const effB=A.bands.map(v=>clamp(v*S.sens,0,1));
-  for(const s of S.signs) updateSign(s,dt,effE,effB);
-  draw();
-  mR.style.transform=`scaleX(${clamp(effE,0,1).toFixed(3)})`;
-  mL.style.transform=`scaleX(${clamp(effB[0],0,1).toFixed(3)})`;
-  mM.style.transform=`scaleX(${clamp(effB[1],0,1).toFixed(3)})`;
-  mH.style.transform=`scaleX(${clamp(effB[2],0,1).toFixed(3)})`;
-  if(buffer){
-    const p=playing?Math.min(curPos(),buffer.duration):tPos;
-    if(!seeking){ $('#ods-seek').value=Math.round(p/buffer.duration*1000); $('#ods-tcur').textContent=fmtT(p); }
-  }
-  const L=locked(); if(L!==lastLock){ lastLock=L; ui(); }
-  requestAnimationFrame(loop);
-}
-
-/* ── Colore Segni ── */
-const inkColorEl=$('#ods-inkColor'), inkHexEl=$('#ods-inkHex');
-function setInkColor(hex){
-  if(!/^#([0-9A-F]{3}){1,2}$/i.test(hex)) return;
-  INK=hex;
-  if(inkColorEl.value.toLowerCase()!==hex.toLowerCase()) inkColorEl.value=hex;
-  if(inkHexEl.value.toLowerCase()!==hex.toLowerCase()) inkHexEl.value=hex.toUpperCase();
-}
-inkColorEl.addEventListener('input',e=>setInkColor(e.target.value));
-inkHexEl.addEventListener('input',e=>{
-  let val=e.target.value.trim();
-  if(!val.startsWith('#')) val='#'+val;
-  if(/^#([0-9A-F]{3}|[0-9A-F]{6})$/i.test(val)){
-    if(val.length===4) val='#'+val[1]+val[1]+val[2]+val[2]+val[3]+val[3];
-    setInkColor(val);
-  }
-});
-
-/* ── Registrazione Video ── */
-let mediaRecorder=null,recChunks=[],isRecording=false,recStartTime=0,recTimerInterval=null;
-
-function getSupportedMimeType(){
-  const types=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4','video/webm;codecs=h264,opus','video/webm;codecs=vp9,opus','video/webm'];
-  for(const t of types) if(MediaRecorder.isTypeSupported(t)) return t;
-  return '';
-}
-
-function startRecording(){
-  ensureAudio(); recChunks=[];
-  if(!audioDstNode&&actx&&analyser){ audioDstNode=actx.createMediaStreamDestination(); analyser.connect(audioDstNode); }
-  const canvasStream=canvas.captureStream(60);
-  const combinedTracks=[...canvasStream.getVideoTracks()];
-  if(audioDstNode&&audioDstNode.stream) combinedTracks.push(...audioDstNode.stream.getAudioTracks());
-  const combinedStream=new MediaStream(combinedTracks);
-  const mimeType=getSupportedMimeType();
-  const options={videoBitsPerSecond:50000000};
-  if(mimeType) options.mimeType=mimeType;
-  try{ mediaRecorder=new MediaRecorder(combinedStream,options); }
-  catch(e){ mediaRecorder=new MediaRecorder(combinedStream); }
-  mediaRecorder.ondataavailable=e=>{ if(e.data&&e.data.size>0) recChunks.push(e.data); };
-  mediaRecorder.onstop=saveRecording;
-  mediaRecorder.start(250);
-  isRecording=true; recStartTime=Date.now();
-  $('#ods-recBtn').textContent='⏹️ Ferma e salva video';
-  $('#ods-recBtn').classList.add('rec-active');
-  updateRecTimer();
-  recTimerInterval=setInterval(updateRecTimer,500);
-}
-
-function stopRecording(){
-  if(!isRecording||!mediaRecorder) return;
-  isRecording=false; clearInterval(recTimerInterval);
-  if(mediaRecorder.state!=='inactive') mediaRecorder.stop();
-  $('#ods-recBtn').textContent='🔴 Esporta Video HD';
-  $('#ods-recBtn').classList.remove('rec-active');
-  $('#ods-recStatus').textContent='Elaborazione e download in corso…';
-}
-
-function updateRecTimer(){
-  if(!isRecording) return;
-  const elapsed=Math.floor((Date.now()-recStartTime)/1000);
-  const m=Math.floor(elapsed/60),s=String(elapsed%60).padStart(2,'0');
-  $('#ods-recStatus').textContent=`🔴 REC — ${m}:${s}`;
-}
-
-function saveRecording(){
-  if(!recChunks.length){ $('#ods-recStatus').textContent='Nessun dato registrato.'; return; }
-  const mime=(mediaRecorder&&mediaRecorder.mimeType)||'video/mp4';
-  const ext=mime.includes('mp4')?'mp4':'webm';
-  const blob=new Blob(recChunks,{type:mime});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.style.display='none'; a.href=url;
-  const timestamp=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
-  a.download=`orchestra-di-segni-${timestamp}.${ext}`;
-  document.body.appendChild(a); a.click();
-  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); $('#ods-recStatus').textContent=`Video scaricato (${ext.toUpperCase()}).`; },100);
-}
-
-$('#ods-recBtn').addEventListener('click',()=>{ if(isRecording) stopRecording(); else startRecording(); });
-
-/* ── Esportazione SVG ── */
-$('#ods-svgBtn').addEventListener('click',()=>{
-  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">\n`;
-  svg+=`<rect width="${W}" height="${H}" fill="${PAPER}"/>\n`;
-  const M=0,iw=W,ih=H,rows=S.rows,rowGap=S.rowGap;
-  const totalRowGap=Math.max(0,rows-1)*rowGap,ih_avail=ih-totalRowGap,rh=ih_avail/rows;
-  for(let r=0;r<rows;r++){
-    const y0=M+r*(rh+rowGap),u=rh/5;
-    svg+=`<g clip-path="url(#clip-${r})">\n`;
-    svg+=`<clipPath id="clip-${r}"><rect x="${M}" y="${y0}" width="${iw}" height="${rh}"/></clipPath>\n`;
-    const list=S.rowsList[r]||[];
-    for(let i=0;i<list.length;i++){
-      const s=list[i]; if(!s) continue;
-      const cw=s.wCurrent,cx=s.cx,x0=s.x;
-      if(s.fam===0){
-        const hLevels=clamp(s.hLevels||1.5,1.0,5.0),q=clamp(s.q||0,0,Math.max(0,1-(hLevels-1)/4));
-        const rx=cw*0.5,ry=Math.min(u*0.5,(hLevels*u)*0.3);
-        const yTop=y0+q*(rh-hLevels*u),arcH=hLevels*u,yBot=yTop+arcH,yJunc=yTop+ry;
-        const p=`M ${cx-rx} ${yJunc} A ${Math.max(0.5,rx)} ${ry} 0 0 1 ${cx+rx} ${yJunc} L ${cx+rx} ${yBot} L ${cx-rx} ${yBot} Z`;
-        svg+=`<path d="${p}" fill="${INK}"/>\n`;
-      } else if(s.fam===1){
-        const hLevels=clamp(s.hLevels||1.5,0.2,s.maxLvl||5.0),rectH=hLevels*u,pos=clamp(s.pos||0,0,Math.max(0,5-hLevels));
-        svg+=`<rect x="${x0}" y="${y0+pos*u}" width="${cw}" height="${rectH}" fill="${INK}"/>\n`;
+      function pause() { if (!playing) return; tPos = Math.min(curPos(), buffer.duration); killSource(); playing = false; ui(); }
+      function stopAll() { killSource(); playing = false; tPos = 0; buildSigns(); ui(); }
+      async function seekTo(sec) {
+        const was = playing;
+        if (was) { killSource(); }
+        tPos = clamp(sec, 0, buffer.duration - .05);
+        if (was) {
+          ensureAudio();
+          if (actx && actx.state === 'suspended') {
+            try { await actx.resume(); } catch (e) { }
+          }
+          startSource();
+        }
+        ui();
       }
-    }
-    svg+=`</g>\n`;
-  }
-  svg+=`</svg>`;
-  const blob=new Blob([svg],{type:'image/svg+xml'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url;
-  a.download=`orchestra-di-segni-${new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)}.svg`;
-  a.click(); URL.revokeObjectURL(url);
-});
 
-/* ── AVVIO ── */
-buildSigns(); resize(); ui();
-requestAnimationFrame(loop);
+      /* ── Stato selezione traccia ── */
+      let currentTrackType = 'default';
 
-// Carica automaticamente la traccia predefinita
-// Piccolo delay per permettere al contesto audio di inizializzarsi
-setTimeout(()=>loadDefaultTrack(), 300);
+      function updateTrackSelectionUI() {
+        const demoBtn = $('#ods-demo');
+        const fileBtn = $('#ods-fileBtn');
+        const caption = $('#ods-trackCaption');
 
-})();
-</script>
+        if (currentTrackType === 'default') {
+          if (demoBtn) {
+            demoBtn.classList.add('is-active');
+            demoBtn.setAttribute('aria-pressed', 'true');
+            demoBtn.innerHTML = '<span class="ods-status-dot"></span><span>Notturno n.1</span><span class="ods-tag-active">Attivo</span>';
+            demoBtn.title = 'Traccia attuale: Notturno n.1 op.70';
+          }
+          if (fileBtn) {
+            fileBtn.classList.remove('is-active-custom');
+            const span = fileBtn.querySelector('span');
+            if (span) span.textContent = 'Carica file audio personalizzato';
+          }
+          if (caption) caption.textContent = 'Traccia predefinita attiva:';
+        } else if (currentTrackType === 'custom') {
+          if (demoBtn) {
+            demoBtn.classList.remove('is-active');
+            demoBtn.setAttribute('aria-pressed', 'false');
+            demoBtn.innerHTML = '<span>↺ Ripristina Notturno n.1</span>';
+            demoBtn.title = 'Clicca per tornare al Notturno n.1';
+          }
+          if (fileBtn) {
+            fileBtn.classList.add('is-active-custom');
+            const span = fileBtn.querySelector('span');
+            if (span) span.textContent = 'Traccia personalizzata attiva';
+          }
+          if (caption) caption.textContent = 'File personalizzato attivo:';
+        }
+      }
+
+      /* ── Carica file utente ── */
+      async function loadFile(file) {
+        try {
+          ensureAudio(); stopAll();
+          currentTrackType = 'custom';
+          updateTrackSelectionUI();
+          $('#ods-trackName').textContent = 'Decodifica traccia…';
+          const ab = await file.arrayBuffer();
+          buffer = await actx.decodeAudioData(ab);
+          trackLabel = file.name;
+          let h = 2166136261; const key = file.name + '|' + file.size;
+          for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); }
+          S.seed = h >>> 0; buildSigns();
+          $('#ods-trackName').textContent = trackLabel;
+          updateTrackSelectionUI();
+          ui();
+        } catch (e) {
+          buffer = null; $('#ods-trackName').textContent = 'Formato non leggibile. Prova MP3, WAV, M4A o OGG.'; ui();
+        }
+      }
+
+      /* ── Carica traccia predefinita (Notturno n.1) ── */
+      async function loadDefaultTrack() {
+        try {
+          ensureAudio(); stopAll();
+          currentTrackType = 'default';
+          updateTrackSelectionUI();
+          $('#ods-trackName').textContent = 'Caricamento Notturno n.1…';
+          const audioFile = 'Notturno n.1 op.70 di Giuseppe Martucci  JURAJ VALČUHA direttore  Orchestra del TCBO.mp3';
+          const response = await fetch(audioFile);
+          if (!response.ok) throw new Error('Network error');
+          const ab = await response.arrayBuffer();
+          ensureAudio();
+          buffer = await actx.decodeAudioData(ab);
+          trackLabel = 'Notturno n.1 op.70 — G. Martucci';
+          S.seed = 20260610;
+          buildSigns();
+          $('#ods-trackName').textContent = trackLabel;
+          updateTrackSelectionUI();
+          ui();
+        } catch (err) {
+          console.warn('Traccia predefinita non caricata:', err);
+          $('#ods-trackName').textContent = 'Carica una traccia o usa la demo sintetica.';
+          ui();
+        }
+      }
+
+      /* ── Demo sintetica ── */
+      function makeDemo() {
+        ensureAudio(); stopAll();
+        currentTrackType = 'custom';
+        updateTrackSelectionUI();
+        const sr = 32000, dur = 28, n = Math.floor(sr * dur), d = new Float32Array(n);
+        const TAU = Math.PI * 2;
+        for (let i = 0; i < n; i++) {
+          const t = i / sr;
+          const swell = Math.sin(t * Math.PI / dur);
+          const bass = Math.sin(TAU * 55 * t) * 0.4 * (1 + 0.3 * Math.sin(t * 0.5));
+          const cello = Math.sin(TAU * 110 * t) * 0.25 * Math.sin(t * 1.2);
+          const horns = (Math.sin(TAU * 220 * t) + 0.5 * Math.sin(TAU * 330 * t)) * 0.2;
+          const violins = (Math.sin(TAU * 660 * t) + 0.4 * Math.sin(TAU * 880 * t) + 0.3 * Math.sin(TAU * 1320 * t)) * 0.18;
+          const timpanHit = Math.exp(-((t % 3) / 0.15)) * Math.sin(TAU * 65 * t) * 0.3;
+          d[i] = swell * (bass + cello + horns + violins) + timpanHit * swell;
+        }
+        let pk = 0; for (let i = 0; i < n; i++) pk = Math.max(pk, Math.abs(d[i])); const gn = .85 / pk; for (let i = 0; i < n; i++) d[i] *= gn;
+        buffer = actx.createBuffer(1, n, sr); buffer.copyToChannel(d, 0);
+        trackLabel = 'Demo Sinfonica — Adagio & Crescendo'; S.seed = 20260610; buildSigns();
+        $('#ods-trackName').textContent = trackLabel; ui();
+      }
+
+      /* ── Segni e armonia ── */
+      const CHORDS = [[0, 2, 4], [0, 1, 3], [1, 3, 4], [0, 2, 3], [1, 2, 4], [0, 3, 4], [1, 3], [0, 2], [2, 4]];
+      const C = { chord: [0, 2, 4], chordT: 6, lastChord: -9, clock: 0, secPh: [0, 0, 0], secRatio: [1, 1.5, 2], centroid: .5 };
+      const nearest = (list, x) => list.reduce((a, b) => Math.abs(b - x) < Math.abs(a - x) ? b : a, list[0]);
+      const chordLevel = () => C.chord[Math.floor(Math.random() * C.chord.length)];
+
+      function weightsAt(x) {
+        const cs = [.1, .5, .9]; const w = cs.map(m => Math.exp(-((x - m) ** 2) / .08)), sum = w[0] + w[1] + w[2];
+        return w.map(v => v / sum);
+      }
+      const secOf = w => w[0] >= w[1] && w[0] >= w[2] ? 0 : (w[1] >= w[2] ? 1 : 2);
+      const FAM_LIST = [0, 1]; const FAM_WEIGHTS = [0.45, 0.55];
+
+      function pickFamWeighted(rnd, lastFam) {
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const r = rnd(); let acc = 0, chosen = FAM_LIST[0];
+          for (let i = 0; i < FAM_WEIGHTS.length; i++) { acc += FAM_WEIGHTS[i]; if (r <= acc) { chosen = FAM_LIST[i]; break; } }
+          if (chosen !== lastFam || rnd() > 0.8) return chosen;
+        }
+        return FAM_LIST[0];
+      }
+
+      function createSign(r, rnd, lastFam = -1) {
+        rnd = rnd || Math.random;
+        const fam = pickFamWeighted(rnd, lastFam);
+        const w = weightsAt(clamp(C.centroid + (rnd() - .5) * .5, 0, 1));
+        const lv = chordLevel();
+        return {
+          r, fam, w, sec: secOf(w), off: rnd() * 2.5, ph: rnd() * Math.PI * 2,
+          timer: rnd() * 4, pend: null, pos: lv, posBase: lv, hLevels: 1.5,
+          q: lv / 4, qBase: lv / 4, wCurrent: 0, x: 0, cx: 0,
+          maxLvl: fam === 1 ? (rnd() > 0.5 ? 5 : 3) : 5
+        };
+      }
+
+      function buildSigns() {
+        const rnd = mulberry(S.seed);
+        S.rowsList = []; S.lastFamRow = [];
+        const M = 0, iw = W, gap = S.gap;
+        const baseW = (iw - (S.cols - 1) * gap) / S.cols;
+        for (let r = 0; r < S.rows; r++) {
+          S.lastFamRow[r] = -1;
+          const list = [];
+          let currX = M - baseW;
+          while (currX < M + iw + baseW * 3) {
+            const s = createSign(r, rnd, S.lastFamRow[r]);
+            S.lastFamRow[r] = s.fam;
+            s.wCurrent = baseW; s.x = currX; s.cx = currX + s.wCurrent / 2;
+            currX += s.wCurrent + gap; list.push(s);
+          }
+          S.rowsList.push(list);
+        }
+        flattenSigns();
+      }
+
+      function flattenSigns() {
+        const all = [];
+        for (let r = 0; r < S.rowsList.length; r++) {
+          if (S.rowsList[r]) all.push(...S.rowsList[r]);
+        }
+        S.signs = all;
+      }
+
+      function updateLayout(dt) {
+        const M = 0, iw = W, gap = S.gap;
+        const baseW = (iw - (S.cols - 1) * gap) / S.cols;
+        if (playing) {
+          const speed = iw * 0.008 * (S.speed / 10);
+          for (let r = 0; r < S.rows; r++) {
+            if (!S.rowsList[r]) S.rowsList[r] = [];
+            const dirVal = (r % 2 === 0) ? -1 : 1;
+            const list = S.rowsList[r];
+            if (list.length > 0) list[0].x += dirVal * speed * dt;
+            let currX = list.length > 0 ? list[0].x : M;
+            for (let i = 0; i < list.length; i++) {
+              const s = list[i]; s.wCurrent = baseW; s.x = currX; s.cx = currX + s.wCurrent / 2; currX += s.wCurrent + gap;
+            }
+            while (list.length > 0 && list[0].x + list[0].wCurrent < M - baseW * 3) list.shift();
+            while (list.length > 0 && list[list.length - 1].x > M + iw + baseW * 3) list.pop();
+            let leftEdge = list.length > 0 ? list[0].x : M;
+            while (leftEdge > M - baseW * 2) {
+              const s = createSign(r, Math.random, S.lastFamRow[r]); S.lastFamRow[r] = s.fam;
+              s.wCurrent = baseW; const newX = leftEdge - gap - s.wCurrent; s.x = newX; s.cx = newX + s.wCurrent / 2;
+              list.unshift(s); leftEdge = newX;
+            }
+            let rightEdge = list.length > 0 ? (list[list.length - 1].x + list[list.length - 1].wCurrent + gap) : M;
+            while (rightEdge < M + iw + baseW * 2) {
+              const s = createSign(r, Math.random, S.lastFamRow[r]); S.lastFamRow[r] = s.fam;
+              s.wCurrent = baseW; s.x = rightEdge; s.cx = rightEdge + s.wCurrent / 2; list.push(s); rightEdge += s.wCurrent + gap;
+            }
+          }
+        } else {
+          const totalW = S.cols * baseW + (S.cols - 1) * gap;
+          const startX = (iw - totalW) / 2;
+          const k = 1 - Math.exp(-dt * 5.0);
+          for (let r = 0; r < S.rows; r++) {
+            if (!S.rowsList[r]) S.rowsList[r] = [];
+            const list = S.rowsList[r];
+            while (list.length < S.cols) { const s = createSign(r, Math.random, S.lastFamRow[r]); S.lastFamRow[r] = s.fam; list.push(s); }
+            while (list.length > S.cols) list.pop();
+            for (let i = 0; i < S.cols; i++) {
+              const s = list[i]; s.wCurrent = baseW;
+              const targetX = startX + i * (baseW + gap); s.x += (targetX - s.x) * k; s.cx = s.x + s.wCurrent / 2;
+            }
+          }
+        }
+        flattenSigns();
+      }
+
+      function drift(s) {
+        const R = Math.random, diss = .08 + .25 * A.E;
+        const lv = R() < diss ? Math.floor(R() * 5) : chordLevel();
+        if (s.fam === 1) s.posBase = lv; else s.qBase = lv / 4;
+      }
+
+      function newChord() {
+        let n; do { n = CHORDS[Math.floor(Math.random() * CHORDS.length)]; } while (n === C.chord);
+        C.chord = n; C.lastChord = C.clock;
+        for (const s of S.signs) {
+          if (s.fam === 1) s.posBase = nearest(n, s.posBase);
+          else s.qBase = nearest(n, s.qBase * 4) / 4;
+        }
+      }
+
+      function conduct(dt) {
+        C.clock += dt; C.chordT -= dt * (.5 + A.E);
+        if (C.chordT <= 0) { C.chordT = 7 + Math.random() * 8; newChord(); }
+        const rate = .5 + 1.8 * A.E;
+        for (let k = 0; k < 3; k++) C.secPh[k] += dt * rate * C.secRatio[k];
+        const b = A.bands, sum = b[0] + b[1] + b[2];
+        if (sum > .06) {
+          const ct = (b[1] * .5 + b[2]) / sum;
+          C.centroid += (ct - C.centroid) * (1 - Math.exp(-dt * 2));
+        }
+      }
+
+      function hit(s, str) {
+        if (s.fam === 1) s.posBase = Math.random() < .15 ? Math.random() * 5 : chordLevel();
+      }
+
+      function triggerOnset(str, sh) {
+        if (sh[0] > .5 && str > .55 && C.clock - C.lastChord > 2.5) newChord();
+        for (const s of S.signs) {
+          const d = s.w[0] * sh[0] + s.w[1] * sh[1] + s.w[2] * sh[2];
+          const p = clamp((.15 + .7 * str) * (.4 + 2 * d), 0, .95);
+          if (Math.random() < p) {
+            const dl = Math.abs((s.cx - W / 2) / W) * .28 + s.r * .04;
+            if (!s.pend || str > s.pend.str) s.pend = { t: dl, str };
+          }
+        }
+      }
+
+      function updateSign(s, dt, E, B) {
+        if (!playing) {
+          const kStatic = 1 - Math.exp(-dt * 6.0);
+          if (s.fam === 0) { s.hLevels += (1.0 - s.hLevels) * kStatic; s.q += (s.qBase - s.q) * kStatic; }
+          else if (s.fam === 1) { s.hLevels += (0.2 - s.hLevels) * kStatic; s.pos += (s.posBase - s.pos) * kStatic; }
+          return;
+        }
+        const k = m => 1 - Math.exp(-dt * m);
+        s.ph += dt * (0.6 + 1.2 * E);
+        const phVal = s.ph + s.off * 2.5;
+        if (s.pend) { s.pend.t -= dt; if (s.pend.t <= 0) { hit(s, s.pend.str); s.pend = null; } }
+        s.timer -= dt * (.2 + 1.2 * E);
+        if (s.timer <= 0) { s.timer = 4 + Math.random() * 6; drift(s); }
+        if (s.fam === 0) {
+          const targetLevels = 1.0 + 4.0 * clamp(B[2] * 0.85 + E * 0.15, 0, 1);
+          s.hLevels = (s.hLevels || 1.5) + (targetLevels - (s.hLevels || 1.5)) * k(2.8);
+          const maxQ = Math.max(0, 1 - (s.hLevels - 1) / 4);
+          const midShift = (B[1] - 0.3) * 0.35;
+          const targetQ = clamp(s.qBase + midShift + 0.12 * Math.sin(phVal * 0.95), 0, maxQ);
+          s.q += (targetQ - s.q) * k(2.8);
+        } else if (s.fam === 1) {
+          const maxL = s.maxLvl || 5;
+          const targetLevels = 0.2 + (maxL - 0.2) * clamp(B[0] * 0.85 + E * 0.15, 0, 1);
+          s.hLevels = (s.hLevels || 1.5) + (targetLevels - (s.hLevels || 1.5)) * k(2.8);
+          const maxShift = Math.max(0, 5 - (s.hLevels || 1.5));
+          const midShift = (B[1] - 0.3) * 0.8;
+          const targetPos = clamp(s.posBase + midShift + 0.15 * Math.sin(phVal * 0.85), 0, maxShift);
+          s.pos += (targetPos - s.pos) * k(2.8);
+        }
+      }
+
+      /* ── Analisi audio ── */
+      const A = {
+        rms: 0, rmsF: 0, rmsP: .05, E: .1, bands: [0, 0, 0], bF: [1, 1, 1], bP: [0, 0, 0], bS: [0, 0, 0],
+        flux: 0, fHist: new Float32Array(43), fi: 0, lastOn: -1, onPulse: 0, idleT: 2
+      };
+
+      function analyse(dt, now) {
+        const decay = 60 * dt;
+        if (playing && analyser) {
+          analyser.getFloatTimeDomainData(td);
+          let sq = 0; for (let i = 0; i < td.length; i++) sq += td[i] * td[i];
+          const rms = Math.sqrt(sq / td.length);
+          A.rmsP = Math.max(rms, A.rmsP - .0004 * decay); A.rmsF = Math.min(rms, A.rmsF + .0002 * decay || 0);
+          if (A.rmsF > A.rmsP) A.rmsF = A.rmsP * .5;
+          const rn = clamp((rms - A.rmsF) / Math.max(.03, A.rmsP - A.rmsF), 0, 1);
+          A.E += (rn - A.E) * (1 - Math.exp(-dt * (rn > A.E ? 12 : 4)));
+          analyser.getByteFrequencyData(fd);
+          const bandFlux = [0, 0, 0]; let tot = 0;
+          for (let b = 0; b < 3; b++) {
+            const [a, z] = rng3[b]; let m = 0, f = 0;
+            for (let i = a; i <= z; i++) { m += fd[i]; const df = fd[i] - prevFd[i]; if (df > 0 && i <= fluxTop) f += df; }
+            const n = z - a + 1; m = m / n / 255;
+            A.bP[b] = Math.max(m, A.bP[b] - .0007 * decay); A.bF[b] = Math.min(m, A.bF[b] + .0005 * decay);
+            if (A.bF[b] > A.bP[b]) A.bF[b] = A.bP[b] * .5;
+            const v = clamp((m - A.bF[b]) / Math.max(.1, A.bP[b] - A.bF[b]), 0, 1);
+            A.bS[b] += (v - A.bS[b]) * (1 - Math.exp(-dt * (v > A.bS[b] ? 14 : 5)));
+            const bandF = f / 255 / n; bandFlux[b] = bandF; tot += f / 255;
+          }
+          prevFd.set(fd);
+          const flux = tot / Math.max(1, fluxTop);
+          let mean = 0; for (let i = 0; i < 43; i++) mean += A.fHist[i]; mean /= 43;
+          let vr = 0; for (let i = 0; i < 43; i++) vr += (A.fHist[i] - mean) ** 2; const sd = Math.sqrt(vr / 43);
+          const thr = mean + 1.8 * sd + .003;
+          if (flux > thr && flux > A.flux && now - A.lastOn > .09) {
+            A.lastOn = now;
+            const str = clamp((flux - thr) / (thr + .002) + .15, .15, 1) * S.sens;
+            const sb = bandFlux[0] + bandFlux[1] + bandFlux[2] + 1e-9;
+            triggerOnset(str, [bandFlux[0] / sb, bandFlux[1] / sb, bandFlux[2] / sb]);
+            A.onPulse = str;
+          }
+          A.flux = flux; A.fHist[A.fi] = flux; A.fi = (A.fi + 1) % 43;
+        } else {
+          A.E += (.1 - A.E) * (1 - Math.exp(-dt * 2));
+          for (let b = 0; b < 3; b++) {
+            const t = .12 + .1 * Math.sin(now * .35 + b * 2.1);
+            A.bS[b] += (t - A.bS[b]) * (1 - Math.exp(-dt * 2));
+          }
+          A.idleT -= dt;
+          if (A.idleT <= 0) { A.idleT = 3 + Math.random() * 2.5; triggerOnset(.3 * S.sens, [.34, .33, .33]); }
+        }
+        A.onPulse = Math.max(0, A.onPulse - dt * 4);
+        A.bands = A.bS;
+      }
+
+      /* ── Disegno ── */
+      function draw() {
+        g.fillStyle = PAPER; g.fillRect(0, 0, W, H);
+        g.fillStyle = INK;
+        const M = 0, iw = W, ih = H, rows = S.rows, rowGap = S.rowGap;
+        const totalRowGap = Math.max(0, rows - 1) * rowGap;
+        const ih_avail = ih - totalRowGap;
+        const rh = ih_avail / rows;
+        for (let r = 0; r < rows; r++) {
+          const y0 = M + r * (rh + rowGap);
+          const u = rh / 5;
+          g.save(); g.beginPath(); g.rect(M, y0, iw, rh); g.clip();
+          const list = S.rowsList[r] || [];
+          for (let i = 0; i < list.length; i++) {
+            const s = list[i]; if (!s) continue;
+            const cw = s.wCurrent, cx = s.cx, x0 = s.x;
+            if (s.fam === 0) {
+              const hLevels = clamp(s.hLevels || 1.5, 1.0, 5.0);
+              const q = clamp(s.q || 0, 0, Math.max(0, 1 - (hLevels - 1) / 4));
+              const rx = cw * 0.5, ry = Math.min(u * 0.5, (hLevels * u) * 0.3);
+              const yTop = y0 + q * (rh - hLevels * u), arcH = hLevels * u, yBot = yTop + arcH, yJunc = yTop + ry;
+              g.beginPath();
+              g.ellipse(cx, yJunc, Math.max(0.5, rx), ry, 0, Math.PI, 0, false);
+              g.lineTo(cx + rx, yBot); g.lineTo(cx - rx, yBot); g.lineTo(cx - rx, yJunc);
+              g.closePath(); g.fill();
+            } else if (s.fam === 1) {
+              const hLevels = clamp(s.hLevels || 1.5, 0.2, s.maxLvl || 5.0);
+              const rectH = hLevels * u, pos = clamp(s.pos || 0, 0, Math.max(0, 5 - hLevels));
+              const yRect = y0 + pos * u;
+              g.fillRect(x0, yRect, cw, rectH);
+            }
+          }
+          g.restore();
+        }
+      }
+
+      /* ── Layout / Resize ── */
+      function resize() {
+        const r = stage.getBoundingClientRect(), pad = r.width < 700 ? 14 : 30;
+        const ar = S.fmt === 1 ? .4 : (S.fmt === 2 ? .8 : (S.fmt === 3 ? 16 / 9 : 9 / 16));
+        const aw = Math.max(80, r.width - pad * 2), ah = Math.max(80, r.height - pad * 2);
+        let w = Math.min(aw, ah * ar), h = w / ar;
+        dpr = Math.min(2, window.devicePixelRatio || 1);
+        canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+        W = canvas.width = Math.round(w * dpr); H = canvas.height = Math.round(h * dpr);
+        buildSigns();
+      }
+      new ResizeObserver(resize).observe(stage);
+      window.addEventListener('resize', resize);
+
+      /* ── UI ── */
+      const fmtT = s => { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+      const locked = () => playing || tPos > .05;
+      function ui() {
+        const playBtn = $('#ods-play');
+        playBtn.disabled = !buffer;
+        if (playing) {
+          playBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="4.5" height="16" rx="1"/><rect x="14.5" y="4" width="4.5" height="16" rx="1"/></svg><span>Pausa</span>`;
+          playBtn.setAttribute('aria-label', 'Pausa');
+        } else {
+          playBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg><span>Riproduci</span>`;
+          playBtn.setAttribute('aria-label', 'Riproduci');
+        }
+        const stopBtn = $('#ods-stop');
+        stopBtn.disabled = !buffer || (!playing && tPos <= .05);
+        $('#ods-seek').disabled = !buffer;
+        $('#ods-tdur').textContent = buffer ? fmtT(buffer.duration) : '0:00';
+        const L = locked();
+        document.querySelectorAll('.ods-stepper button').forEach(b => b.disabled = L);
+        $('#ods-shuffle').disabled = L;
+        $('#ods-lockNote').textContent = L
+          ? 'Griglia bloccata durante l\'esecuzione. Usa "Stop" per modificarla.'
+          : 'La griglia si modifica prima dell\'avvio.';
+        $('#ods-rowsV').textContent = S.rows; $('#ods-colsV').textContent = S.cols;
+      }
+
+      /* ── Listeners ── */
+      $('#ods-file').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadFile(f); e.target.value = ''; });
+      $('#ods-demo').addEventListener('click', loadDefaultTrack);
+      $('#ods-play').addEventListener('click', () => playing ? pause() : play());
+      $('#ods-stop').addEventListener('click', stopAll);
+      $('#ods-audioToggle').addEventListener('click', toggleAudioMute);
+      window.addEventListener('click', () => { if (actx && actx.state === 'suspended') actx.resume(); }, { passive: true });
+      $('#ods-speed').addEventListener('input', e => { S.speed = +e.target.value; });
+      $('#ods-sens').addEventListener('input', e => { S.sens = +e.target.value / 100; $('#ods-sensVal').textContent = e.target.value + '%'; });
+      $('#ods-gap').addEventListener('input', e => { S.gap = +e.target.value; $('#ods-gapVal').textContent = e.target.value + ' px'; buildSigns(); });
+      $('#ods-rowGap').addEventListener('input', e => { S.rowGap = +e.target.value; $('#ods-rowGapVal').textContent = e.target.value + ' px'; });
+
+      let seeking = false;
+      $('#ods-seek').addEventListener('input', e => { seeking = true; if (buffer) $('#ods-tcur').textContent = fmtT(e.target.value / 1000 * buffer.duration); });
+      $('#ods-seek').addEventListener('change', e => { seeking = false; if (buffer) seekTo(e.target.value / 1000 * buffer.duration); });
+
+      document.querySelectorAll('#ods-fmt button').forEach(b => b.addEventListener('click', () => {
+        S.fmt = +b.dataset.f;
+        document.querySelectorAll('#ods-fmt button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+        resize();
+      }));
+
+      document.querySelectorAll('.ods-stepper button').forEach(b => b.addEventListener('click', () => {
+        if (locked()) return;
+        const k = b.dataset.k, d = +b.dataset.d, lim = k === 'rows' ? [1, 8] : [1, 16];
+        S[k] = clamp(S[k] + d, lim[0], lim[1]); buildSigns(); ui();
+      }));
+
+      $('#ods-shuffle').addEventListener('click', () => { if (locked()) return; S.seed = (Math.random() * 4294967296) >>> 0; buildSigns(); });
+
+      window.addEventListener('keydown', e => {
+        if (e.code === 'Space' && buffer && !/^(BUTTON|INPUT)$/.test(document.activeElement.tagName)) { e.preventDefault(); playing ? pause() : play(); }
+      });
+
+      /* ── Meters ── */
+      const mR = $('#ods-mRms'), mL = $('#ods-mLo'), mM = $('#ods-mMi'), mH = $('#ods-mHi');
+      let last = performance.now(), lastLock = false;
+      function loop(t) {
+        const dt = Math.min(.05, (t - last) / 1000); last = t;
+        analyse(dt, t / 1000);
+        conduct(dt);
+        updateLayout(dt);
+        const effE = clamp(A.E * S.sens, 0, 1);
+        const effB = A.bands.map(v => clamp(v * S.sens, 0, 1));
+        for (const s of S.signs) updateSign(s, dt, effE, effB);
+        draw();
+        mR.style.transform = `scaleX(${clamp(effE, 0, 1).toFixed(3)})`;
+        mL.style.transform = `scaleX(${clamp(effB[0], 0, 1).toFixed(3)})`;
+        mM.style.transform = `scaleX(${clamp(effB[1], 0, 1).toFixed(3)})`;
+        mH.style.transform = `scaleX(${clamp(effB[2], 0, 1).toFixed(3)})`;
+        if (buffer) {
+          const p = playing ? Math.min(curPos(), buffer.duration) : tPos;
+          if (!seeking) { $('#ods-seek').value = Math.round(p / buffer.duration * 1000); $('#ods-tcur').textContent = fmtT(p); }
+        }
+        const L = locked(); if (L !== lastLock) { lastLock = L; ui(); }
+        requestAnimationFrame(loop);
+      }
+
+      /* ── Colore Segni ── */
+      const inkColorEl = $('#ods-inkColor'), inkHexEl = $('#ods-inkHex');
+      function setInkColor(hex) {
+        if (!/^#([0-9A-F]{3}){1,2}$/i.test(hex)) return;
+        INK = hex;
+        if (inkColorEl.value.toLowerCase() !== hex.toLowerCase()) inkColorEl.value = hex;
+        if (inkHexEl.value.toLowerCase() !== hex.toLowerCase()) inkHexEl.value = hex.toUpperCase();
+      }
+      inkColorEl.addEventListener('input', e => setInkColor(e.target.value));
+      inkHexEl.addEventListener('input', e => {
+        let val = e.target.value.trim();
+        if (!val.startsWith('#')) val = '#' + val;
+        if (/^#([0-9A-F]{3}|[0-9A-F]{6})$/i.test(val)) {
+          if (val.length === 4) val = '#' + val[1] + val[1] + val[2] + val[2] + val[3] + val[3];
+          setInkColor(val);
+        }
+      });
+
+      /* ── Registrazione Video ── */
+      let mediaRecorder = null, recChunks = [], isRecording = false, recStartTime = 0, recTimerInterval = null;
+
+      function getSupportedMimeType() {
+        const types = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=h264,opus', 'video/webm;codecs=vp9,opus', 'video/webm'];
+        for (const t of types) if (MediaRecorder.isTypeSupported(t)) return t;
+        return '';
+      }
+
+      function startRecording() {
+        ensureAudio(); recChunks = [];
+        if (!audioDstNode && actx && analyser) { audioDstNode = actx.createMediaStreamDestination(); analyser.connect(audioDstNode); }
+        const canvasStream = canvas.captureStream(60);
+        const combinedTracks = [...canvasStream.getVideoTracks()];
+        if (audioDstNode && audioDstNode.stream) combinedTracks.push(...audioDstNode.stream.getAudioTracks());
+        const combinedStream = new MediaStream(combinedTracks);
+        const mimeType = getSupportedMimeType();
+        const options = { videoBitsPerSecond: 50000000 };
+        if (mimeType) options.mimeType = mimeType;
+        try { mediaRecorder = new MediaRecorder(combinedStream, options); }
+        catch (e) { mediaRecorder = new MediaRecorder(combinedStream); }
+        mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) recChunks.push(e.data); };
+        mediaRecorder.onstop = saveRecording;
+        mediaRecorder.start(250);
+        isRecording = true; recStartTime = Date.now();
+        $('#ods-recBtn').textContent = '⏹️ Ferma e salva video';
+        $('#ods-recBtn').classList.add('rec-active');
+        updateRecTimer();
+        recTimerInterval = setInterval(updateRecTimer, 500);
+      }
+
+      function stopRecording() {
+        if (!isRecording || !mediaRecorder) return;
+        isRecording = false; clearInterval(recTimerInterval);
+        if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        $('#ods-recBtn').textContent = '🔴 Esporta Video HD';
+        $('#ods-recBtn').classList.remove('rec-active');
+        $('#ods-recStatus').textContent = 'Elaborazione e download in corso…';
+      }
+
+      function updateRecTimer() {
+        if (!isRecording) return;
+        const elapsed = Math.floor((Date.now() - recStartTime) / 1000);
+        const m = Math.floor(elapsed / 60), s = String(elapsed % 60).padStart(2, '0');
+        $('#ods-recStatus').textContent = `🔴 REC — ${m}:${s}`;
+      }
+
+      function saveRecording() {
+        if (!recChunks.length) { $('#ods-recStatus').textContent = 'Nessun dato registrato.'; return; }
+        const mime = (mediaRecorder && mediaRecorder.mimeType) || 'video/mp4';
+        const ext = mime.includes('mp4') ? 'mp4' : 'webm';
+        const blob = new Blob(recChunks, { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.style.display = 'none'; a.href = url;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.download = `orchestra-di-segni-${timestamp}.${ext}`;
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); $('#ods-recStatus').textContent = `Video scaricato (${ext.toUpperCase()}).`; }, 100);
+      }
+
+      $('#ods-recBtn').addEventListener('click', () => { if (isRecording) stopRecording(); else startRecording(); });
+
+      /* ── Esportazione SVG ── */
+      $('#ods-svgBtn').addEventListener('click', () => {
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">\n`;
+        svg += `<rect width="${W}" height="${H}" fill="${PAPER}"/>\n`;
+        const M = 0, iw = W, ih = H, rows = S.rows, rowGap = S.rowGap;
+        const totalRowGap = Math.max(0, rows - 1) * rowGap, ih_avail = ih - totalRowGap, rh = ih_avail / rows;
+        for (let r = 0; r < rows; r++) {
+          const y0 = M + r * (rh + rowGap), u = rh / 5;
+          svg += `<g clip-path="url(#clip-${r})">\n`;
+          svg += `<clipPath id="clip-${r}"><rect x="${M}" y="${y0}" width="${iw}" height="${rh}"/></clipPath>\n`;
+          const list = S.rowsList[r] || [];
+          for (let i = 0; i < list.length; i++) {
+            const s = list[i]; if (!s) continue;
+            const cw = s.wCurrent, cx = s.cx, x0 = s.x;
+            if (s.fam === 0) {
+              const hLevels = clamp(s.hLevels || 1.5, 1.0, 5.0), q = clamp(s.q || 0, 0, Math.max(0, 1 - (hLevels - 1) / 4));
+              const rx = cw * 0.5, ry = Math.min(u * 0.5, (hLevels * u) * 0.3);
+              const yTop = y0 + q * (rh - hLevels * u), arcH = hLevels * u, yBot = yTop + arcH, yJunc = yTop + ry;
+              const p = `M ${cx - rx} ${yJunc} A ${Math.max(0.5, rx)} ${ry} 0 0 1 ${cx + rx} ${yJunc} L ${cx + rx} ${yBot} L ${cx - rx} ${yBot} Z`;
+              svg += `<path d="${p}" fill="${INK}"/>\n`;
+            } else if (s.fam === 1) {
+              const hLevels = clamp(s.hLevels || 1.5, 0.2, s.maxLvl || 5.0), rectH = hLevels * u, pos = clamp(s.pos || 0, 0, Math.max(0, 5 - hLevels));
+              svg += `<rect x="${x0}" y="${y0 + pos * u}" width="${cw}" height="${rectH}" fill="${INK}"/>\n`;
+            }
+          }
+          svg += `</g>\n`;
+        }
+        svg += `</svg>`;
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = `orchestra-di-segni-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.svg`;
+        a.click(); URL.revokeObjectURL(url);
+      });
+
+      /* ── AVVIO ── */
+      buildSigns(); resize(); ui();
+      requestAnimationFrame(loop);
+
+      // Carica automaticamente la traccia predefinita
+      // Piccolo delay per permettere al contesto audio di inizializzarsi
+      setTimeout(() => loadDefaultTrack(), 300);
+
+    })();
+  </script>
 </body>
+
 </html>

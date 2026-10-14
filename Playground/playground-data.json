@@ -2,7 +2,7 @@
   {
     "id": "orchestra-di-segni",
     "cartella": "ORCHESTRA-DI-SEGNI_sito",
-    "titolo": "Orchestra di segni",
+    "titolo": "Tracce d'Orchestra",
     "titoloEvocativo": "Dove la musica anima",
     "descrizione": "Spartito sinfonico astratto e generativo: la musica si trasforma in tempo reale in un sistema di segni visivi. Rettangoli e archi danzano reagendo ai bassi, medi, alti e alla dinamica complessiva dell'orchestra. Traccia predefinita: Notturno n.1 op.70 di Giuseppe Martucci, direttore Juraj Valčuha, Orchestra del TCBO.",
     "url": "Playground/ORCHESTRA-DI-SEGNI_sito/index.html",
