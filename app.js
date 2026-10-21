@@ -5,38 +5,6 @@ let portfolioStruttura = [];
 let playgroundData = [];
 let playgroundStruttura = [];
 
-// ── Flip Card About: gestisce il pendolo → flip → pendolo senza glitch ──
-function toggleFlipCard(card) {
-    const inner = card.querySelector('.cc-flip-inner');
-    if (!inner) return;
-
-    const isFlipped = card.classList.contains('flipped');
-
-    if (!isFlipped) {
-        // 1. Blocca il pendolo e congela la posizione corrente
-        inner.style.animation = 'none';
-        void inner.offsetWidth; // reflow: applica l'animation:none
-        // 2. Imposta la partenza esplicita da rotateY(0)
-        inner.style.transition = 'none';
-        inner.style.transform = 'rotateY(0deg)';
-        void inner.offsetWidth; // reflow: fissa il punto di partenza
-        // 3. Ora imposta la transition e lancia il flip a 180°
-        inner.style.transition = 'transform 0.75s cubic-bezier(0.34, 1.3, 0.64, 1)';
-        inner.style.transform = 'rotateY(180deg)';
-        card.classList.add('flipped');
-    } else {
-        // Torna al fronte
-        inner.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.2, 0.64, 1)';
-        inner.style.transform = 'rotateY(0deg)';
-        card.classList.remove('flipped');
-        // Dopo la transition riavvia il pendolo
-        setTimeout(() => {
-            inner.style.transition = '';
-            inner.style.transform = '';
-            inner.style.animation = '';
-        }, 650);
-    }
-}
 
 // Helper per verificare se un file è un video
 function isMediaTypeVideo(fileName) {
@@ -136,8 +104,11 @@ const navLinks = document.querySelectorAll('.nav-link');
 function setActiveNav(targetId) {
     navLinks.forEach(l => l.classList.remove('active'));
     if (targetId) {
-        const activeLinks = document.querySelectorAll(`[data-target="${targetId}"]`);
-        activeLinks.forEach(link => link.classList.add('active'));
+        const ids = (targetId === 'about' || targetId === 'contatti') ? ['about', 'contatti'] : [targetId];
+        ids.forEach(id => {
+            const activeLinks = document.querySelectorAll(`[data-target="${id}"]`);
+            activeLinks.forEach(link => link.classList.add('active'));
+        });
     }
 }
 
@@ -247,7 +218,7 @@ function initScrollReveal() {
 // ── EFFETTO TILT 3D ──
 function initTiltEffect() {
     const cards = document.querySelectorAll('.project-card, .archivio-card');
-    
+
     cards.forEach(card => {
         // Rimuovi eventuali event listener precedenti se la funzione viene chiamata più volte
         if (card.dataset.tiltInitialized) return;
@@ -258,11 +229,11 @@ function initTiltEffect() {
 
         const onMove = (clientX, clientY) => {
             if (!bounds) bounds = card.getBoundingClientRect();
-            
+
             // Calcola la posizione relativa del cursore/tocco
             const x = clientX - bounds.left;
             const y = clientY - bounds.top;
-            
+
             // Normalizza tra -1 e 1
             const xNorm = (x / bounds.width) * 2 - 1;
             const yNorm = (y / bounds.height) * 2 - 1;
@@ -291,7 +262,7 @@ function initTiltEffect() {
             requestAnimationFrame(() => {
                 card.style.transition = 'transform 0.3s ease';
                 card.style.transform = 'perspective(1000px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg)';
-                
+
                 // Rimuovi gli stili inline per ripristinare le regole CSS originali
                 setTimeout(() => {
                     if (!isHovered) {
@@ -311,12 +282,12 @@ function initTiltEffect() {
         card.addEventListener('mouseleave', onLeave);
 
         // Mobile
-        card.addEventListener('touchstart', onEnter, {passive: true});
+        card.addEventListener('touchstart', onEnter, { passive: true });
         card.addEventListener('touchmove', (e) => {
             if (e.touches.length > 0) {
                 onMove(e.touches[0].clientX, e.touches[0].clientY);
             }
-        }, {passive: true});
+        }, { passive: true });
         card.addEventListener('touchend', onLeave);
     });
 }
@@ -644,51 +615,118 @@ function renderProgettoPlayground(id) {
     scrollToTop();
 }
 
-function renderContatti() {
-    setActiveNav('contatti');
-
-    const email = bioData.link ? bioData.link.email : 'mailto:virnoferdinando@gmail.com';
-    const bio = bioData.bio || '';
-    const interesse = bioData.interesse || '';
+function renderAbout() {
+    setActiveNav('about');
 
     appContent.innerHTML = `
-        <div class="contatti-card">
+        <main class="about-page">
 
-            <!-- SINISTRA: Titolo, Handle, Link CV -->
-            <div class="cc-left-col">
-                <h1 class="cc-name">FERDINANDO<br>VIRN<span class="cc-o-geo">O</span></h1>
-                <div class="cc-handle">
-                    <svg class="cc-arrow" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 16 L16 4 M16 4 L7 4 M16 4 L16 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    ferd.esign
+            <!-- Hero Section - Large Bio Heading -->
+            <section class="hero-about">
+                <div class="hero-text-wrapper">
+                    <h1 class="hero-title">
+                        Sono Ferdinando Virno, designer sistemico. La mia ricerca unisce grafica di pubblica utilità e storytelling. Credo in una progettazione che nasce dall'ascolto e dalla volontà creare connessioni autentiche.
+                    </h1>
                 </div>
-                <div class="cc-links-row">
-                    <a href="Personal Branding/VIRNO-FERDINANDO_CV_2026.pdf" target="_blank" class="cc-pill-link cc-pill-primary">Scarica Curriculum</a>
-                </div>
-            </div>
+            </section>
 
-            <!-- DESTRA: Flip Card -->
-            <div class="cc-foto-wrapper">
-                <div class="cc-flip-card" id="cc-flip-card" onclick="toggleFlipCard(this)" title="Clicca per scoprire">
-                    <div class="cc-flip-inner">
-                        <!-- FRONTE: foto -->
-                        <div class="cc-flip-front">
-                            <img src="Personal Branding/FOTO-BIO.webp" alt="Ferdinando Virno" class="cc-foto-bio" onerror="this.style.display='none'">
-                            <div class="cc-foto-hint">TAP TO KNOW ME</div>
-                        </div>
-                        <!-- RETRO: testo -->
-                        <div class="cc-flip-back">
-                            <p class="cc-flip-bio">${interesse}</p>
-                        </div>
+            <!-- Main Content Row: CV + Image + Bio Details -->
+            <section class="about-content-row">
+                <div class="about-cv-link">
+                    <h3><a href="Personal Branding/VIRNO-FERDINANDO_CV_2026.pdf" target="_blank" rel="noopener noreferrer" class="cv-link">CV ↗</a></h3>
+                </div>
+
+                <div class="about-image-wrapper">
+                    <div class="about-image">
+                        <img src="Personal Branding/FOTO-BIO.webp" alt="Ferdinando Virno" onerror="this.onerror=null; this.src='Personal Branding/foto_ferd_2024.jpg'">
                     </div>
                 </div>
-            </div>
 
-        </div>
+                <div class="about-details">
+                    <!-- Come lavoro / Approccio -->
+                    <div class="detail-block">
+        
+                        <p class="detail-text">
+                            Il mio processo progettuale parte dall’ascolto e dalla comprensione profonda delle esigenze del contesto e delle persone. Sviluppo i concetti attraverso ricerca, strategia e sperimentazione visiva, affrontando la complessità dei problemi in maniera metodologica e sistemica. Condivido la convinzione che il design sia un modo di essere prima ancora che una disciplina tecnica: per questo realizzo linguaggi visivi flessibili e orientati a generare valore e legami duraturi all'interno della comunità.
+                        </p>
+                    </div>
+
+                    <!-- Esperienza & Attività -->
+                    <div class="experience-columns">
+                        <!-- Esperienza -->
+                        <div class="detail-block">
+                            <h3 class="detail-title">Esperienza:</h3>
+                            <div class="experience-list">
+                                <div class="experience-item">
+                                    <p class="experience-agency">Freelance Designer</p>
+                                    <p class="experience-detail">In corso</p>
+                                </div>
+                                <div class="experience-item">
+                                    <p class="experience-agency">Perseverance Studio</p>
+                                    <p class="experience-detail">Graphic Designer / 2025</p>
+                                </div>
+                                <div class="experience-item">
+                                    <p class="experience-agency">DOTFOG Studio</p>
+                                    <p class="experience-detail">Tirocinio / Napoli, 2025</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Attività & Workshop -->
+                        <div class="detail-block">
+                            <h3 class="detail-title">Attività & Workshop:</h3>
+                            <div class="experience-list">
+                                <div class="experience-item">
+                                    <p class="experience-agency"><a href="https://www.isiaroma.it/" target="_blank" rel="noopener noreferrer" class="experience-link">Unexpected Rome</a></p>
+                                    <p class="experience-detail">ISIA Roma x Kean Univ. / Roma, 2026</p>
+                                </div>
+                                <div class="experience-item">
+                                    <p class="experience-agency"><a href="https://www.sponzfest.it/" target="_blank" rel="noopener noreferrer" class="experience-link">Sponz Fest</a></p>
+                                    <p class="experience-detail">Branding & Manifesti / Calitri, 2025</p>
+                                </div>
+                                <div class="experience-item">
+                                    <p class="experience-agency"><a href="https://www.desina.it/" target="_blank" rel="noopener noreferrer" class="experience-link">Desina Festival</a></p>
+                                    <p class="experience-detail">Workshop “Fuck Logo” / Napoli, 2025</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formazione -->
+                    <div class="detail-block">
+                        <h3 class="detail-title">Formazione:</h3>
+                        <div class="experience-list">
+                            <div class="experience-item">
+                                <p class="experience-agency">ISIA Roma Design</p>
+                                <p class="experience-detail">Magistrale in Design Sistemico per la Comunicazione / In corso</p>
+                            </div>
+                            <div class="experience-item">
+                                <p class="experience-agency">Università Federico II di Napoli</p>
+                                <p class="experience-detail">Laurea in Design per la Comunità / 2022–2025</p>
+                            </div>
+                            <div class="experience-item">
+                                <p class="experience-agency">Talent Garden</p>
+                                <p class="experience-detail">UI/UX Design con Breccia / 2023</p>
+                            </div>
+                            <div class="experience-item">
+                                <p class="experience-agency">Liceo Artistico Sabatini Menna</p>
+                                <p class="experience-detail">Grafica e Comunicazione Visiva / Salerno</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Spacer after content -->
+            <div class="about-spacer"></div>
+        </main>
     `;
     scrollToTop();
 }
+
+// Alias per retrocompatibilità
+const renderContatti = renderAbout;
 
 
 // ── YouTube IFrame API Helper ──
@@ -707,7 +745,7 @@ function disableYTCaptions(player) {
             player.setOption('cc', 'track', {});
             player.setOption('captions', 'reload', false);
         }
-    } catch (e) {}
+    } catch (e) { }
 }
 
 function initYouTubePlayer(iframeId, volume = 50) {
@@ -719,14 +757,14 @@ function initYouTubePlayer(iframeId, volume = 50) {
             try {
                 new YT.Player(iframeId, {
                     events: {
-                        'onReady': function(event) {
+                        'onReady': function (event) {
                             event.target.setVolume(volume);
                             disableYTCaptions(event.target);
                             if (typeof event.target.setPlaybackQuality === 'function') {
                                 event.target.setPlaybackQuality('hd1080');
                             }
                         },
-                        'onStateChange': function(event) {
+                        'onStateChange': function (event) {
                             if (event.data === 1 || event.data === 3) { // PLAYING or BUFFERING (mobile tap)
                                 disableYTCaptions(event.target);
                             }
@@ -745,7 +783,7 @@ function initYouTubePlayer(iframeId, volume = 50) {
         ytPlayerInitCallbacks.push(setupPlayer);
 
         if (!window.onYouTubeIframeAPIReady) {
-            window.onYouTubeIframeAPIReady = function() {
+            window.onYouTubeIframeAPIReady = function () {
                 while (ytPlayerInitCallbacks.length > 0) {
                     const cb = ytPlayerInitCallbacks.shift();
                     if (typeof cb === 'function') cb();
@@ -882,16 +920,51 @@ function renderProgetto(id) {
 
     let nextProjectHtml = '';
     if (nextProject && nextProject.id !== id) {
+        const nextMedia = getProjectMedia(nextProject, portfolioStruttura);
+        const nextCover = getCoverMedia(nextMedia);
+
+        let coverImgHtml = '';
+        if (nextCover && nextCover.path) {
+            coverImgHtml = `
+                <div class="np-trigger-thumb-wrapper">
+                    ${nextCover.type === 'video'
+                        ? `<video src="${nextCover.path}" class="np-trigger-thumb" autoplay loop muted playsinline></video>`
+                        : `<img src="${nextCover.path}" alt="${nextProject.titolo}" class="np-trigger-thumb" onerror="this.parentElement.style.display='none'">`
+                    }
+                </div>
+            `;
+        }
+
+        const nextYear = (nextProject.metadati && nextProject.metadati.anno) ? nextProject.metadati.anno : '';
+        const nextSettore = (nextProject.metadati && nextProject.metadati.settore) ? nextProject.metadati.settore : '';
+        const metaInfo = [nextSettore, nextYear].filter(Boolean).join(' • ');
+
         nextProjectHtml = `
             <div class="next-project-trigger-wrapper reveal">
                 <div class="next-project-trigger" id="next-project-trigger" onclick="triggerNextProject(() => navigateTo('/${nextProject.id}'))" role="button" tabindex="0" aria-label="Passa al prossimo progetto: ${nextProject.titolo}">
-                    <div class="np-trigger-top">
-                        <span class="np-trigger-label">PROSSIMO PROGETTO</span>
-                        <span class="np-trigger-arrow" aria-hidden="true">→</span>
+                    <div class="np-trigger-content">
+                        <div class="np-trigger-top">
+                            <span class="np-trigger-badge">
+                                <span class="np-trigger-dot"></span>
+                                PROSSIMO PROGETTO
+                            </span>
+                            ${metaInfo ? `<span class="np-trigger-meta">${metaInfo}</span>` : ''}
+                        </div>
+                        <h3 class="np-trigger-title">${nextProject.titolo}</h3>
+                        ${nextProject.titoloEvocativo ? `<p class="np-trigger-evocativo">${nextProject.titoloEvocativo}</p>` : ''}
+                        
+                        <div class="np-trigger-action">
+                            <span class="np-trigger-cta">Esplora progetto</span>
+                            <span class="np-trigger-arrow" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12 5 19 12 12 19"></polyline>
+                                </svg>
+                            </span>
+                        </div>
                     </div>
-                    <h3 class="np-trigger-title">${nextProject.titolo}</h3>
-                    ${nextProject.titoloEvocativo ? `<p class="np-trigger-evocativo">${nextProject.titoloEvocativo}</p>` : ''}
-                    <div class="np-trigger-bar">
+                    ${coverImgHtml}
+                    <div class="np-trigger-bar" aria-hidden="true">
                         <div class="np-trigger-bar-fill" id="np-bar-fill"></div>
                     </div>
                 </div>
@@ -1115,8 +1188,9 @@ const SEOManager = {
             title = 'Playground - Ferdinando Virno';
         } else if (page === 'archivio') {
             title = 'Archivio - Ferdinando Virno';
-        } else if (page === 'contatti') {
+        } else if (page === 'contatti' || page === 'about') {
             title = 'About - Ferdinando Virno';
+            description = 'Biografia, percorso e approccio di Ferdinando Virno, designer per la comunità e comunicatore visivo.';
         }
 
         document.title = title;
@@ -1188,8 +1262,8 @@ function handleRoute() {
     }
 
     if (cleanPath === 'contatti' || cleanPath === 'about') {
-        renderContatti();
-        SEOManager.update('contatti');
+        renderAbout();
+        SEOManager.update('about');
         return;
     }
 

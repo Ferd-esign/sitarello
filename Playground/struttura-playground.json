@@ -1,8 +1,8 @@
 [
   {
-    "Cartella": "ORCHESTRA-DI-SEGNI_sito",
+    "Cartella": "CONVERTOTORE",
     "File": [
-      "immagini/COPERTINA.jpg"
+      "immagini/COPERTINA.webp"
     ]
   },
   {
@@ -14,9 +14,10 @@
     ]
   },
   {
-    "Cartella": "CONVERTOTORE",
+    "Cartella": "ORCHESTRA-DI-SEGNI_sito",
     "File": [
-      "immagini/COPERTINA.webp"
+      "immagini/COPERTINA.jpg",
+      "LOGO-CONSERVATORIO.png"
     ]
   }
 ]

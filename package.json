@@ -1,0 +1,25 @@
+{
+  "name": "portfolio-ferdinando-virno",
+  "version": "1.0.0",
+  "description": "Portfolio di Ferdinando Virno - Design Sistemico e Comunicazione Visiva",
+  "main": "app.js",
+  "scripts": {
+    "dev": "python3 -m http.server 3000",
+    "build": "node scripts/generate-structure.js && node scripts/generate-seo.js",
+    "generate": "node scripts/generate-structure.js && node scripts/generate-seo.js",
+    "generate-structure": "node scripts/generate-structure.js",
+    "generate-seo": "node scripts/generate-seo.js",
+    "validate": "node scripts/validate-data.js",
+    "audit": "node scripts/audit-site.js",
+    "watch": "node scripts/generate-structure.js --watch"
+  },
+  "keywords": [
+    "portfolio",
+    "systemic-design",
+    "visual-communication",
+    "interactive",
+    "creative-coding"
+  ],
+  "author": "Ferdinando Virno",
+  "license": "ISC"
+}
