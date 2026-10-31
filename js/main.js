@@ -3,6 +3,13 @@ import { initRouter, navigateTo, handleRoute } from './router.js';
 import { initDrawer, openDrawer, closeDrawer } from './interactions/drawer.js';
 import { togglePlaygroundModal, handlePlaygroundModalOverlayClick } from './views/playground.js';
 import { triggerNextProject } from './views/progetto.js';
+import {
+    switchArchivioSection,
+    openManifestoModal,
+    closeManifestoModal,
+    selectManifestoVersion,
+    handleManifestoModalOverlayClick
+} from './views/archivio.js';
 
 // Esposizione su window per piena compatibilità con template dinamici con handler inline (onclick)
 window.navigateTo = navigateTo;
@@ -11,6 +18,11 @@ window.closeDrawer = closeDrawer;
 window.togglePlaygroundModal = togglePlaygroundModal;
 window.handlePlaygroundModalOverlayClick = handlePlaygroundModalOverlayClick;
 window.triggerNextProject = triggerNextProject;
+window.switchArchivioSection = switchArchivioSection;
+window.openManifestoModal = openManifestoModal;
+window.closeManifestoModal = closeManifestoModal;
+window.selectManifestoVersion = selectManifestoVersion;
+window.handleManifestoModalOverlayClick = handleManifestoModalOverlayClick;
 
 // Bootstrap dell'applicazione
 async function init() {

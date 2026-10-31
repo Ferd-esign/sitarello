@@ -12,7 +12,7 @@ export function renderAbout() {
             <section class="hero-about">
                 <div class="hero-text-wrapper">
                     <h1 class="hero-title">
-                        Sono Ferdinando Virno, designer sistemico. La mia ricerca unisce grafica di pubblica utilità e storytelling. Credo in una progettazione che nasce dall'ascolto e dalla volontà creare connessioni autentiche.
+                        Ciao, sono Ferd, designer sistemico. Credo in una progettazione che nasce dall'ascolto e dalla volontà di creare connessioni autentiche. Una ricerca che inizia dalla complessità dei problemi, per arrivare a una chiarezza fruibile e narrativa.
                     </h1>
                 </div>
             </section>

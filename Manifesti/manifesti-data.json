@@ -1,0 +1,27 @@
+[
+  {
+    "id": "mw-posters",
+    "cartella": "mw-posters",
+    "titolo": "\"M/W posters\" tribute to Armando Milani",
+    "descrizione": "Una mia interpretazione del celebre manifesto Translating War into Peace realizzato dal Maestro Armando Milani per le nazioni unite nel 2002.",
+    "data": "Aprile 2026",
+    "dataOrdinamento": "2026-04",
+    "media": [
+      {
+        "file": "composizione_1_1.mp4",
+        "type": "video",
+        "label": "Composizione 1_1"
+      },
+      {
+        "file": "mw-posters-dark.jpg",
+        "type": "image",
+        "label": "Versione Scura"
+      },
+      {
+        "file": "mw-posters-light.jpg",
+        "type": "image",
+        "label": "Versione Chiara"
+      }
+    ]
+  }
+]

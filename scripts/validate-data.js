@@ -6,9 +6,11 @@ const path = require('path');
 const ROOT_DIR = path.join(__dirname, '..');
 const PROGETTI_DATA_PATH = path.join(ROOT_DIR, 'Progetti', 'progetti-data.json');
 const PLAYGROUND_DATA_PATH = path.join(ROOT_DIR, 'Playground', 'playground-data.json');
+const MANIFESTI_DATA_PATH = path.join(ROOT_DIR, 'Manifesti', 'manifesti-data.json');
 const BIO_DATA_PATH = path.join(ROOT_DIR, 'Personal Branding', 'BIO-ABOUT-US.json');
 const PROGETTI_DIR = path.join(ROOT_DIR, 'Progetti');
 const PLAYGROUND_DIR = path.join(ROOT_DIR, 'Playground');
+const MANIFESTI_DIR = path.join(ROOT_DIR, 'Manifesti');
 const BRANDING_DIR = path.join(ROOT_DIR, 'Personal Branding');
 
 let errorCount = 0;
@@ -150,8 +152,64 @@ function validatePlayground() {
     });
 }
 
+function validateManifesti() {
+    console.log('\n\x1b[1m🔍 [3/4] Validazione Manifesti (manifesti-data.json)\x1b[0m');
+    if (!fs.existsSync(MANIFESTI_DATA_PATH)) {
+        logWarn('manifesti-data.json non ancora presente.');
+        return;
+    }
+    const data = readJSON(MANIFESTI_DATA_PATH, 'Manifesti');
+    if (!data) return;
+
+    if (!Array.isArray(data)) {
+        logError('manifesti-data.json deve contenere un array di oggetti.');
+        return;
+    }
+
+    logPass(`Array JSON valido (${data.length} manifesti registrati).`);
+
+    const ids = new Set();
+    data.forEach((m, idx) => {
+        const prefix = `Manifesto #${idx + 1} (${m.id || 'senza id'})`;
+
+        if (!m.id) {
+            logError(`${prefix}: campo "id" mancante.`);
+        } else if (ids.has(m.id)) {
+            logError(`${prefix}: ID duplicato "${m.id}".`);
+        } else {
+            ids.add(m.id);
+        }
+
+        if (!m.titolo) logError(`${prefix}: campo "titolo" mancante.`);
+        if (!m.cartella) {
+            logError(`${prefix}: campo "cartella" mancante.`);
+        } else {
+            const folderPath = path.join(MANIFESTI_DIR, m.cartella);
+            if (!fs.existsSync(folderPath)) {
+                logError(`${prefix}: cartella fisica non trovata in Manifesti/${m.cartella}`);
+            } else {
+                logPass(`${prefix}: cartella fisica presente.`);
+            }
+        }
+
+        if (!m.media || !Array.isArray(m.media) || m.media.length === 0) {
+            logError(`${prefix}: nessun media specificato.`);
+        } else {
+            m.media.forEach((med, mIdx) => {
+                const mediaFile = typeof med === 'string' ? med : med.file;
+                const mediaPath = path.join(MANIFESTI_DIR, m.cartella, mediaFile);
+                if (!fs.existsSync(mediaPath)) {
+                    logError(`${prefix} media #${mIdx + 1}: file non trovato (${mediaFile})`);
+                } else {
+                    logPass(`${prefix} media #${mIdx + 1} (${mediaFile}) presente.`);
+                }
+            });
+        }
+    });
+}
+
 function validateBranding() {
-    console.log('\n\x1b[1m🔍 [3/3] Validazione Personal Branding & Bio\x1b[0m');
+    console.log('\n\x1b[1m🔍 [4/4] Validazione Personal Branding & Bio\x1b[0m');
     const bio = readJSON(BIO_DATA_PATH, 'Bio');
     if (!bio) return;
 
@@ -181,6 +239,7 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
 
 validateProgetti();
 validatePlayground();
+validateManifesti();
 validateBranding();
 
 console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

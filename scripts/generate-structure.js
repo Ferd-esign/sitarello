@@ -99,10 +99,12 @@ function buildStructure() {
 
     const progettiDir = path.join(__dirname, '..', 'Progetti');
     const playgroundDir = path.join(__dirname, '..', 'Playground');
+    const manifestiDir = path.join(__dirname, '..', 'Manifesti');
 
     const progettiOutputFile = path.join(progettiDir, 'portfolio-struttura.json');
     const playgroundOutputFile = path.join(playgroundDir, 'struttura-playground.json');
     const playgroundDataFile = path.join(playgroundDir, 'playground-data.json');
+    const manifestiOutputFile = path.join(manifestiDir, 'struttura-manifesti.json');
 
     // 1. Scansione Progetti
     const progettiStructure = scanFolderStructure(progettiDir);
@@ -116,12 +118,23 @@ function buildStructure() {
 
     // Sincronizza i progetti del playground
     syncPlaygroundData(playgroundStructure, playgroundDataFile);
+
+    // 3. Scansione Manifesti
+    if (fs.existsSync(manifestiDir)) {
+        const manifestiStructure = scanFolderStructure(manifestiDir);
+        fs.writeFileSync(manifestiOutputFile, JSON.stringify(manifestiStructure, null, 2), 'utf-8');
+        console.log(`✅ [Manifesti] Mappatura salvata in: Manifesti/struttura-manifesti.json (${manifestiStructure.length} cartelle)`);
+    }
 }
 
 function watchMode() {
     buildStructure();
 
-    const watchDirs = [path.join(__dirname, '..', 'Progetti'), path.join(__dirname, '..', 'Playground')];
+    const watchDirs = [
+        path.join(__dirname, '..', 'Progetti'),
+        path.join(__dirname, '..', 'Playground'),
+        path.join(__dirname, '..', 'Manifesti')
+    ];
     console.log(`\n👀 [WATCH MODE] In ascolto su modifiche nelle cartelle dei progetti...`);
 
     let debounceTimer = null;

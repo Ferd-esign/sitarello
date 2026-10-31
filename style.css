@@ -1182,13 +1182,68 @@ nav a.active {
     padding-bottom: 40px;
 }
 
+.archivio-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
 .archivio-title {
     font-size: clamp(48px, 8vw, 96px);
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1;
     color: var(--black);
-    margin-bottom: 16px;
+    margin-bottom: 0;
+}
+
+/* Switcher Sezioni Archivio (Progetti / Manifesti) */
+.archivio-section-tabs {
+    display: inline-flex;
+    background: #f0f0f0;
+    padding: 4px;
+    border-radius: 999px;
+    gap: 4px;
+}
+
+.archivio-tab-btn {
+    background: transparent;
+    border: none;
+    padding: 8px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #666666;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.archivio-tab-btn:hover {
+    color: var(--black);
+}
+
+.archivio-tab-btn.active {
+    background: var(--black);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.archivio-tab-count {
+    font-size: 11px;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.archivio-tab-btn.active .archivio-tab-count {
+    opacity: 0.85;
 }
 
 .archivio-subtitle {
@@ -1322,12 +1377,270 @@ nav a.active {
 }
 
 /* ============================================================
+   ARCHIVIO — Sezione Manifesti (Masonry & Lightbox)
+   ============================================================ */
+
+.manifesti-container {
+    width: 100%;
+}
+
+/* Tassellazione Masonry con gap orizzontali e verticali uguali */
+.manifesti-masonry {
+    column-count: 3;
+    column-gap: 24px;
+    width: 100%;
+}
+
+.manifesto-card {
+    break-inside: avoid;
+    margin-bottom: 24px;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    background: #f8f8f8;
+    border-radius: 2px;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease;
+    will-change: transform;
+}
+
+.manifesto-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+}
+
+.manifesto-card:focus-visible {
+    outline: 2px solid var(--black);
+    outline-offset: 4px;
+}
+
+/* Media manifesto senza alterare le proporzioni */
+.manifesto-card-media {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+.manifesto-card-placeholder {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eee;
+    color: #999;
+}
+
+/* Badge indicatore per manifesti con più versioni */
+.manifesto-versions-badge {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 9px;
+    border-radius: 4px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    letter-spacing: 0.03em;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+/* Modale Lightbox con sfondo in Blur */
+.manifesto-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 10, 10, 0.88);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.manifesto-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.manifesto-modal-dialog {
+    position: relative;
+    max-width: 960px;
+    width: 100%;
+    max-height: 94vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    padding: 16px 12px;
+}
+
+/* Pulsante Chiusura */
+.manifesto-modal-close {
+    position: fixed;
+    top: 24px;
+    right: 28px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 100000;
+}
+
+.manifesto-modal-close:hover {
+    background: rgba(255, 255, 255, 0.28);
+    transform: scale(1.08);
+}
+
+/* Stage principale con il media ingrandito */
+.manifesto-modal-main-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    margin-bottom: 20px;
+}
+
+.manifesto-modal-media-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.manifesto-modal-large-media {
+    max-height: 66vh;
+    max-width: 84vw;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    display: block;
+    border-radius: 2px;
+    pointer-events: none; /* Disabilita click o hover che potrebbero far apparire UI video nativa */
+}
+
+.manifesto-modal-large-media::-webkit-media-controls,
+.manifesto-modal-large-media::-webkit-media-controls-enclosure,
+.manifesto-modal-large-media::-webkit-media-controls-panel {
+    display: none !important;
+    -webkit-appearance: none !important;
+    opacity: 0 !important;
+}
+
+/* Barra delle miniature per le versioni alternative */
+.manifesto-modal-versions-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.manifesto-version-thumb {
+    width: 54px;
+    height: 74px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    background: #181818;
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.manifesto-version-thumb:hover {
+    border-color: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+}
+
+.manifesto-version-thumb.active {
+    border-color: #ffffff;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+}
+
+.manifesto-version-thumb-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Dettagli e testo manifesto */
+.manifesto-modal-details {
+    max-width: 700px;
+    width: 100%;
+    text-align: center;
+    color: #ffffff;
+    padding: 0 16px;
+}
+
+.manifesto-modal-header-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.manifesto-modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+
+.manifesto-modal-date {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.manifesto-modal-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 300;
+}
+
+/* ============================================================
    ARCHIVIO — Responsive
    ============================================================ */
 
 @media (max-width: 1024px) {
     .archivio-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .manifesti-masonry {
+        column-count: 2;
+        column-gap: 20px;
+    }
+
+    .manifesto-card {
+        margin-bottom: 20px;
     }
 }
 
@@ -1362,6 +1675,43 @@ nav a.active {
 
     .archivio-timeline {
         gap: 56px;
+    }
+
+    .manifesto-modal-close {
+        top: 16px;
+        right: 16px;
+        width: 38px;
+        height: 38px;
+    }
+
+    .manifesto-modal-large-media {
+        max-height: 55vh;
+        max-width: 90vw;
+    }
+}
+
+@media (max-width: 600px) {
+    .archivio-header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .manifesti-masonry {
+        column-count: 1;
+        column-gap: 16px;
+    }
+
+    .manifesto-card {
+        margin-bottom: 16px;
+    }
+
+    .manifesto-modal-title {
+        font-size: 18px;
+    }
+
+    .manifesto-modal-desc {
+        font-size: 13px;
     }
 }
 

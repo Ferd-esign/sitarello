@@ -33,7 +33,7 @@ function scanDir(dir) {
     const items = fs.readdirSync(dir, { withFileTypes: true });
 
     for (const item of items) {
-        if (item.name === '.DS_Store' || item.name === 'node_modules' || item.name === '.git') continue;
+        if (item.name === '.DS_Store' || item.name === 'node_modules') continue;
         const fullPath = path.join(dir, item.name);
 
         if (item.isDirectory()) {

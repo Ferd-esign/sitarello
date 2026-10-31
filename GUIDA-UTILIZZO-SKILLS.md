@@ -18,6 +18,9 @@ Quando hai pronto un nuovo progetto o materiale da inserire, basta aprire la cha
 @skill-page-archive Integra la cartella progetto "Percorso/Cartella"
 ```
 ```text
+@skill-page-manifesti Integra manifesto "Titolo" --data="Aprile 2026" --descrizione="Breve testo"
+```
+```text
 @skill-page-about Aggiorna profilo con "Percorso/NuovoCV_2026.pdf"
 ```
 ```text
@@ -67,6 +70,16 @@ NomeEsperimento/
 ├── copertina.webp          <- Anteprima per la griglia (rapporto 4:3)
 └── note.txt                <- Tag tecnici (Three.js, Creative Coding, Web Audio, ecc.)
 ```
+
+### C. Manifesti & Grafiche (`skill-page-manifesti`)
+```text
+NomeManifesto/
+├── 01_anteprima.mp4        <- PRIMO FILE = ANTEPRIMA (se video va in loop)
+├── 02_versione-dark.jpg    <- Versioni alternative visibili nella modale
+├── 03_versione-light.jpg
+└── note.txt                <- (Opzionale: Titolo, Data es. "Aprile 2026", Descrizione)
+```
+*Oppure allega direttamente i file e il testo nella chat!*
 
 ---
 

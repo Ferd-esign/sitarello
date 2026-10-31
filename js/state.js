@@ -5,7 +5,9 @@ export const state = {
     bioData: {},
     portfolioStruttura: [],
     playgroundData: [],
-    playgroundStruttura: []
+    playgroundStruttura: [],
+    manifestiData: [],
+    manifestiStruttura: []
 };
 
 // Helper per verificare se un file è un video
@@ -119,12 +121,14 @@ export function getPlaygroundMedia(project, struttura) {
 
 // Caricamento asincrono iniziale dei dati JSON
 export async function loadAppData() {
-    const [progettiRes, strutturaRes, bioRes, playgroundRes, playgroundStrutturaRes] = await Promise.all([
+    const [progettiRes, strutturaRes, bioRes, playgroundRes, playgroundStrutturaRes, manifestiRes, manifestiStrutturaRes] = await Promise.all([
         fetch('Progetti/progetti-data.json'),
         fetch('Progetti/portfolio-struttura.json'),
         fetch('Personal Branding/BIO-ABOUT-US.json'),
         fetch('Playground/playground-data.json').catch(() => ({ json: async () => [] })),
-        fetch('Playground/struttura-playground.json').catch(() => ({ json: async () => [] }))
+        fetch('Playground/struttura-playground.json').catch(() => ({ json: async () => [] })),
+        fetch('Manifesti/manifesti-data.json').catch(() => ({ json: async () => [] })),
+        fetch('Manifesti/struttura-manifesti.json').catch(() => ({ json: async () => [] }))
     ]);
 
     state.progettiData = await progettiRes.json();
@@ -132,6 +136,8 @@ export async function loadAppData() {
     state.bioData = await bioRes.json();
     state.playgroundData = await playgroundRes.json();
     state.playgroundStruttura = await playgroundStrutturaRes.json();
+    state.manifestiData = await manifestiRes.json();
+    state.manifestiStruttura = await manifestiStrutturaRes.json();
 
     // Auto-discovery lato client: aggiunge dinamicamente cartelle non ancora descritte
     if (Array.isArray(state.playgroundStruttura)) {
