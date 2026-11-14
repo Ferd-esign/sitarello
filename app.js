@@ -1547,7 +1547,7 @@ function renderProgetto(id) {
 
             ${coverHeroHtml}
 
-            <p class="progetto-descrizione reveal">${p.descrizione}</p>
+            ${p.descrizione ? `<p class="progetto-descrizione reveal">${p.descrizione}</p>` : ''}
 
             ${videoEmbedHtml}
 

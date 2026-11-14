@@ -96,8 +96,8 @@ function validateProgetti() {
         }
 
         // Campi descrittivi
-        if (!p.descrizione || p.descrizione.trim().length < 20) {
-            logWarn(`${pLabel}: descrizione breve o mancante.`);
+        if (p.descrizione && p.descrizione.trim().length < 20) {
+            logWarn(`${pLabel}: descrizione breve.`);
         }
         if (!p.metadati || typeof p.metadati !== 'object') {
             logError(`${pLabel}: oggetto "metadati" mancante.`);
