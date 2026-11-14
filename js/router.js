@@ -5,6 +5,7 @@ import { renderArchivio } from './views/archivio.js';
 import { renderPlayground, renderProgettoPlayground, togglePlaygroundModal } from './views/playground.js';
 import { renderAbout } from './views/about.js';
 import { renderProgetto } from './views/progetto.js';
+import { hideGyroConsentBannerIfNotHome } from './interactions/tilt.js';
 
 export function setActiveNav(targetId) {
     const navLinks = document.querySelectorAll('.nav-link');
@@ -15,6 +16,9 @@ export function setActiveNav(targetId) {
             const activeLinks = document.querySelectorAll(`[data-target="${id}"]`);
             activeLinks.forEach(link => link.classList.add('active'));
         });
+    }
+    if (targetId !== 'esplora') {
+        hideGyroConsentBannerIfNotHome();
     }
 }
 

@@ -1,6 +1,7 @@
 import { loadAppData, state } from './state.js';
 import { initRouter, navigateTo, handleRoute } from './router.js';
 import { initDrawer, openDrawer, closeDrawer } from './interactions/drawer.js';
+import { initCustomCursor } from './interactions/cursor.js';
 import { togglePlaygroundModal, handlePlaygroundModalOverlayClick } from './views/playground.js';
 import { triggerNextProject } from './views/progetto.js';
 import {
@@ -26,6 +27,7 @@ window.handleManifestoModalOverlayClick = handleManifestoModalOverlayClick;
 
 // Bootstrap dell'applicazione
 async function init() {
+    initCustomCursor();
     initDrawer();
     initRouter();
 

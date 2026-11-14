@@ -19,25 +19,31 @@ function isMediaTypeVideo(fileName) {
 
 // Helper per mappare i media di ciascun progetto dalla struttura dei file
 function getProjectMedia(project, struttura) {
+    if (!project || !project.cartella) return [];
     const cartellaLower = project.cartella.toLowerCase();
+    const idLower = (project.id || '').toLowerCase();
 
-    // 1. GESTIONE SPECIALE CARTELLA "TESI" (Intrecci Narrativi e sottoprogetti)
-    if (cartellaLower === 'nlm' || cartellaLower === 'marathia' || cartellaLower === 'cunti') {
+    // 1. GESTIONE SPECIALE CARTELLA "TESI" (Intrecci Narrativi e sottoprogetti INTRECCI, CUNTI, NODI)
+    const isTesi = cartellaLower === 'tesi' || cartellaLower === 'nlm' || idLower === 'nlm' ||
+        cartellaLower === 'marathia' || cartellaLower === 'nodi' || idLower === 'marathia' ||
+        cartellaLower === 'cunti' || idLower === 'cunti' || cartellaLower === 'intrecci';
+
+    if (isTesi) {
         const tesiFolder = struttura.find(item => item.Cartella.toLowerCase() === 'tesi');
         if (tesiFolder) {
             let matchedFiles = [];
             tesiFolder.File.forEach(fileName => {
                 const fileNameLower = fileName.toLowerCase();
 
-                // Se stiamo caricando il progetto padre (NLM), prendiamo tutti i file della cartella Tesi,
-                // perché renderProgetto li filtrerà poi per assegnarli ai rispettivi sottoprogetti.
                 let isMatch = false;
-                if (cartellaLower === 'nlm') {
+                if (cartellaLower === 'nlm' || cartellaLower === 'tesi' || idLower === 'nlm') {
                     isMatch = true;
-                } else if (cartellaLower === 'marathia' && fileNameLower.includes('marathia')) {
-                    isMatch = true;
-                } else if (cartellaLower === 'cunti' && fileNameLower.includes('cunti')) {
-                    isMatch = true;
+                } else if (cartellaLower === 'marathia' || cartellaLower === 'nodi' || idLower === 'marathia') {
+                    isMatch = fileNameLower.includes('marathia') || fileNameLower.includes('nodi');
+                } else if (cartellaLower === 'cunti' || idLower === 'cunti') {
+                    isMatch = fileNameLower.includes('cunti');
+                } else if (cartellaLower === 'intrecci') {
+                    isMatch = fileNameLower.includes('intrecci') || fileNameLower.includes('nlm');
                 }
 
                 if (isMatch) {
@@ -220,12 +226,276 @@ function initScrollReveal() {
     elements.forEach(el => observer.observe(el));
 }
 
-// ── EFFETTO TILT 3D ──
+// ── EFFETTO TILT 3D (Desktop: Mouse | Mobile: Giroscopio in Homepage) ──
+const CONSENT_STORAGE_KEY = 'fv_gyro_consent_v1';
+const gyroState = {
+    active: false,
+    rafId: null,
+    hasOrientationReading: false,
+    baseBeta: null,
+    baseGamma: null,
+    targetX: 0,
+    targetY: 0,
+    currentX: 0,
+    currentY: 0
+};
+
+function isMobileDevice() {
+    const coarsePointer = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    const mobileViewport = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+    const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    const mobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
+    const isIPadOS = (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    return coarsePointer || mobileUA || isIPadOS || (hasTouch && mobileViewport);
+}
+
+function isOnHomepage() {
+    return document.body.classList.contains('page-esplora') || !!document.querySelector('.hero');
+}
+
+async function requestGyroPermissionAndStart() {
+    let permissionGranted = false;
+    const needsIOSOrientationPerm = typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function';
+    const needsIOSMotionPerm = typeof DeviceMotionEvent !== 'undefined' &&
+        typeof DeviceMotionEvent.requestPermission === 'function';
+
+    if (needsIOSOrientationPerm || needsIOSMotionPerm) {
+        try {
+            const promises = [];
+            if (needsIOSOrientationPerm) promises.push(DeviceOrientationEvent.requestPermission().catch(() => 'denied'));
+            if (needsIOSMotionPerm) promises.push(DeviceMotionEvent.requestPermission().catch(() => 'denied'));
+            const results = await Promise.all(promises);
+            permissionGranted = results.some(r => r === 'granted');
+        } catch (_) {
+            permissionGranted = false;
+        }
+    } else {
+        permissionGranted = true;
+    }
+
+    if (permissionGranted) {
+        try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'granted'); } catch (_) {}
+        startGyroListeners();
+        return true;
+    } else {
+        try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'denied'); } catch (_) {}
+        return false;
+    }
+}
+
+function processAngles(beta, gamma) {
+    if (beta === null || gamma === null || isNaN(beta) || isNaN(gamma)) return;
+
+    if (gyroState.baseBeta === null || gyroState.baseGamma === null) {
+        gyroState.baseBeta = beta;
+        gyroState.baseGamma = gamma;
+    }
+
+    let deltaBeta = beta - gyroState.baseBeta;
+    let deltaGamma = gamma - gyroState.baseGamma;
+
+    if (deltaBeta > 180) deltaBeta -= 360;
+    if (deltaBeta < -180) deltaBeta += 360;
+    if (deltaGamma > 90) deltaGamma -= 180;
+    if (deltaGamma < -90) deltaGamma += 180;
+
+    const driftSpeed = (Math.abs(deltaBeta) > 40 || Math.abs(deltaGamma) > 40) ? 0.08 : 0.012;
+    gyroState.baseBeta += deltaBeta * driftSpeed;
+    gyroState.baseGamma += deltaGamma * driftSpeed;
+
+    const sensitivityDeg = 16;
+    const normGamma = Math.tanh(deltaGamma / sensitivityDeg);
+    const normBeta = Math.tanh(deltaBeta / sensitivityDeg);
+
+    const screenAngle = (window.screen && window.screen.orientation && typeof window.screen.orientation.angle === 'number')
+        ? window.screen.orientation.angle
+        : (typeof window.orientation === 'number' ? window.orientation : 0);
+
+    let xNorm = normGamma;
+    let yNorm = normBeta;
+
+    if (screenAngle === 90) {
+        xNorm = normBeta;
+        yNorm = -normGamma;
+    } else if (screenAngle === -90 || screenAngle === 270) {
+        xNorm = -normBeta;
+        yNorm = normGamma;
+    } else if (screenAngle === 180) {
+        xNorm = -normGamma;
+        yNorm = -normBeta;
+    }
+
+    gyroState.targetX = Math.max(-1, Math.min(1, xNorm));
+    gyroState.targetY = Math.max(-1, Math.min(1, yNorm));
+}
+
+function handleDeviceOrientation(event) {
+    if (event.beta !== null && event.gamma !== null) {
+        gyroState.hasOrientationReading = true;
+        processAngles(event.beta, event.gamma);
+    }
+}
+
+function handleDeviceOrientationAbsolute(event) {
+    if (!gyroState.hasOrientationReading && event.beta !== null && event.gamma !== null) {
+        processAngles(event.beta, event.gamma);
+    }
+}
+
+function handleDeviceMotion(event) {
+    if (gyroState.hasOrientationReading) return;
+    const ag = event.accelerationIncludingGravity;
+    if (!ag || ag.x === null || ag.y === null) return;
+
+    const x = ag.x || 0;
+    const y = ag.y || 0;
+    const z = ag.z || 0;
+    const roll = Math.atan2(x, Math.sqrt(y * y + z * z)) * (180 / Math.PI);
+    const pitch = Math.atan2(y, Math.sqrt(x * x + z * z)) * (180 / Math.PI);
+    processAngles(pitch, roll);
+}
+
+function startGyroListeners() {
+    if (gyroState.active) {
+        startGyroAnimationLoop();
+        return;
+    }
+    gyroState.active = true;
+    gyroState.baseBeta = null;
+    gyroState.baseGamma = null;
+
+    window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+    window.addEventListener('deviceorientationabsolute', handleDeviceOrientationAbsolute, { passive: true });
+    window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
+    window.addEventListener('orientationchange', () => {
+        gyroState.baseBeta = null;
+        gyroState.baseGamma = null;
+    });
+
+    startGyroAnimationLoop();
+}
+
+function startGyroAnimationLoop() {
+    if (gyroState.rafId) {
+        cancelAnimationFrame(gyroState.rafId);
+        gyroState.rafId = null;
+    }
+    const maxRotation = 8;
+    const animate = () => {
+        if (!gyroState.active) return;
+        if (!document.hidden && isOnHomepage() && isMobileDevice()) {
+            gyroState.currentX += (gyroState.targetX - gyroState.currentX) * 0.14;
+            gyroState.currentY += (gyroState.targetY - gyroState.currentY) * 0.14;
+            const rotateX = (gyroState.currentY * -maxRotation).toFixed(2);
+            const rotateY = (gyroState.currentX * maxRotation).toFixed(2);
+            const cards = document.querySelectorAll('.project-grid .project-card');
+            cards.forEach(card => {
+                card.style.transition = 'opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1)';
+                card.style.transform = `perspective(850px) scale3d(1.02, 1.02, 1.02) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+        }
+        gyroState.rafId = requestAnimationFrame(animate);
+    };
+    gyroState.rafId = requestAnimationFrame(animate);
+}
+
+function showGyroConsentBanner() {
+    if (!isMobileDevice() || !isOnHomepage()) return;
+    let banner = document.getElementById('gyro-consent-banner');
+    if (banner) {
+        banner.classList.add('is-visible');
+        return;
+    }
+
+    banner = document.createElement('div');
+    banner.id = 'gyro-consent-banner';
+    banner.className = 'gyro-consent-banner';
+    banner.setAttribute('role', 'dialog');
+    banner.setAttribute('aria-live', 'polite');
+    banner.setAttribute('aria-label', 'Consenso sensore di movimento 3D');
+    banner.innerHTML = `
+        <div class="gyro-consent-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                <path d="M12 18h.01"></path>
+                <path d="M2 12c0-2.8 4.5-5 10-5s10 2.2 10 5-4.5 5-10 5-10-2.2-10-5z"></path>
+            </svg>
+        </div>
+        <div class="gyro-consent-content">
+            <span class="gyro-consent-title">Esperienza 3D interattiva</span>
+            <span class="gyro-consent-desc">Consenti l'uso del giroscopio per inclinare le miniature muovendo il dispositivo.</span>
+        </div>
+        <div class="gyro-consent-actions">
+            <button type="button" id="gyro-consent-accept" class="gyro-btn-accept">Consenti</button>
+            <button type="button" id="gyro-consent-dismiss" class="gyro-btn-dismiss" aria-label="Chiudi">✕</button>
+        </div>
+    `;
+    document.body.appendChild(banner);
+    requestAnimationFrame(() => requestAnimationFrame(() => banner.classList.add('is-visible')));
+
+    const hideBanner = () => {
+        banner.classList.remove('is-visible');
+        setTimeout(() => {
+            if (banner && banner.parentNode) banner.parentNode.removeChild(banner);
+        }, 350);
+    };
+
+    const acceptBtn = banner.querySelector('#gyro-consent-accept');
+    const dismissBtn = banner.querySelector('#gyro-consent-dismiss');
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', async () => {
+            await requestGyroPermissionAndStart();
+            hideBanner();
+        });
+    }
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+            try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'denied'); } catch (_) {}
+            hideBanner();
+        });
+    }
+}
+
+async function initMobileHomepageGyro() {
+    if (!isOnHomepage()) return;
+    if (gyroState.active) {
+        startGyroAnimationLoop();
+        return;
+    }
+    let storedConsent = null;
+    try { storedConsent = sessionStorage.getItem(CONSENT_STORAGE_KEY); } catch (_) {}
+    if (storedConsent === 'denied') return;
+
+    const needsIOSPermission = (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') ||
+        (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function');
+
+    if (storedConsent === 'granted') {
+        if (!needsIOSPermission) {
+            startGyroListeners();
+            return;
+        } else {
+            try {
+                const state = await DeviceOrientationEvent.requestPermission();
+                if (state === 'granted') {
+                    startGyroListeners();
+                    return;
+                }
+            } catch (_) {}
+        }
+    }
+    showGyroConsentBanner();
+}
+
 function initTiltEffect() {
+    if (isMobileDevice()) {
+        initMobileHomepageGyro();
+        return;
+    }
+
     const cards = document.querySelectorAll('.project-card, .archivio-card');
 
     cards.forEach(card => {
-        // Rimuovi eventuali event listener precedenti se la funzione viene chiamata più volte
         if (card.dataset.tiltInitialized) return;
         card.dataset.tiltInitialized = 'true';
 
@@ -235,22 +505,20 @@ function initTiltEffect() {
         const onMove = (clientX, clientY) => {
             if (!bounds) bounds = card.getBoundingClientRect();
 
-            // Calcola la posizione relativa del cursore/tocco
             const x = clientX - bounds.left;
             const y = clientY - bounds.top;
 
-            // Normalizza tra -1 e 1
             const xNorm = (x / bounds.width) * 2 - 1;
             const yNorm = (y / bounds.height) * 2 - 1;
 
-            const maxRotation = 6; // Gradi massimi (5°-8°)
+            const maxRotation = 6;
             const rotateX = yNorm * -maxRotation;
             const rotateY = xNorm * maxRotation;
 
             requestAnimationFrame(() => {
                 if (isHovered) {
                     card.style.transform = `perspective(1000px) scale3d(1.02, 1.02, 1.02) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-                    card.style.transition = 'none'; // Reattività immediata al movimento
+                    card.style.transition = 'none';
                 }
             });
         };
@@ -268,7 +536,6 @@ function initTiltEffect() {
                 card.style.transition = 'transform 0.3s ease';
                 card.style.transform = 'perspective(1000px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg)';
 
-                // Rimuovi gli stili inline per ripristinare le regole CSS originali
                 setTimeout(() => {
                     if (!isHovered) {
                         card.style.transform = '';
@@ -285,15 +552,6 @@ function initTiltEffect() {
             onMove(e.clientX, e.clientY);
         });
         card.addEventListener('mouseleave', onLeave);
-
-        // Mobile
-        card.addEventListener('touchstart', onEnter, { passive: true });
-        card.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                onMove(e.touches[0].clientX, e.touches[0].clientY);
-            }
-        }, { passive: true });
-        card.addEventListener('touchend', onLeave);
     });
 }
 
@@ -1108,6 +1366,11 @@ function renderProgetto(id) {
 
     // ── Galleria principale (solo i media del progetto padre, non dei sottoprogetti) ──
     const subKeywords = (p.sottoprogetti || []).map(sp => sp.cartella.toLowerCase());
+    if (p.id === 'nlm' || (p.cartella && p.cartella.toLowerCase() === 'tesi')) {
+        ['cunti', 'marathia', 'nodi'].forEach(k => {
+            if (!subKeywords.includes(k)) subKeywords.push(k);
+        });
+    }
     let mainMedia = p.sottoprogetti
         ? media.filter(m => !subKeywords.some(kw => m.name.toLowerCase().includes(kw)))
         : media;
@@ -1144,9 +1407,15 @@ function renderProgetto(id) {
     let subProjectsHtml = '';
     if (p.sottoprogetti && p.sottoprogetti.length > 0) {
         p.sottoprogetti.forEach(sp => {
-            // Filtra i media del sottoprogetto per nome file
+            // Filtra i media del sottoprogetto per nome file o cartella
             const spKey = sp.cartella.toLowerCase();
-            const spMedia = media.filter(m => m.name.toLowerCase().includes(spKey));
+            const spMedia = media.filter(m => {
+                const nameLower = m.name.toLowerCase();
+                if (spKey === 'nodi' || spKey === 'marathia') {
+                    return nameLower.includes('nodi') || nameLower.includes('marathia');
+                }
+                return nameLower.includes(spKey);
+            });
 
             const spCoverMedia = getCoverMedia(spMedia);
 
@@ -1333,8 +1602,63 @@ navLinks.forEach(link => {
     link.addEventListener('click', closeDrawer);
 });
 
+// Cursore personalizzato desktop: quadratino piccolo blu branding che diventa cerchietto in hover
+function initCustomCursor() {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        return;
+    }
+
+    let cursor = document.getElementById('custom-cursor');
+    if (!cursor) {
+        cursor = document.createElement('div');
+        cursor.id = 'custom-cursor';
+        cursor.className = 'custom-cursor';
+        cursor.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(cursor);
+    }
+
+    let isVisible = false;
+
+    function isInteractive(element) {
+        if (!element || element === document.body || element === document.documentElement) return false;
+        return !!element.closest(
+            'a, button, input, textarea, select, [role="button"], [role="link"], [tabindex]:not([tabindex="-1"]), label, summary, .manifesto-card, .progetto-card, .filter-chip, .clickable, [onclick]'
+        );
+    }
+
+    const onPointerMove = (e) => {
+        if (!isVisible) {
+            isVisible = true;
+            cursor.classList.add('is-visible');
+        }
+        cursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
+
+        const target = document.elementFromPoint(e.clientX, e.clientY) || e.target;
+        if (target && isInteractive(target)) {
+            cursor.classList.add('is-hover');
+        } else {
+            cursor.classList.remove('is-hover');
+        }
+    };
+
+    const onPointerLeave = () => {
+        isVisible = false;
+        cursor.classList.remove('is-visible');
+    };
+
+    const onPointerEnter = () => {
+        isVisible = true;
+        cursor.classList.add('is-visible');
+    };
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    document.addEventListener('mouseleave', onPointerLeave);
+    document.addEventListener('mouseenter', onPointerEnter);
+}
+
 // Funzione asincrona di avvio per caricare i file JSON
 async function init() {
+    initCustomCursor();
     try {
         const [progettiRes, strutturaRes, bioRes, playgroundRes, playgroundStrutturaRes, manifestiRes, manifestiStrutturaRes] = await Promise.all([
             fetch('Progetti/progetti-data.json'),

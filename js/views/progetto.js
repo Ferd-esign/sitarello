@@ -168,6 +168,11 @@ export function renderProgetto(id) {
 
     // Galleria principale (solo i media del progetto padre)
     const subKeywords = (p.sottoprogetti || []).map(sp => sp.cartella.toLowerCase());
+    if (p.id === 'nlm' || (p.cartella && p.cartella.toLowerCase() === 'tesi')) {
+        ['cunti', 'marathia', 'nodi'].forEach(k => {
+            if (!subKeywords.includes(k)) subKeywords.push(k);
+        });
+    }
     let mainMedia = p.sottoprogetti
         ? media.filter(m => !subKeywords.some(kw => m.name.toLowerCase().includes(kw)))
         : media;
@@ -204,7 +209,13 @@ export function renderProgetto(id) {
     if (p.sottoprogetti && p.sottoprogetti.length > 0) {
         p.sottoprogetti.forEach(sp => {
             const spKey = sp.cartella.toLowerCase();
-            const spMedia = media.filter(m => m.name.toLowerCase().includes(spKey));
+            const spMedia = media.filter(m => {
+                const nameLower = m.name.toLowerCase();
+                if (spKey === 'nodi' || spKey === 'marathia') {
+                    return nameLower.includes('nodi') || nameLower.includes('marathia');
+                }
+                return nameLower.includes(spKey);
+            });
             const spCoverMedia = getCoverMedia(spMedia);
 
             let spGalleryHtml = '';

@@ -20,22 +20,30 @@ export function isMediaTypeVideo(fileName) {
 export function getProjectMedia(project, struttura) {
     if (!project || !project.cartella) return [];
     const cartellaLower = project.cartella.toLowerCase();
+    const idLower = (project.id || '').toLowerCase();
     const portfolio = struttura || state.portfolioStruttura;
 
-    // 1. Gestione speciale cartella "Tesi" (Intrecci Narrativi e sottoprogetti)
-    if (cartellaLower === 'nlm' || cartellaLower === 'marathia' || cartellaLower === 'cunti') {
+    // 1. Gestione cartella "Tesi" (Intrecci Narrativi e sottoprogetti INTRECCI, CUNTI, NODI)
+    const isTesi = cartellaLower === 'tesi' || cartellaLower === 'nlm' || idLower === 'nlm' ||
+        cartellaLower === 'marathia' || cartellaLower === 'nodi' || idLower === 'marathia' ||
+        cartellaLower === 'cunti' || idLower === 'cunti' || cartellaLower === 'intrecci';
+
+    if (isTesi) {
         const tesiFolder = portfolio.find(item => item.Cartella.toLowerCase() === 'tesi');
         if (tesiFolder) {
             let matchedFiles = [];
             tesiFolder.File.forEach(fileName => {
                 const fileNameLower = fileName.toLowerCase();
                 let isMatch = false;
-                if (cartellaLower === 'nlm') {
+
+                if (cartellaLower === 'nlm' || cartellaLower === 'tesi' || idLower === 'nlm') {
                     isMatch = true;
-                } else if (cartellaLower === 'marathia' && fileNameLower.includes('marathia')) {
-                    isMatch = true;
-                } else if (cartellaLower === 'cunti' && fileNameLower.includes('cunti')) {
-                    isMatch = true;
+                } else if (cartellaLower === 'marathia' || cartellaLower === 'nodi' || idLower === 'marathia') {
+                    isMatch = fileNameLower.includes('marathia') || fileNameLower.includes('nodi');
+                } else if (cartellaLower === 'cunti' || idLower === 'cunti') {
+                    isMatch = fileNameLower.includes('cunti');
+                } else if (cartellaLower === 'intrecci') {
+                    isMatch = fileNameLower.includes('intrecci') || fileNameLower.includes('nlm');
                 }
 
                 if (isMatch) {

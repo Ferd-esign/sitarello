@@ -18,10 +18,10 @@
   },
   {
     "id": "nlm",
-    "cartella": "NLM",
+    "cartella": "Tesi",
     "titolo": "Intrecci Narrativi a Maratea",
     "titoloEvocativo": "La Nuova Libbaneria Mediterranea tra design sociale e territorio",
-    "descrizione": "Raccolta editoriale che esplora il legame tra territorio e antiche tecniche artigianali. Al centro vi è la riscoperta dei libbani, corde vegetali oggi reinterpretate con lente moderna. Il cofanetto racchiude un albo e una mappa che guidano tra memoria e innovazione sociale. Il progetto riattiva un patrimonio immateriale rendendolo nuovamente tangibile e narrabile per la comunità.",
+    "descrizione": "A Maratea la cultura materiale dei libbàni — corde vegetali in tagliamani riattivate dall'impresa sociale Nuova Libbaneria Mediterranea — diventa strumento di riscatto e memoria viva per la comunità. Da questa pratica di coesione prende forma Intrecci Narrativi a Maratea, progetto di tesi in Community Design all'Università Federico II con la relatrice Maria Luisa Firpo, pubblicato da Sintesi Edizioni. La ricerca sul campo si traduce in una raccolta editoriale a due anime, dove l'intreccio non è solo tecnica artigianale ma principio narrativo strutturale. Attraverso un vocabolario visivo di segni minimi e memorie orali, il progetto restituisce la ricetta di un rinnovato saper fare comunità.",
     "prime": true,
     "metadati": {
       "progetto": [
@@ -35,17 +35,17 @@
     "sottoprogetti": [
       {
         "id": "cunti",
-        "cartella": "Cunti",
+        "cartella": "CUNTI",
         "titolo": "Cunti da libbàni",
         "titoloEvocativo": "Una Ricetta del Saper Fare Comunità",
-        "descrizione": "Albo illustrato e manifesto per un design collaborativo radicato nelle tradizioni locali. La pubblicazione documenta la lavorazione delle fibre vegetali come simbolo di resilienza creativa. Raccoglie visioni di designer che hanno reinterpretato i libbani per oggetti d'uso quotidiano. Una guida su come la condivisione di saperi possa rigenerare l'identità di un intero territorio."
+        "descrizione": "In Cunti da libbàni la lavorazione si fa racconto popolare attraverso il dialogo tra Angelina Tortorella e la nipotina Maria, scandendo in dialetto lucano le cinque fasi dell'intreccio tradizionale. L'albo documenta il processo di coprogettazione e le residenze artistiche di Sara Bologna, Marco Deodati e Davide Tagliabue per \"Intrecci di comunità\", progetto inserito nell'ADI Design Index 2020. Le illustrazioni a tratti minimi dialogano con una cura materica rigorosa: carta Fedrigoni Arena, packaging in carta Gesso, stampa di Grafica Metelliana e una legatura a filo Singer rifinita con un libbano artigianale, sviluppato assieme a uno storico cordaio di Cava de' Tirreni."
       },
       {
         "id": "marathia",
-        "cartella": "Marathia",
+        "cartella": "NODI",
         "titolo": "Marathia",
-        "titoloEvocativo": "Geografie Emotive di Maratea",
-        "descrizione": "Sistema di editoria e servizi per scoprire Maratea attraverso una mappatura partecipativa. Una mappa pieghevole raccoglie emozioni e tracce urbane, espandendosi grazie a sticker interattivi usati dagli utenti. L'approccio trasforma il cammino in pratica collettiva di riscoperta del paesaggio. Uno strumento che unisce rigore cartografico alla poesia dell'esperienza vissuta sul campo."
+        "titoloEvocativo": "Nodi: geografie emotive di Maratea",
+        "descrizione": "Il pieghevole Nodi: geografie emotive di Maratea capovolge la cartografia convenzionale trasformando il visitatore in cittadino temporaneo. Nato dalla domanda cardine dell'esperienza immersiva Eco — «Qual è il nodo che ti lega a questa terra?» —, il supporto invita a mappare impressioni ed emozioni attraverso sticker interattivi e pensieri scritti. Uno strumento relazionale vivo e partecipativo, dove il rigore topografico si fonde con la memoria corale e l'esplorazione del paesaggio lucano."
       }
     ]
   },

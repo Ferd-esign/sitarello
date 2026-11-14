@@ -113,6 +113,15 @@ function validateProgetti() {
                 if (!sub.id) logError(`${subLabel}: campo "id" mancante.`);
                 if (!sub.cartella) logError(`${subLabel}: campo "cartella" mancante.`);
                 if (!sub.descrizione) logWarn(`${subLabel}: descrizione mancante.`);
+
+                // Verifica esistenza sottocartella fisica se il progetto padre è Tesi
+                if (p.cartella && (p.cartella.toLowerCase() === 'tesi' || p.cartella.toLowerCase() === 'nlm')) {
+                    const subDirPath = path.join(PROGETTI_DIR, 'Tesi', sub.cartella);
+                    if (fs.existsSync(subDirPath)) {
+                        const subFiles = fs.readdirSync(subDirPath).filter(f => !f.startsWith('.'));
+                        logPass(`${subLabel}: sottocartella fisica "Tesi/${sub.cartella}" presente (${subFiles.length} file).`);
+                    }
+                }
             });
         }
     });
