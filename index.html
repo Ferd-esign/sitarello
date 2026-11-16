@@ -23,13 +23,13 @@
     <!-- DM Sans Variable Font (@font-face in style.css) -->
     <link rel="stylesheet" href="style.css">
     <!-- Favicon & Touch Icons (compatibilità universale Safari, Chrome, Firefox, Edge, iOS) -->
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="apple-touch-icon-precomposed" href="apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-    <link rel="icon" type="image/png" href="favicon-ferd.png">
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-    <link rel="icon" type="image/x-icon" href="favicon-ferd.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="apple-touch-icon-precomposed" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16.png">
+    <link rel="icon" type="image/png" href="favicon/favicon-ferd.png">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="favicon/favicon-ferd.ico">
 
     <!-- JSON-LD Structured Data Container -->
     <script type="application/ld+json" id="schema-ld"></script>
@@ -50,6 +50,13 @@
             <a href="/archivio" class="nav-link" data-target="archivio">ARCHIVIO</a>
             <a href="/playground" class="nav-link" data-target="playground">PLAYGROUND</a>
             <a href="/about" class="nav-link" data-target="about">ABOUT</a>
+            <span class="nav-divider" aria-hidden="true"></span>
+            <div class="nav-box-sintesi">
+                <a href="/sintesi/" class="nav-link nav-link-sintesi" data-target="sintesi" data-external="true">
+                    SINTESI
+                    <span class="nav-badge">new space</span>
+                </a>
+            </div>
         </nav>
 
         <!-- Pulsante Menu visibile solo su Mobile -->
@@ -64,9 +71,17 @@
             <a href="/archivio" class="nav-link" data-target="archivio">Archivio</a>
             <a href="/playground" class="nav-link" data-target="playground">Playground</a>
             <a href="/about" class="nav-link" data-target="about">About</a>
+            <div class="mobile-nav-divider" aria-hidden="true"></div>
+            <div class="nav-box-sintesi">
+                <a href="/sintesi/" class="nav-link nav-link-sintesi" data-target="sintesi" data-external="true">
+                    Sintesi
+                    <span class="nav-badge">new space</span>
+                </a>
+            </div>
         </nav>
         <div class="drawer-footer">
-            <a href="mailto:virnoferdinando@gmail.com" class="drawer-cta-btn" onclick="closeDrawer()">Contattami</a>
+            <a href="mailto:virnoferdinando@gmail.com" class="drawer-cta-btn" onclick="closeDrawer()">Lavoriamo
+                insieme</a>
             <div class="drawer-socials">
                 <a href="https://www.instagram.com/ferd.esign/" target="_blank" aria-label="Instagram"
                     rel="noopener noreferrer">

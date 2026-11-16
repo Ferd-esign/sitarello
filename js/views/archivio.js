@@ -46,30 +46,23 @@ export function renderArchivio() {
     // 3. Generazione HTML Intestazione e Switcher Sezioni
     let html = `
         <div class="archivio-header reveal">
-            <div class="archivio-header-top">
-                <h2 class="archivio-title">Archivio</h2>
-                <div class="archivio-section-tabs" role="tablist" aria-label="Sezioni Archivio">
-                    <button id="tab-btn-progetti" 
-                            class="archivio-tab-btn ${currentSection === 'progetti' ? 'active' : ''}" 
-                            onclick="switchArchivioSection('progetti')" 
-                            role="tab" 
-                            aria-selected="${currentSection === 'progetti'}">
-                        PROGETTI <span class="archivio-tab-count">${sortedProgetti.length}</span>
-                    </button>
-                    <button id="tab-btn-manifesti" 
-                            class="archivio-tab-btn ${currentSection === 'manifesti' ? 'active' : ''}" 
-                            onclick="switchArchivioSection('manifesti')" 
-                            role="tab" 
-                            aria-selected="${currentSection === 'manifesti'}">
-                        MANIFESTI <span class="archivio-tab-count">${sortedManifesti.length}</span>
-                    </button>
-                </div>
+            <h2 class="archivio-title">Archivio</h2>
+            <div class="archivio-section-tabs" role="tablist" aria-label="Sezioni Archivio">
+                <button id="tab-btn-progetti" 
+                        class="archivio-tab-btn ${currentSection === 'progetti' ? 'active' : ''}" 
+                        onclick="switchArchivioSection('progetti')" 
+                        role="tab" 
+                        aria-selected="${currentSection === 'progetti'}">
+                    PROGETTI
+                </button>
+                <button id="tab-btn-manifesti" 
+                        class="archivio-tab-btn ${currentSection === 'manifesti' ? 'active' : ''}" 
+                        onclick="switchArchivioSection('manifesti')" 
+                        role="tab" 
+                        aria-selected="${currentSection === 'manifesti'}">
+                    MANIFESTI
+                </button>
             </div>
-            <p class="archivio-subtitle" id="archivio-subtitle">
-                ${currentSection === 'manifesti'
-                    ? 'Una raccolta visiva di manifesti, poster e sperimentazioni grafiche.'
-                    : 'Una selezione di progetti significativi, organizzati nel tempo.'}
-            </p>
         </div>
     `;
 

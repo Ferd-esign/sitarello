@@ -27,7 +27,9 @@ function generateSitemap() {
         { loc: `${BASE_URL}/`, priority: '1.0' },
         { loc: `${BASE_URL}/archivio`, priority: '0.8' },
         { loc: `${BASE_URL}/playground`, priority: '0.8' },
-        { loc: `${BASE_URL}/contatti`, priority: '0.8' }
+        { loc: `${BASE_URL}/about`, priority: '0.8' },
+        { loc: `${BASE_URL}/contatti`, priority: '0.8' },
+        { loc: `${BASE_URL}/sintesi/`, priority: '0.9' }
     ];
 
     // Progetti principali

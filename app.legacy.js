@@ -412,7 +412,6 @@ function renderArchivio() {
     let html = `
         <div class="archivio-header reveal">
             <h2 class="archivio-title">Archivio</h2>
-            <p class="archivio-subtitle">Una selezione di progetti significativi, organizzati nel tempo.</p>
         </div>
         <div class="archivio-timeline">
     `;
@@ -501,7 +500,6 @@ function renderPlayground() {
     let html = `
         <div class="archivio-header reveal">
             <h2 class="archivio-title">Playground</h2>
-            <p class="archivio-subtitle">Laboratorio di sperimentazioni visive, prototipi interattivi e progetti di codice.</p>
         </div>
         <div class="archivio-grid">
     `;

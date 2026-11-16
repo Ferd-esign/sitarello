@@ -60,6 +60,12 @@ export function handleRoute() {
     const segments = cleanPath ? cleanPath.split('/') : [];
     const slug = segments.length > 0 ? segments[segments.length - 1].toLowerCase() : '';
 
+    // Se l'URL punta a sintesi, reindirizza direttamente al sottosito indipendente
+    if (cleanPath === 'sintesi' || cleanPath.startsWith('sintesi/')) {
+        window.location.replace('/sintesi/');
+        return;
+    }
+
     if (!cleanPath || cleanPath === 'esplora') {
         renderEsplora();
         SEOManager.update('esplora');
@@ -121,7 +127,15 @@ export function initRouter() {
         const link = e.target.closest('a');
         if (link) {
             const href = link.getAttribute('href');
-            if (href && (href.startsWith('/') || href.startsWith('#')) && !href.startsWith('mailto:') && link.getAttribute('target') !== '_blank') {
+            // Esclude mailto, percorsi esterni, target blank e la sezione indipendente /sintesi
+            if (
+                href &&
+                (href.startsWith('/') || href.startsWith('#')) &&
+                !href.startsWith('mailto:') &&
+                !href.startsWith('/sintesi') &&
+                !link.hasAttribute('data-external') &&
+                link.getAttribute('target') !== '_blank'
+            ) {
                 e.preventDefault();
                 const targetPath = href.startsWith('#') ? href.replace(/^#\/?/, '/') : href;
                 navigateTo(targetPath || '/');

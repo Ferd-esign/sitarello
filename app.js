@@ -275,11 +275,11 @@ async function requestGyroPermissionAndStart() {
     }
 
     if (permissionGranted) {
-        try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'granted'); } catch (_) {}
+        try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'granted'); } catch (_) { }
         startGyroListeners();
         return true;
     } else {
-        try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'denied'); } catch (_) {}
+        try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'denied'); } catch (_) { }
         return false;
     }
 }
@@ -423,7 +423,7 @@ function showGyroConsentBanner() {
             </svg>
         </div>
         <div class="gyro-consent-content">
-            <span class="gyro-consent-title">Esperienza 3D interattiva</span>
+            <span class="gyro-consent-title">Esperienza interattiva</span>
             <span class="gyro-consent-desc">Consenti l'uso del giroscopio per inclinare le miniature muovendo il dispositivo.</span>
         </div>
         <div class="gyro-consent-actions">
@@ -451,7 +451,7 @@ function showGyroConsentBanner() {
     }
     if (dismissBtn) {
         dismissBtn.addEventListener('click', () => {
-            try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'denied'); } catch (_) {}
+            try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'denied'); } catch (_) { }
             hideBanner();
         });
     }
@@ -464,7 +464,7 @@ async function initMobileHomepageGyro() {
         return;
     }
     let storedConsent = null;
-    try { storedConsent = sessionStorage.getItem(CONSENT_STORAGE_KEY); } catch (_) {}
+    try { storedConsent = sessionStorage.getItem(CONSENT_STORAGE_KEY); } catch (_) { }
     if (storedConsent === 'denied') return;
 
     const needsIOSPermission = (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') ||
@@ -481,7 +481,7 @@ async function initMobileHomepageGyro() {
                     startGyroListeners();
                     return;
                 }
-            } catch (_) {}
+            } catch (_) { }
         }
     }
     showGyroConsentBanner();
@@ -572,7 +572,14 @@ document.addEventListener('click', (e) => {
     const link = e.target.closest('a');
     if (link) {
         const href = link.getAttribute('href');
-        if (href && (href.startsWith('/') || href.startsWith('#')) && !href.startsWith('mailto:') && link.getAttribute('target') !== '_blank') {
+        if (
+            href &&
+            (href.startsWith('/') || href.startsWith('#')) &&
+            !href.startsWith('mailto:') &&
+            !href.startsWith('/sintesi') &&
+            !link.hasAttribute('data-external') &&
+            link.getAttribute('target') !== '_blank'
+        ) {
             e.preventDefault();
             const targetPath = href.startsWith('#') ? href.replace(/^#\/?/, '/') : href;
             navigateTo(targetPath || '/');
@@ -689,30 +696,23 @@ function renderArchivio() {
 
     let html = `
         <div class="archivio-header reveal">
-            <div class="archivio-header-top">
-                <h2 class="archivio-title">Archivio</h2>
-                <div class="archivio-section-tabs" role="tablist" aria-label="Sezioni Archivio">
-                    <button id="tab-btn-progetti" 
-                            class="archivio-tab-btn ${currentArchivioSection === 'progetti' ? 'active' : ''}" 
-                            onclick="switchArchivioSection('progetti')" 
-                            role="tab" 
-                            aria-selected="${currentArchivioSection === 'progetti'}">
-                        PROGETTI <span class="archivio-tab-count">${sorted.length}</span>
-                    </button>
-                    <button id="tab-btn-manifesti" 
-                            class="archivio-tab-btn ${currentArchivioSection === 'manifesti' ? 'active' : ''}" 
-                            onclick="switchArchivioSection('manifesti')" 
-                            role="tab" 
-                            aria-selected="${currentArchivioSection === 'manifesti'}">
-                        MANIFESTI <span class="archivio-tab-count">${sortedManifesti.length}</span>
-                    </button>
-                </div>
+            <h2 class="archivio-title">Archivio</h2>
+            <div class="archivio-section-tabs" role="tablist" aria-label="Sezioni Archivio">
+                <button id="tab-btn-progetti" 
+                        class="archivio-tab-btn ${currentArchivioSection === 'progetti' ? 'active' : ''}" 
+                        onclick="switchArchivioSection('progetti')" 
+                        role="tab" 
+                        aria-selected="${currentArchivioSection === 'progetti'}">
+                    PROGETTI
+                </button>
+                <button id="tab-btn-manifesti" 
+                        class="archivio-tab-btn ${currentArchivioSection === 'manifesti' ? 'active' : ''}" 
+                        onclick="switchArchivioSection('manifesti')" 
+                        role="tab" 
+                        aria-selected="${currentArchivioSection === 'manifesti'}">
+                    MANIFESTI
+                </button>
             </div>
-            <p class="archivio-subtitle" id="archivio-subtitle">
-                ${currentArchivioSection === 'manifesti'
-                    ? 'Una raccolta visiva di manifesti, poster e sperimentazioni grafiche.'
-                    : 'Una selezione di progetti significativi, organizzati nel tempo.'}
-            </p>
         </div>
         <div id="archivio-progetti-view" class="archivio-timeline" style="${currentArchivioSection === 'progetti' ? 'display: flex;' : 'display: none;'}">
     `;
@@ -1051,7 +1051,6 @@ function renderPlayground() {
     let html = `
         <div class="archivio-header reveal">
             <h2 class="archivio-title">Playground</h2>
-            <p class="archivio-subtitle">Laboratorio di sperimentazioni visive, prototipi interattivi e progetti di codice.</p>
         </div>
         <div class="archivio-grid">
     `;
@@ -1862,6 +1861,11 @@ function handleRoute() {
     const cleanPath = pathname.replace(/^\/+|\/+$/g, '');
     const segments = cleanPath ? cleanPath.split('/') : [];
     const slug = segments.length > 0 ? segments[segments.length - 1].toLowerCase() : '';
+
+    if (cleanPath === 'sintesi' || cleanPath.startsWith('sintesi/')) {
+        window.location.replace('/sintesi/');
+        return;
+    }
 
     if (!cleanPath || cleanPath === 'esplora') {
         renderEsplora();
