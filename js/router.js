@@ -34,7 +34,7 @@ export function navigateTo(path, replace = false) {
     const targetUrl = path.startsWith('/') ? path : '/' + path;
     if (replace) {
         window.history.replaceState(null, '', targetUrl);
-    } else if (window.location.pathname + window.location.search !== targetUrl) {
+    } else if (window.location.pathname + window.location.search + window.location.hash !== targetUrl) {
         window.history.pushState(null, '', targetUrl);
     }
     handleRoute();
@@ -48,8 +48,10 @@ export function handleRoute() {
 
     let pathname = window.location.pathname;
     const hash = window.location.hash;
-    if (hash && hash.length > 1) {
-        const cleanHash = hash.replace(/^#\/?/, '');
+    const archivioSections = ['progetti', 'manifesti', 'playground'];
+    const cleanHash = hash ? hash.replace(/^#\/?/, '').toLowerCase() : '';
+
+    if (hash && hash.length > 1 && !archivioSections.includes(cleanHash)) {
         if (cleanHash) {
             pathname = '/' + cleanHash;
             window.history.replaceState(null, '', pathname);
@@ -73,14 +75,16 @@ export function handleRoute() {
     }
 
     if (cleanPath === 'archivio') {
-        renderArchivio();
+        const targetSec = archivioSections.includes(cleanHash) ? cleanHash : null;
+        renderArchivio(targetSec);
         SEOManager.update('archivio');
         return;
     }
 
     if (cleanPath === 'playground') {
-        renderPlayground();
-        SEOManager.update('playground');
+        window.history.replaceState(null, '', '/archivio#playground');
+        renderArchivio('playground');
+        SEOManager.update('archivio');
         return;
     }
 

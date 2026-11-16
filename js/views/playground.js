@@ -1,7 +1,6 @@
 import { state, getPlaygroundMedia, getCoverMedia } from '../state.js';
-import { initScrollReveal } from '../interactions/reveal.js';
-import { initTiltEffect } from '../interactions/tilt.js';
 import { setActiveNav, scrollToTop } from '../router.js';
+import { renderArchivio } from './archivio.js';
 
 export function togglePlaygroundModal(show) {
     const modal = document.getElementById('pg-info-modal');
@@ -26,55 +25,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 export function renderPlayground() {
-    setActiveNav('playground');
-
-    const appContent = document.getElementById('app-content');
-    if (!appContent) return;
-
-    const sorted = [...state.playgroundData].sort((a, b) => {
-        const annoA = (a.metadati && a.metadati.anno) ? a.metadati.anno : 0;
-        const annoB = (b.metadati && b.metadati.anno) ? b.metadati.anno : 0;
-        if (annoB !== annoA) return annoB - annoA;
-        return a.titolo.localeCompare(b.titolo, 'it', { sensitivity: 'base' });
-    });
-
-    let html = `
-        <div class="archivio-header reveal">
-            <h2 class="archivio-title">Playground</h2>
-        </div>
-        <div class="archivio-grid">
-    `;
-
-    sorted.forEach((p) => {
-        const media = getPlaygroundMedia(p, state.playgroundStruttura);
-        const coverMedia = getCoverMedia(media);
-
-        let coverHtml = `<div class="archivio-card-cover-placeholder">—</div>`;
-        if (coverMedia) {
-            if (coverMedia.type === 'video') {
-                coverHtml = `<video src="${coverMedia.path}" class="archivio-card-cover-media" autoplay loop muted playsinline></video>`;
-            } else {
-                coverHtml = `<img src="${coverMedia.path}" alt="${p.titolo}" class="archivio-card-cover-media">`;
-            }
-        }
-
-        html += `
-            <div class="archivio-card reveal" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri esperimento ${p.titolo}">
-                <div class="archivio-card-cover">
-                    ${coverHtml}
-                </div>
-                <div class="archivio-card-info">
-                    <h3 class="archivio-card-title">${p.titolo}</h3>
-                </div>
-            </div>
-        `;
-    });
-
-    html += `</div>`;
-    appContent.innerHTML = html;
-    scrollToTop();
-    initScrollReveal();
-    initTiltEffect();
+    renderArchivio('playground');
 }
 
 export function renderProgettoPlayground(id) {
@@ -86,7 +37,7 @@ export function renderProgettoPlayground(id) {
 
     document.body.classList.add('playground-fullscreen-mode');
     document.body.classList.add('hide-footer');
-    setActiveNav('playground');
+    setActiveNav('archivio');
 
     const projectUrl = p.url || `Playground/${p.cartella}/index.html`;
 
@@ -100,7 +51,7 @@ export function renderProgettoPlayground(id) {
     appContent.innerHTML = `
         <div class="pg-fullscreen-container">
             <header class="pg-fullscreen-header">
-                <button class="pg-back-btn" onclick="navigateTo('/playground')" aria-label="Torna a Playground">
+                <button class="pg-back-btn" onclick="navigateTo('/archivio#playground')" aria-label="Torna a Playground">
                     ← Torna a Playground
                 </button>
                 <div class="pg-header-actions">

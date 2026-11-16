@@ -606,7 +606,6 @@ function renderEsplora() {
 
     let html = `
         <div class="hero">
-            <img src="Personal Branding/logotipo-ferd.png" alt="Ferdinando Virno" class="hero-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <h1 class="claim">
                 <span class="claim-line">${line1}</span>
                 <span class="claim-line">${line2}</span>
@@ -650,7 +649,10 @@ function renderEsplora() {
         `;
     });
 
-    html += `</div>`;
+    html += `
+        </div>
+        <img src="Personal Branding/logotipo-ferd.png" alt="Ferdinando Virno" class="hero-logo" onerror="this.style.display='none';">
+    `;
     appContent.innerHTML = html;
     scrollToTop();
     initScrollReveal();
@@ -661,37 +663,42 @@ function getArchivioMedia(project, struttura) {
     return getProjectMedia(project, portfolioStruttura);
 }
 
-function renderArchivio() {
+function renderArchivio(initialSection = null) {
     setActiveNav('archivio');
 
-    // Riconosci eventuale hash nella URL per aprire direttamente la sezione Manifesti
-    const hash = window.location.hash.toLowerCase();
-    if (hash === '#manifesti' || hash === '#/manifesti') {
-        currentArchivioSection = 'manifesti';
-    } else if (hash === '#progetti' || hash === '#/progetti') {
-        currentArchivioSection = 'progetti';
+    if (initialSection && ['progetti', 'manifesti', 'playground'].includes(initialSection)) {
+        currentArchivioSection = initialSection;
+    } else {
+        const hash = window.location.hash.toLowerCase();
+        if (hash === '#manifesti' || hash === '#/manifesti') {
+            currentArchivioSection = 'manifesti';
+        } else if (hash === '#playground' || hash === '#/playground') {
+            currentArchivioSection = 'playground';
+        } else if (hash === '#progetti' || hash === '#/progetti') {
+            currentArchivioSection = 'progetti';
+        }
     }
 
-    // 1. Dati Progetti (raggruppati per anno)
+    // 1. Dati Progetti (ordinati cronologicamente senza anni/timeline)
     const sorted = [...progettiData].sort((a, b) => {
         const annoA = (a.metadati && a.metadati.anno) ? a.metadati.anno : 0;
         const annoB = (b.metadati && b.metadati.anno) ? b.metadati.anno : 0;
         return annoB - annoA;
     });
 
-    const byYear = {};
-    sorted.forEach(p => {
-        const y = (p.metadati && p.metadati.anno) ? p.metadati.anno : 'N/A';
-        if (!byYear[y]) byYear[y] = [];
-        byYear[y].push(p);
-    });
-    const years = Object.keys(byYear).sort((a, b) => b - a);
-
     // 2. Dati Manifesti (ordinati per data più recente)
     const sortedManifesti = [...manifestiData].sort((a, b) => {
         const orderA = a.dataOrdinamento || a.data || '';
         const orderB = b.dataOrdinamento || b.data || '';
         return orderB.localeCompare(orderA);
+    });
+
+    // 3. Dati Playground
+    const sortedPlayground = [...playgroundData].sort((a, b) => {
+        const annoA = (a.metadati && a.metadati.anno) ? a.metadati.anno : 0;
+        const annoB = (b.metadati && b.metadati.anno) ? b.metadati.anno : 0;
+        if (annoB !== annoA) return annoB - annoA;
+        return a.titolo.localeCompare(b.titolo, 'it', { sensitivity: 'base' });
     });
 
     let html = `
@@ -712,51 +719,48 @@ function renderArchivio() {
                         aria-selected="${currentArchivioSection === 'manifesti'}">
                     MANIFESTI
                 </button>
+                <button id="tab-btn-playground" 
+                        class="archivio-tab-btn ${currentArchivioSection === 'playground' ? 'active' : ''}" 
+                        onclick="switchArchivioSection('playground')" 
+                        role="tab" 
+                        aria-selected="${currentArchivioSection === 'playground'}">
+                    PLAYGROUND
+                </button>
             </div>
         </div>
-        <div id="archivio-progetti-view" class="archivio-timeline" style="${currentArchivioSection === 'progetti' ? 'display: flex;' : 'display: none;'}">
+        <div id="archivio-progetti-view" style="${currentArchivioSection === 'progetti' ? 'display: block;' : 'display: none;'}">
+            <div class="archivio-grid">
     `;
 
-    years.forEach((year) => {
-        const progetti = byYear[year];
-        html += `
-            <div class="archivio-year-block reveal">
-                <div class="archivio-year-label">${year}</div>
-                <div class="archivio-grid">
-        `;
+    sorted.forEach((p) => {
+        const media = getProjectMedia(p, portfolioStruttura);
+        const coverMedia = getCoverMedia(media);
 
-        progetti.forEach((p) => {
-            const media = getProjectMedia(p, portfolioStruttura);
-            const coverMedia = getCoverMedia(media);
-
-            let coverHtml = `<div class="archivio-card-cover-placeholder">—</div>`;
-            if (coverMedia) {
-                if (coverMedia.type === 'video') {
-                    coverHtml = `<video src="${coverMedia.path}" class="archivio-card-cover-media" autoplay loop muted playsinline></video>`;
-                } else {
-                    coverHtml = `<img src="${coverMedia.path}" alt="${p.titolo}" class="archivio-card-cover-media">`;
-                }
+        let coverHtml = `<div class="archivio-card-cover-placeholder">—</div>`;
+        if (coverMedia) {
+            if (coverMedia.type === 'video') {
+                coverHtml = `<video src="${coverMedia.path}" class="archivio-card-cover-media" autoplay loop muted playsinline></video>`;
+            } else {
+                coverHtml = `<img src="${coverMedia.path}" alt="${p.titolo}" class="archivio-card-cover-media">`;
             }
-
-            html += `
-                <div class="archivio-card reveal" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri progetto ${p.titolo}">
-                    <div class="archivio-card-cover">
-                        ${coverHtml}
-                    </div>
-                    <div class="archivio-card-info">
-                        <h3 class="archivio-card-title">${p.titolo}</h3>
-                    </div>
-                </div>
-            `;
-        });
+        }
 
         html += `
+            <div class="archivio-card reveal" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri progetto ${p.titolo}">
+                <div class="archivio-card-cover">
+                    ${coverHtml}
+                </div>
+                <div class="archivio-card-info">
+                    <h3 class="archivio-card-title">${p.titolo}</h3>
                 </div>
             </div>
         `;
     });
 
-    html += `</div>`; // Fine archivio-timeline
+    html += `
+            </div>
+        </div>
+    `;
 
     // Sezione Manifesti
     html += `
@@ -811,6 +815,42 @@ function renderArchivio() {
         </div>
     `;
 
+    // Sezione Playground
+    html += `
+        <div id="archivio-playground-view" style="${currentArchivioSection === 'playground' ? 'display: block;' : 'display: none;'}">
+            <div class="archivio-grid">
+    `;
+
+    sortedPlayground.forEach((p) => {
+        const media = getPlaygroundMedia(p, playgroundStruttura);
+        const coverMedia = getCoverMedia(media);
+
+        let coverHtml = `<div class="archivio-card-cover-placeholder">—</div>`;
+        if (coverMedia) {
+            if (coverMedia.type === 'video') {
+                coverHtml = `<video src="${coverMedia.path}" class="archivio-card-cover-media" autoplay loop muted playsinline></video>`;
+            } else {
+                coverHtml = `<img src="${coverMedia.path}" alt="${p.titolo}" class="archivio-card-cover-media">`;
+            }
+        }
+
+        html += `
+            <div class="archivio-card reveal" onclick="navigateTo('/${p.id}')" role="button" tabindex="0" aria-label="Apri esperimento ${p.titolo}">
+                <div class="archivio-card-cover">
+                    ${coverHtml}
+                </div>
+                <div class="archivio-card-info">
+                    <h3 class="archivio-card-title">${p.titolo}</h3>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `
+            </div>
+        </div>
+    `;
+
     // Modale Lightbox
     html += `
         <div id="manifesto-lightbox-modal" 
@@ -857,27 +897,32 @@ function switchArchivioSection(section) {
 
     const btnProgetti = document.getElementById('tab-btn-progetti');
     const btnManifesti = document.getElementById('tab-btn-manifesti');
+    const btnPlayground = document.getElementById('tab-btn-playground');
     const viewProgetti = document.getElementById('archivio-progetti-view');
     const viewManifesti = document.getElementById('archivio-manifesti-view');
-    const subtitle = document.getElementById('archivio-subtitle');
+    const viewPlayground = document.getElementById('archivio-playground-view');
 
-    if (section === 'manifesti') {
-        if (btnProgetti) btnProgetti.classList.remove('active');
-        if (btnManifesti) btnManifesti.classList.add('active');
-        if (viewProgetti) viewProgetti.style.display = 'none';
-        if (viewManifesti) viewManifesti.style.display = 'block';
-        if (subtitle) subtitle.textContent = 'Una raccolta visiva di manifesti, poster e sperimentazioni grafiche.';
-        window.history.replaceState(null, '', '#manifesti');
-    } else {
-        if (btnManifesti) btnManifesti.classList.remove('active');
-        if (btnProgetti) btnProgetti.classList.add('active');
-        if (viewManifesti) viewManifesti.style.display = 'none';
-        if (viewProgetti) viewProgetti.style.display = 'flex';
-        if (subtitle) subtitle.textContent = 'Una selezione di progetti significativi, organizzati nel tempo.';
-        window.history.replaceState(null, '', '#progetti');
+    if (btnProgetti) {
+        btnProgetti.classList.toggle('active', section === 'progetti');
+        btnProgetti.setAttribute('aria-selected', String(section === 'progetti'));
+    }
+    if (btnManifesti) {
+        btnManifesti.classList.toggle('active', section === 'manifesti');
+        btnManifesti.setAttribute('aria-selected', String(section === 'manifesti'));
+    }
+    if (btnPlayground) {
+        btnPlayground.classList.toggle('active', section === 'playground');
+        btnPlayground.setAttribute('aria-selected', String(section === 'playground'));
     }
 
+    if (viewProgetti) viewProgetti.style.display = section === 'progetti' ? 'block' : 'none';
+    if (viewManifesti) viewManifesti.style.display = section === 'manifesti' ? 'block' : 'none';
+    if (viewPlayground) viewPlayground.style.display = section === 'playground' ? 'block' : 'none';
+
+    window.history.replaceState(null, '', `#${section}`);
+
     initScrollReveal();
+    initTiltEffect();
 }
 
 function openManifestoModal(manifestoId, versionIndex = 0) {
@@ -1116,7 +1161,7 @@ function renderProgettoPlayground(id) {
     if (!p) return;
     document.body.classList.add('playground-fullscreen-mode');
     document.body.classList.add('hide-footer');
-    setActiveNav('playground');
+    setActiveNav('archivio');
 
     const projectUrl = p.url || `Playground/${p.cartella}/index.html`;
 
@@ -1130,7 +1175,7 @@ function renderProgettoPlayground(id) {
     appContent.innerHTML = `
         <div class="pg-fullscreen-container">
             <header class="pg-fullscreen-header">
-                <button class="pg-back-btn" onclick="navigateTo('/playground')" aria-label="Torna a Playground">
+                <button class="pg-back-btn" onclick="navigateTo('/archivio#playground')" aria-label="Torna a Playground">
                     ← Torna a Playground
                 </button>
                 <div class="pg-header-actions">

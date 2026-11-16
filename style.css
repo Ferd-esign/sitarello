@@ -178,14 +178,34 @@ nav a.nav-link-sintesi:hover .nav-badge {
 }
 
 /* HERO SECTION */
+body.page-esplora #app-content,
+body:has(.hero) #app-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: 16px;
+    padding-bottom: 8px;
+}
+
 .hero {
     text-align: center;
-    margin-bottom: 80px;
+    margin-bottom: 0;
+}
+
+body.page-esplora .project-grid,
+body:has(.hero) .project-grid {
+    margin: auto 0;
+    padding: 28px 0;
 }
 
 .hero-logo {
-    max-width: 320px;
-    margin-bottom: 25px;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    margin-top: auto;
+    margin-bottom: 0;
 }
 
 .claim {
@@ -321,7 +341,7 @@ nav a.nav-link-sintesi:hover .nav-badge {
         width: 100% !important;
         height: auto !important;
         aspect-ratio: 16 / 9 !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 5px !important;
         overflow: hidden !important;
     }
 
@@ -366,7 +386,7 @@ nav a.nav-link-sintesi:hover .nav-badge {
     aspect-ratio: 16/9;
     overflow: hidden;
     background-color: #f5f5f5;
-    margin-bottom: 16px;
+    margin-bottom: 9px;
 }
 
 .project-card .cover {
@@ -729,136 +749,46 @@ nav a.nav-link-sintesi:hover .nav-badge {
 }
 
 
-/* FOOTER */
-/* ============================================
-   FOOTER — LAYOUT 3 COLONNE DESKTOP
-   ============================================ */
+/* FOOTER MINIMAL (SOLO COPYRIGHT E SOCIAL SU DESKTOP) */
 #main-footer {
-    background-color: #3273bf;
-    color: #ffffff;
-    padding: 32px 6% 20px;
-    margin-top: 80px;
+    background-color: transparent;
+    padding: 8px 5% 20px;
+    margin-top: 0;
 }
 
-/* Inner wrapper: 3 col desktop */
-.footer-inner {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 24px;
-    align-items: center;
-    width: 100%;
-}
-
-.footer-col {
-    display: flex;
-    flex-direction: column;
-}
-
-
-
-.footer-col-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.footer-col-right {
-    align-items: flex-end;
-    /* allinea a destra */
-    text-align: right;
-}
-
-/* Immagine nome centrale */
-.footer-bottom-logo {
-    width: 100%;
-    max-width: 340px;
-    height: auto;
-    display: block;
-    filter: brightness(0) invert(1);
-    object-fit: contain;
-}
-
-/* Piccoli label uppercase sopra i valori */
-.footer-label {
-    display: block;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
-    margin-bottom: 6px;
-}
-
-.footer-info-val {
-    font-size: 13px;
-    font-weight: 400;
-    color: #ffffff;
-    line-height: 1.7;
-}
-
-/* Blocchi contatto: label + valori */
-.footer-contact-block {
-    display: flex;
-    flex-direction: column;
-}
-
-.footer-contact-block a {
-    color: #ffffff !important;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 1.7;
-    transition: opacity 0.25s;
-}
-
-.footer-contact-block a:hover {
-    opacity: 0.65;
-    text-decoration: underline;
-}
-
-/* Pittogramma */
-.footer-pictogram {
-    height: 36px;
-    width: auto;
-    filter: brightness(0) invert(1);
-    object-fit: contain;
-}
-
-/* CV button pill */
-.footer-cv-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 18px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    border-radius: 100px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #fff !important;
-    text-decoration: none !important;
-    transition: background 0.25s, border-color 0.25s;
-}
-
-.footer-cv-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: #fff;
-}
-
-/* Divider e credits */
-.footer-divider {
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    margin: 20px 0 12px;
-}
-
-.footer-credits {
+.footer-minimal {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    font-size: 12px;
+    color: #777777;
+    letter-spacing: 0.03em;
+}
+
+.footer-copyright {
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.45);
-    letter-spacing: 0.04em;
+}
+
+.footer-socials {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.footer-socials a {
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    transition: color 0.25s ease;
+}
+
+.footer-socials a:hover {
+    color: var(--gold);
 }
 
 /* ── MOBILE: nasconde completamente il footer ── */
@@ -1436,7 +1366,7 @@ nav a.nav-link-sintesi:hover .nav-badge {
     aspect-ratio: 4 / 3;
     overflow: hidden;
     background-color: #f0f0f0;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
 }
 
 .archivio-card-cover-media {
@@ -2429,13 +2359,25 @@ body.playground-fullscreen-mode #app-content {
         left: 0;
         width: 10px;
         height: 10px;
-        background-color: var(--blue);
-        border-radius: 0;
         pointer-events: none;
         z-index: 9999999;
         opacity: 0;
         transform: translate3d(-100px, -100px, 0) translate(-50%, -50%);
-        transition: border-radius 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.15s ease;
+        transition: opacity 0.15s ease;
+        will-change: transform;
+    }
+
+    .custom-cursor::before {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 100%;
+        background-color: var(--blue);
+        border-radius: 0;
+        transform: scale(1);
+        transform-origin: center center;
+        transition: border-radius 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+                    transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
         will-change: transform, border-radius;
     }
 
@@ -2443,8 +2385,9 @@ body.playground-fullscreen-mode #app-content {
         opacity: 1;
     }
 
-    .custom-cursor.is-hover {
+    .custom-cursor.is-hover::before {
         border-radius: 50%;
+        transform: scale(1.1);
     }
 }
 

@@ -24,7 +24,6 @@ export function renderEsplora() {
 
     let html = `
         <div class="hero">
-            <img src="Personal Branding/logotipo-ferd.png" alt="Ferdinando Virno" class="hero-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <h1 class="claim">
                 <span class="claim-line">${line1}</span>
                 <span class="claim-line">${line2}</span>
@@ -67,7 +66,10 @@ export function renderEsplora() {
         `;
     });
 
-    html += `</div>`;
+    html += `
+        </div>
+        <img src="Personal Branding/logotipo-ferd.png" alt="Ferdinando Virno" class="hero-logo" onerror="this.style.display='none';">
+    `;
     appContent.innerHTML = html;
     scrollToTop();
     initScrollReveal();
