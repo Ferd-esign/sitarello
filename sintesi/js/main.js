@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileNav();
   initScrollSpy();
   initSmoothScroll();
-  initSectionTriggers();
+  initLetterHoverHeadings();
+  initHeroMarquee();
   initLogoFallback();
   initArticlesEngineStub();
 });
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function initMobileNav() {
   const toggleBtn = document.querySelector('.js-nav-toggle');
+  const toggleLabel = document.querySelector('.js-nav-toggle-label');
   const navWrapper = document.querySelector('.js-nav-wrapper');
   const navLinks = document.querySelectorAll('.js-nav-link');
 
@@ -29,8 +31,16 @@ function initMobileNav() {
     const nextState = typeof forceState === 'boolean' ? forceState : !isCurrentlyOpen;
 
     toggleBtn.setAttribute('aria-expanded', String(nextState));
+    toggleBtn.setAttribute(
+      'aria-label',
+      nextState ? 'Chiudi menu di navigazione' : 'Apri menu di navigazione'
+    );
     toggleBtn.classList.toggle('is-open', nextState);
     navWrapper.classList.toggle('is-open', nextState);
+    if (toggleLabel) {
+      toggleLabel.textContent = nextState ? 'Close' : 'Menu';
+    }
+    document.body.classList.toggle('is-menu-open', nextState);
     document.body.style.overflow = nextState ? 'hidden' : '';
     document.documentElement.style.overflow = nextState ? 'hidden' : '';
   };
@@ -75,6 +85,62 @@ function initMobileNav() {
 }
 
 /**
+ * Helper: scorrimento fluido ad alta precisione (60/120fps) senza conflitti con scroll-snap
+ */
+let activeScrollRaf = null;
+
+function smoothScrollToSection(targetEl, onComplete) {
+  if (!targetEl) return;
+
+  if (activeScrollRaf) {
+    cancelAnimationFrame(activeScrollRaf);
+    activeScrollRaf = null;
+  }
+
+  const htmlEl = document.documentElement;
+  const headerHeight = document.querySelector('.site-header')?.offsetHeight || 64;
+  const startY = window.scrollY;
+  const targetRectTop = targetEl.getBoundingClientRect().top;
+  const rawTargetY = targetEl.id === 'hero' || targetEl.id === 'top'
+    ? 0
+    : Math.max(0, startY + targetRectTop - headerHeight);
+  const maxScroll = Math.max(0, htmlEl.scrollHeight - window.innerHeight);
+  const targetY = Math.min(rawTargetY, maxScroll);
+  const distance = targetY - startY;
+
+  if (Math.abs(distance) < 2) {
+    if (typeof onComplete === 'function') onComplete();
+    return;
+  }
+
+  const prevBehavior = htmlEl.style.scrollBehavior;
+  htmlEl.style.scrollBehavior = 'auto';
+
+  const duration = Math.min(620, Math.max(380, Math.abs(distance) * 0.48));
+  const startTime = performance.now();
+
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+  const step = (now) => {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / duration);
+    const eased = easeOutCubic(progress);
+
+    window.scrollTo(0, startY + distance * eased);
+
+    if (progress < 1) {
+      activeScrollRaf = requestAnimationFrame(step);
+    } else {
+      activeScrollRaf = null;
+      htmlEl.style.scrollBehavior = prevBehavior;
+      if (typeof onComplete === 'function') onComplete();
+    }
+  };
+
+  activeScrollRaf = requestAnimationFrame(step);
+}
+
+/**
  * 2. Active Section Spy (Sincronizzazione Navigazione & Correzione Landing Hero)
  */
 function initScrollSpy() {
@@ -85,11 +151,13 @@ function initScrollSpy() {
     { id: 'about', el: document.querySelector('#about') }
   ].filter((item) => item.el !== null);
 
+  let spyTicking = false;
+
   const updateActiveNav = () => {
+    spyTicking = false;
     const scrollPos = window.scrollY;
     const headerHeight = document.querySelector('.site-header')?.offsetHeight || 64;
     const heroEl = document.querySelector('#hero');
-    // Soglia della hero: se siamo sopra o dentro la hero, nessuna voce dell'header deve essere attiva!
     const heroBottom = heroEl ? (heroEl.offsetTop + heroEl.offsetHeight - headerHeight - 90) : 300;
 
     if (scrollPos < heroBottom) {
@@ -111,7 +179,6 @@ function initScrollSpy() {
       }
     }
 
-    // Se siamo arrivati all'estremo fondo della pagina
     if ((window.innerHeight + scrollPos) >= (document.documentElement.scrollHeight - 70)) {
       activeId = 'about';
     }
@@ -128,172 +195,206 @@ function initScrollSpy() {
     });
   };
 
-  window.addEventListener('scroll', updateActiveNav, { passive: true });
-  window.addEventListener('resize', updateActiveNav, { passive: true });
+  const onScroll = () => {
+    if (!spyTicking) {
+      spyTicking = true;
+      requestAnimationFrame(updateActiveNav);
+    }
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
   updateActiveNav();
 }
 
 /**
- * 3. Smooth Scroll e "Torna su"
+ * 3. Smooth Scroll e Navigazione Interna
  */
 function initSmoothScroll() {
-  const backToTopBtn = document.querySelector('.js-back-to-top');
+  const scrollLinks = document.querySelectorAll(
+    '.js-nav-link[href^="#"], .site-brand[href^="#"], .js-back-to-top, a[href^="#"]'
+  );
 
-  if (backToTopBtn) {
-    backToTopBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    });
-  }
-}
-
-/**
- * 4. Trigger di Scorrimento Bidirezionale (Passaggio Pagina-per-Pagina)
- */
-function initSectionTriggers() {
-  const triggerLinks = document.querySelectorAll('.js-scroll-trigger');
-  triggerLinks.forEach((link) => {
+  scrollLinks.forEach((link) => {
     link.addEventListener('click', (e) => {
       const targetId = link.getAttribute('href');
-      if (targetId && targetId.startsWith('#')) {
-        const targetEl = document.querySelector(targetId);
+      if (targetId && targetId.startsWith('#') && targetId.length > 1) {
+        const targetEl = (targetId === '#top' || targetId === '#hero')
+          ? document.querySelector('#hero')
+          : document.querySelector(targetId);
+
         if (targetEl) {
           e.preventDefault();
-          targetEl.scrollIntoView({ behavior: 'smooth' });
+          smoothScrollToSection(targetEl);
         }
       }
     });
   });
+}
 
-  const pageSections = [
-    document.querySelector('#hero'),
-    document.querySelector('#articoli'),
-    document.querySelector('#mission'),
-    document.querySelector('#about')
-  ].filter(Boolean);
+/**
+ * 6. Interactive Per-Letter Font Hover on Hero Claim
+ * Suddivide i caratteri del claim hero (.hero-headline) in singoli span (.hover-letter) mantenendo le parole raggruppate (.hover-word)
+ * In hover, ogni singola lettera passa dinamicamente a Calvino (font-accent) con transizione fluida
+ */
+function initLetterHoverHeadings() {
+  const headingSelectors = [
+    '.hero-headline'
+  ];
 
-  if (!pageSections.length) return;
+  const headings = document.querySelectorAll(headingSelectors.join(', '));
+  if (!headings.length) return;
 
-  let isTriggering = false;
-  let accumulatedDelta = 0;
-  let touchStartY = 0;
-  let resetDeltaTimeout = null;
+  const processNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.nodeValue;
+      if (!text || !text.length) return null;
 
-  const navigateToPage = (targetSection) => {
-    if (!targetSection || isTriggering) return;
-    isTriggering = true;
-    targetSection.scrollIntoView({ behavior: 'smooth' });
-    setTimeout(() => {
-      isTriggering = false;
-      accumulatedDelta = 0;
-    }, 750);
-  };
-
-  const getCurrentPageIndex = () => {
-    const scrollPos = window.scrollY;
-    const headerHeight = document.querySelector('.site-header')?.offsetHeight || 64;
-    const probe = scrollPos + headerHeight + (window.innerHeight * 0.35);
-
-    for (let i = pageSections.length - 1; i >= 0; i--) {
-      if (probe >= pageSections[i].offsetTop) {
-        return i;
+      if (/^\s+$/.test(text)) {
+        return document.createTextNode(text);
       }
-    }
-    return 0;
-  };
 
-  const isAtSectionBottom = (el) => {
-    const rect = el.getBoundingClientRect();
-    return rect.bottom <= (window.innerHeight + 45);
-  };
+      const fragment = document.createDocumentFragment();
+      const tokens = text.split(/(\s+)/);
 
-  const isAtSectionTop = (el) => {
-    const headerHeight = document.querySelector('.site-header')?.offsetHeight || 64;
-    const rect = el.getBoundingClientRect();
-    return rect.top >= (headerHeight - 45);
-  };
+      tokens.forEach((token) => {
+        if (!token) return;
+        if (/^\s+$/.test(token)) {
+          fragment.appendChild(document.createTextNode(' '));
+        } else {
+          const wordSpan = document.createElement('span');
+          wordSpan.className = 'hover-word';
 
-  // Trigger con rotella o trackpad bidirezionale (Avanti & Indietro tra tutte le pagine)
-  window.addEventListener('wheel', (e) => {
-    if (isTriggering) return;
-    const currentIndex = getCurrentPageIndex();
-    const currentSection = pageSections[currentIndex];
-
-    // Scroll verso il basso: passa alla pagina successiva
-    if (e.deltaY > 0) {
-      if (currentIndex < pageSections.length - 1 && isAtSectionBottom(currentSection)) {
-        accumulatedDelta += e.deltaY;
-        if (accumulatedDelta > 40) {
-          navigateToPage(pageSections[currentIndex + 1]);
-        }
-      } else {
-        accumulatedDelta = 0;
-      }
-    } 
-    // Scroll verso l'alto: ritorna alla pagina precedente
-    else if (e.deltaY < 0) {
-      if (currentIndex > 0 && isAtSectionTop(currentSection)) {
-        accumulatedDelta += Math.abs(e.deltaY);
-        if (accumulatedDelta > 40) {
-          navigateToPage(pageSections[currentIndex - 1]);
-        }
-      } else {
-        accumulatedDelta = 0;
-      }
-    }
-
-    clearTimeout(resetDeltaTimeout);
-    resetDeltaTimeout = setTimeout(() => {
-      accumulatedDelta = 0;
-    }, 250);
-  }, { passive: true });
-
-  // Trigger touch per dispositivi mobili (Avanti & Indietro)
-  window.addEventListener('touchstart', (e) => {
-    touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  window.addEventListener('touchmove', (e) => {
-    if (isTriggering) return;
-    const touchY = e.touches[0].clientY;
-    const diff = touchStartY - touchY;
-    const currentIndex = getCurrentPageIndex();
-    const currentSection = pageSections[currentIndex];
-
-    // Nella Hero: swipe verso l'alto (scroll down) conduce alla prima sezione Articoli
-    if (currentIndex === 0 && diff > 50) {
-      navigateToPage(pageSections[1]);
-      return;
-    }
-
-    // Su schermi ampi o desktop con touch: swipe controllato tra sezioni
-    if (window.innerWidth > 768) {
-      if (diff > 55 && currentIndex < pageSections.length - 1 && isAtSectionBottom(currentSection)) {
-        navigateToPage(pageSections[currentIndex + 1]);
-      } else if (diff < -55 && currentIndex > 0 && isAtSectionTop(currentSection)) {
-        navigateToPage(pageSections[currentIndex - 1]);
-      }
-    }
-  }, { passive: true });
-
-  const sections = document.querySelectorAll('.section, .hero-section');
-  if ('IntersectionObserver' in window && sections.length) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-triggered');
+          for (const char of token) {
+            const letterSpan = document.createElement('span');
+            letterSpan.className = 'hover-letter';
+            letterSpan.textContent = char;
+            wordSpan.appendChild(letterSpan);
+          }
+          fragment.appendChild(wordSpan);
         }
       });
-    }, {
-      rootMargin: '-10% 0px -10% 0px',
-      threshold: 0.15
+
+      return fragment;
+    }
+
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.classList.contains('hover-letter') || node.classList.contains('hover-word') || node.tagName === 'SVG') {
+        return null;
+      }
+      const childNodes = Array.from(node.childNodes);
+      childNodes.forEach((child) => {
+        const replacement = processNode(child);
+        if (replacement) {
+          node.replaceChild(replacement, child);
+        }
+      });
+      return null;
+    }
+
+    return null;
+  };
+
+  headings.forEach((heading) => {
+    if (!heading.hasAttribute('aria-label')) {
+      heading.setAttribute('aria-label', heading.textContent.replace(/\s+/g, ' ').trim());
+    }
+
+    const childNodes = Array.from(heading.childNodes);
+    childNodes.forEach((child) => {
+      const replacement = processNode(child);
+      if (replacement) {
+        heading.replaceChild(replacement, child);
+      }
+    });
+  });
+}
+
+/**
+ * 7. Carosello manifesti in hero: loop orizzontale infinito, prospettiva 3D e tinta brand
+ * - La traccia viene duplicata: l'animazione CSS trasla da 0 a -50% per un loop senza scatti
+ * - Hover: pausa + card frontale a colori originali
+ * - Click: blocca la card attiva; un nuovo click la riporta in prospettiva e riprende lo scorrimento
+ */
+function initHeroMarquee() {
+  const marquee = document.querySelector('.js-marquee');
+  const track = marquee ? marquee.querySelector('.js-marquee-track') : null;
+  if (!marquee || !track) return;
+
+  // Duplicazione degli elementi per la continuità del loop
+  Array.from(track.children).forEach((item) => {
+    const clone = item.cloneNode(true);
+    clone.setAttribute('aria-hidden', 'true');
+    clone.querySelectorAll('button').forEach((btn) => btn.setAttribute('tabindex', '-1'));
+    clone.querySelectorAll('img').forEach((img) => img.setAttribute('alt', ''));
+    track.appendChild(clone);
+  });
+
+  // Velocità costante in px/s indipendente dal numero/larghezza delle immagini
+  const updateDuration = () => {
+    const halfWidth = track.scrollWidth / 2;
+    if (!halfWidth) return;
+    const pxPerSecond = window.innerWidth < 768 ? 34 : 48;
+    track.style.setProperty('--marquee-duration', `${(halfWidth / pxPerSecond).toFixed(2)}s`);
+  };
+
+  updateDuration();
+  window.addEventListener('load', updateDuration);
+  window.addEventListener('resize', updateDuration, { passive: true });
+  track.querySelectorAll('img').forEach((img) => {
+    if (!img.complete) img.addEventListener('load', updateDuration, { once: true });
+  });
+
+  let activeCard = null;
+
+  const pause = () => marquee.classList.add('is-paused');
+  const resume = () => {
+    if (!activeCard) marquee.classList.remove('is-paused');
+  };
+
+  const deactivate = (card, keepResting) => {
+    card.classList.remove('is-active');
+    card.setAttribute('aria-pressed', 'false');
+    if (keepResting) card.classList.add('is-resting');
+    if (activeCard === card) activeCard = null;
+  };
+
+  const cards = track.querySelectorAll('.marquee-card');
+
+  cards.forEach((card) => {
+    card.addEventListener('mouseenter', () => {
+      if (!card.classList.contains('is-resting')) pause();
     });
 
-    sections.forEach((sec) => observer.observe(sec));
-  }
+    card.addEventListener('mouseleave', () => {
+      card.classList.remove('is-resting');
+      resume();
+    });
+
+    card.addEventListener('click', () => {
+      if (activeCard === card) {
+        // Secondo click: torna in prospettiva, riapplica la tinta e riprende il loop
+        deactivate(card, true);
+        marquee.classList.remove('is-paused');
+        return;
+      }
+
+      if (activeCard) deactivate(activeCard, false);
+      activeCard = card;
+      card.classList.remove('is-resting');
+      card.classList.add('is-active');
+      card.setAttribute('aria-pressed', 'true');
+      pause();
+    });
+  });
+
+  // Escape: rilascia la card attiva e riprende lo scorrimento
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && activeCard) {
+      deactivate(activeCard, false);
+      marquee.classList.remove('is-paused');
+    }
+  });
 }
 
 /**
