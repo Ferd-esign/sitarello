@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://ferdinandovirno.it/sintesi/</loc>
+    <lastmod>2026-11-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://ferdinandovirno.it/sintesi/assets/branding/sintesi-logo.png</image:loc>
+      <image:title>Sintesi — Lo spazio per nuovi immaginari</image:title>
+      <image:caption>Logo ufficiale di Sintesi, progetto editoriale indipendente per la cultura del progetto e il design sociale</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://ferdinandovirno.it/sintesi/assets/team/FERDINANDO-VIRNO.jpg</image:loc>
+      <image:title>Ferdinando Virno — Founder di Sintesi</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ferdinandovirno.it/sintesi/assets/team/MARCELO-ESPOSITO.jpg</image:loc>
+      <image:title>Marcelo Esposito — Redazione Sintesi</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ferdinandovirno.it/sintesi/assets/team/TORE-BOCCIA.jpg</image:loc>
+      <image:title>Tore Boccia — Redazione Sintesi</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ferdinandovirno.it/sintesi/assets/team/SIMONE-MASCIA.jpg</image:loc>
+      <image:title>Simone Mascia — Redazione Sintesi</image:title>
+    </image:image>
+  </url>
+</urlset>

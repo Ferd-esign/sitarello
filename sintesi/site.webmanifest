@@ -1,0 +1,28 @@
+{
+  "name": "Sintesi — Lo spazio per nuovi immaginari",
+  "short_name": "Sintesi",
+  "description": "Progetto editoriale indipendente dedicato alla cultura del progetto, alla grafica militante e al design ad impatto sociale.",
+  "start_url": "/sintesi/",
+  "scope": "/sintesi/",
+  "display": "standalone",
+  "background_color": "#009eb8",
+  "theme_color": "#009eb8",
+  "lang": "it-IT",
+  "icons": [
+    {
+      "src": "./Branding-sintesi/favicon-sintesi-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "./Branding-sintesi/favicon-sintesi-apple-touch.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./Branding-sintesi/favicon-sintesi.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

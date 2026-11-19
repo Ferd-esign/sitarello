@@ -372,49 +372,74 @@ button {
   transform: translateY(-1px);
 }
 
-/* Toggle Menu Mobile (solo testo tipografico: Menu / Close) */
+/* Toggle Menu Mobile (solo scritta tipografica senza box: Menu / Close) */
 .nav-toggle {
   display: none;
   position: relative;
-  min-height: 36px;
-  padding: 0.35rem 0.85rem;
-  border-radius: 2px;
+  padding: 0.35rem 0;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border: none;
+  box-shadow: none;
   color: #FFFFFF;
   font-family: var(--font-primary);
-  font-size: var(--text-xs);
+  font-size: 0.95rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  line-height: 1;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
   cursor: pointer;
-  z-index: 120;
+  z-index: 1002;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   -webkit-tap-highlight-color: transparent;
-  transition: color var(--transition-fast),
-              background-color var(--transition-fast),
-              border-color var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
-.nav-toggle-label {
+.nav-toggle-inner {
+  position: relative;
+  display: inline-grid;
+  align-items: center;
+  justify-items: end;
+  overflow: hidden;
+  height: 1.25em;
+}
+
+.nav-toggle-word {
+  grid-area: 1 / 1;
   display: inline-block;
-  transition: transform var(--transition-fast);
+  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-toggle-word--menu {
+  transform: translateY(0%);
+  opacity: 1;
+}
+
+.nav-toggle-word--close {
+  transform: translateY(105%);
+  opacity: 0;
 }
 
 .nav-toggle:hover {
-  border-color: var(--color-accent);
   color: var(--color-accent);
-  background-color: rgba(229, 169, 60, 0.14);
 }
 
 .nav-toggle.is-open {
-  border-color: var(--color-accent);
   color: var(--color-accent);
-  background-color: rgba(229, 169, 60, 0.18);
+}
+
+.nav-toggle.is-open .nav-toggle-word--menu {
+  transform: translateY(-105%);
+  opacity: 0;
+}
+
+.nav-toggle.is-open .nav-toggle-word--close {
+  transform: translateY(0%);
+  opacity: 1;
 }
 
 /* Elementi contestuali menu mobile (nascosti su desktop) */
+.mobile-nav-backdrop,
 .mobile-nav-colophon {
   display: none;
 }
@@ -1206,7 +1231,34 @@ button {
     display: inline-flex;
   }
 
-  /* Overlay Menu Mobile: transizione fluida e layout editoriale a tutta altezza */
+  /* Backdrop di sfondo per chiusura fluida del menu mobile */
+  .mobile-nav-backdrop {
+    display: block;
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 998;
+    transition: opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0s linear 0.42s;
+  }
+
+  .mobile-nav-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0s linear 0s;
+  }
+
+  /* Overlay Menu Mobile: animazione fluida di apertura e chiusura a tendina editoriale */
   .nav-wrapper {
     position: fixed;
     top: var(--header-height);
@@ -1222,26 +1274,37 @@ button {
     padding: clamp(2rem, 5vh, 3.25rem) clamp(1.25rem, 4vw, 2.5rem) clamp(1.75rem, 4vh, 2.5rem);
     gap: var(--space-lg);
     border-top: 1px solid rgba(255, 255, 255, 0.16);
-    transform: translateY(-10px);
+    clip-path: inset(0 0 100% 0);
+    -webkit-clip-path: inset(0 0 100% 0);
+    transform: translateY(-16px);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-                opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-                visibility 0.38s;
+    transition: clip-path 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+                -webkit-clip-path 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0s linear 0.48s;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     z-index: 999;
   }
 
   .nav-wrapper.is-open {
+    clip-path: inset(0 0 0% 0);
+    -webkit-clip-path: inset(0 0 0% 0);
     transform: translateY(0);
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+    transition: clip-path 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+                -webkit-clip-path 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0s linear 0s;
   }
 
-  /* Voci del menu mobile con spaziatura verticale generosa e ingresso scaglionato */
+  /* Voci del menu mobile con spaziatura verticale generosa e ingresso/uscita scaglionati */
   .nav-links {
     flex-direction: column;
     align-items: stretch;
@@ -1251,19 +1314,21 @@ button {
 
   .nav-links li {
     opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(14px);
+    transition: opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .nav-wrapper.is-open .nav-links li {
     opacity: 1;
     transform: translateY(0);
+    transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .nav-wrapper.is-open .nav-links li:nth-child(1) { transition-delay: 40ms; }
-  .nav-wrapper.is-open .nav-links li:nth-child(2) { transition-delay: 90ms; }
-  .nav-wrapper.is-open .nav-links li:nth-child(3) { transition-delay: 140ms; }
+  .nav-wrapper.is-open .nav-links li:nth-child(1) { transition-delay: 60ms; }
+  .nav-wrapper.is-open .nav-links li:nth-child(2) { transition-delay: 120ms; }
+  .nav-wrapper.is-open .nav-links li:nth-child(3) { transition-delay: 180ms; }
 
   .nav-link {
     display: flex;
@@ -1383,10 +1448,8 @@ button {
     scroll-behavior: auto;
   }
 
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .scroll-cue svg {
+    animation: none !important;
   }
 }
 

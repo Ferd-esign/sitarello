@@ -20,8 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function initMobileNav() {
   const toggleBtn = document.querySelector('.js-nav-toggle');
-  const toggleLabel = document.querySelector('.js-nav-toggle-label');
+  const wordMenu = toggleBtn ? toggleBtn.querySelector('.nav-toggle-word--menu') : null;
+  const wordClose = toggleBtn ? toggleBtn.querySelector('.nav-toggle-word--close') : null;
   const navWrapper = document.querySelector('.js-nav-wrapper');
+  const navBackdrop = document.querySelector('.js-nav-backdrop');
   const navLinks = document.querySelectorAll('.js-nav-link');
 
   if (!toggleBtn || !navWrapper) return;
@@ -37,8 +39,12 @@ function initMobileNav() {
     );
     toggleBtn.classList.toggle('is-open', nextState);
     navWrapper.classList.toggle('is-open', nextState);
-    if (toggleLabel) {
-      toggleLabel.textContent = nextState ? 'Close' : 'Menu';
+    if (navBackdrop) {
+      navBackdrop.classList.toggle('is-open', nextState);
+    }
+    if (wordMenu && wordClose) {
+      wordMenu.setAttribute('aria-hidden', String(nextState));
+      wordClose.setAttribute('aria-hidden', String(!nextState));
     }
     document.body.classList.toggle('is-menu-open', nextState);
     document.body.style.overflow = nextState ? 'hidden' : '';
@@ -49,6 +55,22 @@ function initMobileNav() {
     e.stopPropagation();
     toggleMenu();
   });
+
+  if (navBackdrop) {
+    navBackdrop.addEventListener('click', () => {
+      toggleMenu(false);
+    });
+  }
+
+  // Chiudi menu al click sul logo in header se aperto su mobile
+  const siteBrand = document.querySelector('.site-brand');
+  if (siteBrand) {
+    siteBrand.addEventListener('click', () => {
+      if (toggleBtn.getAttribute('aria-expanded') === 'true') {
+        toggleMenu(false);
+      }
+    });
+  }
 
   // Chiudi menu al click sui link interni
   navLinks.forEach((link) => {
