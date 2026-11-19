@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://ferdinandovirno.it/sintesi/</loc>
+    <xhtml:link rel="alternate" hreflang="it-IT" href="https://ferdinandovirno.it/sintesi/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://ferdinandovirno.it/sintesi/" />
     <lastmod>2026-11-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://ferdinandovirno.it/sintesi/assets/branding/sintesi-logo.png</image:loc>
+      <image:loc>https://ferdinandovirno.it/sintesi/assets/branding/sintesi-og-cover.jpg</image:loc>
       <image:title>Sintesi — Lo spazio per nuovi immaginari</image:title>
-      <image:caption>Logo ufficiale di Sintesi, progetto editoriale indipendente per la cultura del progetto e il design sociale</image:caption>
+      <image:caption>Progetto editoriale indipendente dedicato alla cultura del progetto, alla grafica militante e al design a impatto sociale.</image:caption>
     </image:image>
     <image:image>
       <image:loc>https://ferdinandovirno.it/sintesi/assets/team/FERDINANDO-VIRNO.jpg</image:loc>

@@ -75,7 +75,7 @@ function generateSitemap() {
 
 function generateRobots() {
     console.log("Generazione Robots in corso...");
-    const robotsContent = `User-agent: *\nAllow: /\n\nSitemap: ${BASE_URL}/sitemap.xml\n`;
+    const robotsContent = `User-agent: *\nAllow: /\n\nSitemap: ${BASE_URL}/sitemap.xml\nSitemap: ${BASE_URL}/sintesi/sitemap.xml\n`;
     fs.writeFileSync(path.join(__dirname, '..', 'public', 'robots.txt'), robotsContent, 'utf-8');
     console.log("robots.txt generato con successo in public/!");
 }

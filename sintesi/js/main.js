@@ -6,7 +6,7 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {
-  initMobileNav();
+  initMobileViews();
   initScrollSpy();
   initSmoothScroll();
   initLetterHoverHeadings();
@@ -16,94 +16,103 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * 1. Mobile Navigation & Accessibility
+ * 1. Mobile-Only Multi-View Architecture (<= 768px)
+ * Gestisce le viste separate su mobile (hero, articoli, mission) e il tema del footer fisso
  */
-function initMobileNav() {
-  const toggleBtn = document.querySelector('.js-nav-toggle');
-  const wordMenu = toggleBtn ? toggleBtn.querySelector('.nav-toggle-word--menu') : null;
-  const wordClose = toggleBtn ? toggleBtn.querySelector('.nav-toggle-word--close') : null;
-  const navWrapper = document.querySelector('.js-nav-wrapper');
-  const navBackdrop = document.querySelector('.js-nav-backdrop');
-  const navLinks = document.querySelectorAll('.js-nav-link');
+function initMobileViews() {
+  const mobileMedia = window.matchMedia('(max-width: 768px)');
+  const viewButtons = document.querySelectorAll('.js-mobile-view-btn');
+  const homeTrigger = document.querySelector('.js-mobile-home-trigger');
+  let currentView = 'hero';
 
-  if (!toggleBtn || !navWrapper) return;
-
-  const toggleMenu = (forceState) => {
-    const isCurrentlyOpen = toggleBtn.getAttribute('aria-expanded') === 'true';
-    const nextState = typeof forceState === 'boolean' ? forceState : !isCurrentlyOpen;
-
-    toggleBtn.setAttribute('aria-expanded', String(nextState));
-    toggleBtn.setAttribute(
-      'aria-label',
-      nextState ? 'Chiudi menu di navigazione' : 'Apri menu di navigazione'
-    );
-    toggleBtn.classList.toggle('is-open', nextState);
-    navWrapper.classList.toggle('is-open', nextState);
-    if (navBackdrop) {
-      navBackdrop.classList.toggle('is-open', nextState);
-    }
-    if (wordMenu && wordClose) {
-      wordMenu.setAttribute('aria-hidden', String(nextState));
-      wordClose.setAttribute('aria-hidden', String(!nextState));
-    }
-    document.body.classList.toggle('is-menu-open', nextState);
-    document.body.style.overflow = nextState ? 'hidden' : '';
-    document.documentElement.style.overflow = nextState ? 'hidden' : '';
+  const resolveViewFromHash = (hash) => {
+    if (hash === '#articoli') return 'articoli';
+    if (hash === '#mission' || hash === '#about' || hash === '#team') return 'mission';
+    return 'hero';
   };
 
-  toggleBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggleMenu();
+  const applyMobileView = (view, updateHash = false) => {
+    currentView = view;
+
+    if (!mobileMedia.matches) {
+      document.body.removeAttribute('data-mobile-view');
+      return;
+    }
+
+    document.body.setAttribute('data-mobile-view', view);
+
+    viewButtons.forEach((btn) => {
+      const isActive = btn.dataset.view === view;
+      btn.classList.toggle('is-active', isActive);
+      if (isActive) {
+        btn.setAttribute('aria-current', 'page');
+      } else {
+        btn.removeAttribute('aria-current');
+      }
+    });
+
+    // Reset scroll all'inizio della vista attiva
+    window.scrollTo(0, 0);
+
+    if (updateHash && window.history && window.history.replaceState) {
+      const nextHash = view === 'hero' ? '' : `#${view}`;
+      const cleanUrl = `${window.location.pathname}${window.location.search}${nextHash}`;
+      window.history.replaceState(null, '', cleanUrl);
+    }
+  };
+
+  const syncBreakpoint = () => {
+    if (mobileMedia.matches) {
+      applyMobileView(currentView, false);
+    } else {
+      document.body.removeAttribute('data-mobile-view');
+      viewButtons.forEach((btn) => {
+        btn.classList.remove('is-active');
+        btn.removeAttribute('aria-current');
+      });
+    }
+  };
+
+  // Click sui pulsanti del footer fisso mobile (Articoli / About)
+  viewButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (!mobileMedia.matches) return;
+      const targetView = btn.dataset.view;
+      if (!targetView) return;
+
+      if (currentView === targetView) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      applyMobileView(targetView, true);
+    });
   });
 
-  if (navBackdrop) {
-    navBackdrop.addEventListener('click', () => {
-      toggleMenu(false);
+  // Tap sul logo nell'header -> torna alla Landing Hero su mobile
+  if (homeTrigger) {
+    homeTrigger.addEventListener('click', (e) => {
+      if (!mobileMedia.matches) return;
+      e.preventDefault();
+      applyMobileView('hero', true);
     });
   }
 
-  // Chiudi menu al click sul logo in header se aperto su mobile
-  const siteBrand = document.querySelector('.site-brand');
-  if (siteBrand) {
-    siteBrand.addEventListener('click', () => {
-      if (toggleBtn.getAttribute('aria-expanded') === 'true') {
-        toggleMenu(false);
-      }
-    });
+  // Sincronizza cambio hash / navigazione browser su mobile
+  window.addEventListener('hashchange', () => {
+    if (!mobileMedia.matches) return;
+    applyMobileView(resolveViewFromHash(window.location.hash), false);
+  });
+
+  if (typeof mobileMedia.addEventListener === 'function') {
+    mobileMedia.addEventListener('change', syncBreakpoint);
+  } else {
+    window.addEventListener('resize', syncBreakpoint, { passive: true });
   }
 
-  // Chiudi menu al click sui link interni
-  navLinks.forEach((link) => {
-    link.addEventListener('click', () => {
-      if (window.innerWidth <= 768) {
-        toggleMenu(false);
-      }
-    });
-  });
-
-  // Chiudi cliccando fuori dal menu aperto (backdrop tap)
-  document.addEventListener('click', (e) => {
-    if (toggleBtn.getAttribute('aria-expanded') === 'true') {
-      if (!navWrapper.contains(e.target) && !toggleBtn.contains(e.target)) {
-        toggleMenu(false);
-      }
-    }
-  });
-
-  // Chiudi con il tasto Escape per conformità WCAG
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && toggleBtn.getAttribute('aria-expanded') === 'true') {
-      toggleMenu(false);
-      toggleBtn.focus();
-    }
-  });
-
-  // Ripristina l'overflow quando la finestra viene ridimensionata oltre il breakpoint mobile
-  window.addEventListener('resize', () => {
-    if (window.innerWidth > 768 && toggleBtn.getAttribute('aria-expanded') === 'true') {
-      toggleMenu(false);
-    }
-  });
+  // Inizializzazione vista iniziale
+  currentView = resolveViewFromHash(window.location.hash);
+  syncBreakpoint();
 }
 
 /**
@@ -169,8 +178,7 @@ function initScrollSpy() {
   const navLinks = document.querySelectorAll('.nav-links .nav-link');
   const sections = [
     { id: 'articoli', el: document.querySelector('#articoli') },
-    { id: 'mission', el: document.querySelector('#mission') },
-    { id: 'about', el: document.querySelector('#about') }
+    { id: 'mission', el: document.querySelector('#mission') }
   ].filter((item) => item.el !== null);
 
   let spyTicking = false;
@@ -202,7 +210,7 @@ function initScrollSpy() {
     }
 
     if ((window.innerHeight + scrollPos) >= (document.documentElement.scrollHeight - 70)) {
-      activeId = 'about';
+      activeId = 'mission';
     }
 
     navLinks.forEach((link) => {
@@ -239,6 +247,9 @@ function initSmoothScroll() {
 
   scrollLinks.forEach((link) => {
     link.addEventListener('click', (e) => {
+      // Su mobile (<= 768px) la navigazione avviene tramite viste dedicate (initMobileViews)
+      if (window.matchMedia('(max-width: 768px)').matches) return;
+
       const targetId = link.getAttribute('href');
       if (targetId && targetId.startsWith('#') && targetId.length > 1) {
         const targetEl = (targetId === '#top' || targetId === '#hero')
