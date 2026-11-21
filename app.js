@@ -230,6 +230,7 @@ function initScrollReveal() {
 const CONSENT_STORAGE_KEY = 'fv_gyro_consent_v1';
 const gyroState = {
     active: false,
+    dismissedThisLoad: false,
     rafId: null,
     hasOrientationReading: false,
     baseBeta: null,
@@ -279,7 +280,6 @@ async function requestGyroPermissionAndStart() {
         startGyroListeners();
         return true;
     } else {
-        try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'denied'); } catch (_) { }
         return false;
     }
 }
@@ -304,7 +304,7 @@ function processAngles(beta, gamma) {
     gyroState.baseBeta += deltaBeta * driftSpeed;
     gyroState.baseGamma += deltaGamma * driftSpeed;
 
-    const sensitivityDeg = 16;
+    const sensitivityDeg = 12;
     const normGamma = Math.tanh(deltaGamma / sensitivityDeg);
     const normBeta = Math.tanh(deltaBeta / sensitivityDeg);
 
@@ -381,12 +381,12 @@ function startGyroAnimationLoop() {
         cancelAnimationFrame(gyroState.rafId);
         gyroState.rafId = null;
     }
-    const maxRotation = 8;
+    const maxRotation = 10;
     const animate = () => {
         if (!gyroState.active) return;
         if (!document.hidden && isOnHomepage() && isMobileDevice()) {
-            gyroState.currentX += (gyroState.targetX - gyroState.currentX) * 0.14;
-            gyroState.currentY += (gyroState.targetY - gyroState.currentY) * 0.14;
+            gyroState.currentX += (gyroState.targetX - gyroState.currentX) * 0.16;
+            gyroState.currentY += (gyroState.targetY - gyroState.currentY) * 0.16;
             const rotateX = (gyroState.currentY * -maxRotation).toFixed(2);
             const rotateY = (gyroState.currentX * maxRotation).toFixed(2);
             const cards = document.querySelectorAll('.project-grid .project-card');
@@ -413,7 +413,7 @@ function showGyroConsentBanner() {
     banner.className = 'gyro-consent-banner';
     banner.setAttribute('role', 'dialog');
     banner.setAttribute('aria-live', 'polite');
-    banner.setAttribute('aria-label', 'Consenso sensore di movimento 3D');
+    banner.setAttribute('aria-label', 'Esperienza interattiva — consenso sensore di movimento');
     banner.innerHTML = `
         <div class="gyro-consent-icon" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -438,7 +438,7 @@ function showGyroConsentBanner() {
         banner.classList.remove('is-visible');
         setTimeout(() => {
             if (banner && banner.parentNode) banner.parentNode.removeChild(banner);
-        }, 350);
+        }, 480);
     };
 
     const acceptBtn = banner.querySelector('#gyro-consent-accept');
@@ -451,7 +451,7 @@ function showGyroConsentBanner() {
     }
     if (dismissBtn) {
         dismissBtn.addEventListener('click', () => {
-            try { sessionStorage.setItem(CONSENT_STORAGE_KEY, 'denied'); } catch (_) { }
+            gyroState.dismissedThisLoad = true;
             hideBanner();
         });
     }
@@ -463,9 +463,10 @@ async function initMobileHomepageGyro() {
         startGyroAnimationLoop();
         return;
     }
+    if (gyroState.dismissedThisLoad) return;
+
     let storedConsent = null;
     try { storedConsent = sessionStorage.getItem(CONSENT_STORAGE_KEY); } catch (_) { }
-    if (storedConsent === 'denied') return;
 
     const needsIOSPermission = (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') ||
         (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function');

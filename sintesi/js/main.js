@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSmoothScroll();
   initLetterHoverHeadings();
   initHeroMarquee();
+  initArticleCardsScrollTilt();
   initLogoFallback();
   initArticlesEngineStub();
 });
@@ -20,13 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
  * Gestisce le viste separate su mobile (hero, articoli, mission) e il tema del footer fisso
  */
 function initMobileViews() {
+  if (document.body.classList.contains('page-article')) return;
+
   const mobileMedia = window.matchMedia('(max-width: 768px)');
   const viewButtons = document.querySelectorAll('.js-mobile-view-btn');
   const homeTrigger = document.querySelector('.js-mobile-home-trigger');
   let currentView = 'hero';
 
   const resolveViewFromHash = (hash) => {
-    if (hash === '#articoli') return 'articoli';
+    if (hash === '#articoli' || hash === '#archivio') return 'articoli';
     if (hash === '#mission' || hash === '#about' || hash === '#team') return 'mission';
     return 'hero';
   };
@@ -272,7 +275,9 @@ function initSmoothScroll() {
  */
 function initLetterHoverHeadings() {
   const headingSelectors = [
-    '.hero-headline'
+    '.hero-headline',
+    '.article-entry-title',
+    '.article-chapter-title'
   ];
 
   const headings = document.querySelectorAll(headingSelectors.join(', '));
@@ -352,31 +357,36 @@ function initLetterHoverHeadings() {
 function initHeroMarquee() {
   const marquee = document.querySelector('.js-marquee');
   const track = marquee ? marquee.querySelector('.js-marquee-track') : null;
-  if (!marquee || !track) return;
+  const groupA = track ? track.querySelector('.js-marquee-group') : null;
+  if (!marquee || !track || !groupA) return;
 
-  // Duplicazione degli elementi per la continuità del loop
-  Array.from(track.children).forEach((item) => {
-    const clone = item.cloneNode(true);
-    clone.setAttribute('aria-hidden', 'true');
-    clone.querySelectorAll('button').forEach((btn) => btn.setAttribute('tabindex', '-1'));
-    clone.querySelectorAll('img').forEach((img) => img.setAttribute('alt', ''));
-    track.appendChild(clone);
+  // Assicura caricamento immediato di tutti i manifesti per evitare salti di larghezza nel loop
+  groupA.querySelectorAll('img').forEach((img) => {
+    img.loading = 'eager';
   });
 
-  // Velocità costante in px/s indipendente dal numero/larghezza delle immagini
+  // Duplica l'intera Track A in una Track B identica (gap uniforme tra ultima e prima immagine)
+  const groupB = groupA.cloneNode(true);
+  groupB.classList.remove('js-marquee-group');
+  groupB.setAttribute('aria-hidden', 'true');
+  groupB.querySelectorAll('button').forEach((btn) => btn.setAttribute('tabindex', '-1'));
+  groupB.querySelectorAll('img').forEach((img) => {
+    img.setAttribute('alt', '');
+    img.loading = 'eager';
+  });
+  track.appendChild(groupB);
+
+  // Velocità lineare costante in px/s basata sulla larghezza esatta di Track A
   const updateDuration = () => {
-    const halfWidth = track.scrollWidth / 2;
-    if (!halfWidth) return;
-    const pxPerSecond = window.innerWidth < 768 ? 34 : 48;
-    track.style.setProperty('--marquee-duration', `${(halfWidth / pxPerSecond).toFixed(2)}s`);
+    const groupWidth = groupA.getBoundingClientRect().width;
+    if (!groupWidth) return;
+    const pxPerSecond = window.innerWidth < 768 ? 36 : 50;
+    const duration = (groupWidth / pxPerSecond).toFixed(2);
+    track.style.setProperty('--marquee-duration', `${duration}s`);
   };
 
   updateDuration();
-  window.addEventListener('load', updateDuration);
   window.addEventListener('resize', updateDuration, { passive: true });
-  track.querySelectorAll('img').forEach((img) => {
-    if (!img.complete) img.addEventListener('load', updateDuration, { once: true });
-  });
 
   let activeCard = null;
 
@@ -428,6 +438,76 @@ function initHeroMarquee() {
       marquee.classList.remove('is-paused');
     }
   });
+}
+
+/**
+ * 8. Rotazione scroll-driven del rettangolo blu retrostante alle card Archivio su dispositivi touch/mobile
+ * - Su desktop la rotazione è guidata dal CSS :hover (-2.2deg -> -5deg)
+ * - Su mobile/touch ruota fluidamente tra -2deg e -5.5deg mentre la card attraversa il centro del viewport
+ */
+function initArticleCardsScrollTilt() {
+  const isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!isTouch || reducedMotion) return;
+
+  const cards = Array.from(document.querySelectorAll('.article-card:not(.article-card--upcoming)'));
+  if (!cards.length) return;
+
+  const visibleCards = new Set();
+  let ticking = false;
+
+  const updateAngles = () => {
+    ticking = false;
+    const viewportCenter = window.innerHeight * 0.5;
+
+    visibleCards.forEach((card) => {
+      const rect = card.getBoundingClientRect();
+      if (rect.height === 0) return;
+
+      const cardCenter = rect.top + rect.height * 0.5;
+      const maxDistance = window.innerHeight * 0.65;
+      const normalizedDist = Math.min(1, Math.abs(cardCenter - viewportCenter) / maxDistance);
+      const focusFactor = 1 - normalizedDist; // 1 al centro del viewport, 0 ai bordi
+      const angle = -2 - (focusFactor * 3.5); // -2deg -> -5.5deg
+
+      card.style.setProperty('--card-back-angle', `${angle.toFixed(2)}deg`);
+    });
+  };
+
+  const requestUpdate = () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(updateAngles);
+    }
+  };
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            visibleCards.add(entry.target);
+          } else {
+            visibleCards.delete(entry.target);
+            entry.target.style.setProperty('--card-back-angle', '-2deg');
+          }
+        });
+        requestUpdate();
+      },
+      { threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+
+    cards.forEach((card) => observer.observe(card));
+  } else {
+    cards.forEach((card) => visibleCards.add(card));
+  }
+
+  window.addEventListener('scroll', requestUpdate, { passive: true });
+  window.addEventListener('resize', requestUpdate, { passive: true });
+
+  // Aggiorna immediatamente al cambio vista mobile (es. apertura tab Archivio)
+  const bodyObserver = new MutationObserver(requestUpdate);
+  bodyObserver.observe(document.body, { attributes: true, attributeFilter: ['data-mobile-view'] });
 }
 
 /**

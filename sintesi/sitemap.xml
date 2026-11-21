@@ -31,4 +31,14 @@
       <image:title>Simone Mascia — Redazione Sintesi</image:title>
     </image:image>
   </url>
+  <url>
+    <loc>https://ferdinandovirno.it/sintesi/intrecci-narrativi.html</loc>
+    <lastmod>2026-11-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://ferdinandovirno.it/sintesi/assets/archivio/intrecci-narrativi/NLM-1.webp</image:loc>
+      <image:title>Intrecci Narrativi a Maratea — Nuova Libbaneria Mediterranea</image:title>
+    </image:image>
+  </url>
 </urlset>
