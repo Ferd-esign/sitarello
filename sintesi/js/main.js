@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initLetterHoverHeadings();
   initHeroMarquee();
   initArticleCardsScrollTilt();
+  initTiltedCallouts();
   initLogoFallback();
   initArticlesEngineStub();
 });
@@ -575,4 +576,54 @@ function initArticlesEngineStub() {
       `).join('');
     }
   };
+}
+
+/**
+ * 6. Tilted Callout Blocks ("Pacchetti") - Micro-interazione Tap/Click su Mobile/Touch
+ * Alterna lo stato .is-active al tap per raddrizzare il blocco inclinato su touch screen
+ */
+function initTiltedCallouts() {
+  const callouts = document.querySelectorAll(
+    '.about-sidebar, .about-quote, blockquote, .callout--primary, .statement-callout, .pull-quote, .quote-editorial, .tilted-callout'
+  );
+  if (!callouts.length) return;
+
+  callouts.forEach((block) => {
+    block.setAttribute('tabindex', '0');
+    block.setAttribute('role', 'button');
+    block.setAttribute('aria-pressed', 'false');
+
+    block.addEventListener('click', (e) => {
+      // Non bloccare eventuali link all'interno del blocco
+      if (e.target.closest('a')) return;
+
+      const wasActive = block.classList.contains('is-active');
+      callouts.forEach((b) => {
+        b.classList.remove('is-active');
+        b.setAttribute('aria-pressed', 'false');
+      });
+
+      if (!wasActive) {
+        block.classList.add('is-active');
+        block.setAttribute('aria-pressed', 'true');
+      }
+      e.stopPropagation();
+    });
+
+    block.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        block.click();
+      }
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.about-sidebar, .about-quote, blockquote, .callout--primary, .statement-callout, .pull-quote, .quote-editorial, .tilted-callout')) {
+      callouts.forEach((b) => {
+        b.classList.remove('is-active');
+        b.setAttribute('aria-pressed', 'false');
+      });
+    }
+  });
 }
